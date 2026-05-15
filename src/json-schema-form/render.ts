@@ -1,4 +1,4 @@
-import { html, nothing, type TemplateResult } from 'lit'
+import { html, nothing, type TemplateResult } from "lit";
 import {
   acceptsType,
   describeUnion,
@@ -11,11 +11,16 @@ import {
   pathToKey,
   resolveSchema,
   sanitizeValueForSchema,
-} from '../lib/schema.js'
-import { formatNumericValue, getNumericInputStep, getStringInputType, parseNumericInputValue } from '../lib/input.js'
-import type { JsonSchemaFormContext, FieldRenderOptions } from './shared.js'
-import type { JsonPointerPath, JsonSchema202012, JsonValue } from '../lib/types.js'
-import { getValueAtPath, isJsonObject } from '../lib/value.js'
+} from "../lib/schema.js";
+import {
+  formatNumericValue,
+  getNumericInputStep,
+  getStringInputType,
+  parseNumericInputValue,
+} from "../lib/input.js";
+import type { JsonSchemaFormContext, FieldRenderOptions } from "./shared.js";
+import type { JsonPointerPath, JsonSchema202012, JsonValue } from "../lib/types.js";
+import { getValueAtPath, isJsonObject } from "../lib/value.js";
 import {
   addAdditionalProperty,
   addArrayItem,
@@ -35,19 +40,19 @@ import {
   shouldFrameContainer,
   toggleCollapsed,
   updatePathValue,
-} from './state.js'
+} from "./state.js";
 
 export function renderForm(ctx: JsonSchemaFormContext) {
   if (!ctx.schema) {
-    return nothing
+    return nothing;
   }
 
-  const rootSchema = ctx.rootSchema
-  const schema = resolveSchema(rootSchema, rootSchema, ctx.value)
-  const serializedValue = JSON.stringify(ctx.value ?? null)
+  const rootSchema = ctx.rootSchema;
+  const schema = resolveSchema(rootSchema, rootSchema, ctx.value);
+  const serializedValue = JSON.stringify(ctx.value ?? null);
 
   return html`
-    <div class="lipstick-form" data-disabled=${String(ctx.disabled)}>
+    <div class="lipstick" data-disabled=${String(ctx.disabled)}>
       ${renderNode(ctx, schema, ctx.value, [], {
         required: true,
         present: true,
@@ -58,7 +63,7 @@ export function renderForm(ctx: JsonSchemaFormContext) {
         ? html`<input type="hidden" name=${ctx.name} .value=${serializedValue} />`
         : nothing}
     </div>
-  `
+  `;
 }
 
 function renderNode(
@@ -68,36 +73,36 @@ function renderNode(
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
-  const rootSchema = ctx.rootSchema
-  const resolved = resolveSchema(schema, rootSchema, value)
+  const rootSchema = ctx.rootSchema;
+  const resolved = resolveSchema(schema, rootSchema, value);
   const union = describeUnion(
     resolved,
     value,
     rootSchema,
     ctx.branchSelections.get(pathToKey(path)),
-  )
+  );
 
   if (!options.present && !options.required) {
-    return renderCollapsedOptionalField(ctx, resolved, path, options)
+    return renderCollapsedOptionalField(ctx, resolved, path, options);
   }
 
   if (union) {
-    return renderUnionField(ctx, resolved, value, path, options, union)
+    return renderUnionField(ctx, resolved, value, path, options, union);
   }
 
   if (resolved.const !== undefined || resolved.enum?.length) {
-    return renderScalarField(ctx, resolved, value, path, options)
+    return renderScalarField(ctx, resolved, value, path, options);
   }
 
   if (isObjectSchema(resolved)) {
-    return renderObjectField(ctx, resolved, value, path, options)
+    return renderObjectField(ctx, resolved, value, path, options);
   }
 
   if (isArraySchema(resolved)) {
-    return renderArrayField(ctx, resolved, value, path, options)
+    return renderArrayField(ctx, resolved, value, path, options);
   }
 
-  return renderScalarField(ctx, resolved, value, path, options)
+  return renderScalarField(ctx, resolved, value, path, options);
 }
 
 function renderCollapsedOptionalField(
@@ -106,14 +111,14 @@ function renderCollapsedOptionalField(
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
-  const label = options.label ?? schema.title ?? 'Field'
-  const collapsedOptions = { ...options, collapsible: false }
+  const label = options.label ?? schema.title ?? "Field";
+  const collapsedOptions = { ...options, collapsible: false };
 
   return html`
     <div class="lipstick-leaf lipstick-leaf--collapsed">
       ${renderLeafHeader(ctx, label, collapsedOptions, path)}
     </div>
-  `
+  `;
 }
 
 function renderUnionField(
@@ -124,26 +129,22 @@ function renderUnionField(
   options: FieldRenderOptions,
   union: NonNullable<ReturnType<typeof describeUnion>>,
 ): TemplateResult {
-  const rootSchema = ctx.rootSchema
-  const branches = schema.oneOf ?? schema.anyOf ?? []
-  const branchSchema = resolveSchema(
-    branches[union.selectedIndex],
-    rootSchema,
-    value,
-  )
-  const pathKey = pathToKey(path)
-  const collapsed = isCollapsed(ctx, path)
+  const rootSchema = ctx.rootSchema;
+  const branches = schema.oneOf ?? schema.anyOf ?? [];
+  const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
+  const pathKey = pathToKey(path);
+  const collapsed = isCollapsed(ctx, path);
 
   const changeBranch = (index: number) => {
-    ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index)
-    const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema)
-    commitRootValue(ctx, path, nextValue, branches[index])
-  }
+    ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
+    const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema);
+    commitRootValue(ctx, path, nextValue, branches[index]);
+  };
 
   return html`
     <fieldset
       class=${getFieldClassNames(
-        'lipstick-union',
+        "lipstick-union",
         shouldFrameContainer(ctx, schema, options.framed !== false),
       )}
     >
@@ -151,15 +152,14 @@ function renderUnionField(
       ${collapsed
         ? nothing
         : html`
-            ${renderDescription(schema)}
-            ${renderRefWarning(schema)}
-            ${renderUnionSelector(ctx, union, changeBranch)}
+            ${renderDescription(schema)} ${renderRefWarning(schema)}
+            ${renderUnionSelector(ctx, schema, union, changeBranch)}
             <div class="lipstick-union-body">
               ${renderUnionBranch(ctx, branchSchema, value, path, union)}
             </div>
           `}
     </fieldset>
-  `
+  `;
 }
 
 function renderUnionBranch(
@@ -172,22 +172,41 @@ function renderUnionBranch(
   const schema =
     union.discriminator && isObjectSchema(branchSchema)
       ? omitObjectProperty(branchSchema, union.discriminator.property)
-      : branchSchema
+      : branchSchema;
 
   return renderNode(ctx, schema, value, path, {
     required: true,
     present: true,
     framed: false,
     collapsible: false,
-  })
+  });
 }
 
 function renderUnionSelector(
   ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
   union: NonNullable<ReturnType<typeof describeUnion>>,
   changeBranch: (index: number) => void,
 ): TemplateResult {
-  if (union.kind === 'discriminator' && union.discriminator) {
+  if (schema.anyOf?.length && union.kind !== "discriminator") {
+    return html`
+      <label class="lipstick-inline-field">
+        <span>Variant</span>
+        <select
+          .disabled=${ctx.formDisabled}
+          .value=${String(union.selectedIndex)}
+          @change=${(event: Event) =>
+            changeBranch(Number((event.target as HTMLSelectElement).value))}
+        >
+          ${union.options.map(
+            (option) => html` <option value=${String(option.index)}>${option.label}</option> `,
+          )}
+        </select>
+      </label>
+    `;
+  }
+
+  if (union.kind === "discriminator" && union.discriminator) {
     return html`
       <label class="lipstick-inline-field">
         <span>${humanizeLabel(union.discriminator.property)}</span>
@@ -199,17 +218,15 @@ function renderUnionSelector(
         >
           ${union.discriminator.options.map(
             (option) => html`
-              <option value=${String(option.index)}>
-                ${String(option.value)}
-              </option>
+              <option value=${String(option.index)}>${String(option.value)}</option>
             `,
           )}
         </select>
       </label>
-    `
+    `;
   }
 
-  if (union.kind === 'generic') {
+  if (union.kind === "generic") {
     return html`
       <label class="lipstick-inline-field">
         <span>Variant</span>
@@ -220,13 +237,11 @@ function renderUnionSelector(
             changeBranch(Number((event.target as HTMLSelectElement).value))}
         >
           ${union.options.map(
-            (option) => html`
-              <option value=${String(option.index)}>${option.label}</option>
-            `,
+            (option) => html` <option value=${String(option.index)}>${option.label}</option> `,
           )}
         </select>
       </label>
-    `
+    `;
   }
 
   return html`
@@ -235,7 +250,7 @@ function renderUnionSelector(
         (option) => html`
           <button
             type="button"
-            class=${option.index === union.selectedIndex ? 'is-selected' : ''}
+            class=${option.index === union.selectedIndex ? "is-selected" : ""}
             ?disabled=${ctx.formDisabled}
             @click=${() => changeBranch(option.index)}
           >
@@ -244,7 +259,7 @@ function renderUnionSelector(
         `,
       )}
     </div>
-  `
+  `;
 }
 
 function renderObjectField(
@@ -254,13 +269,11 @@ function renderObjectField(
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
-  const objectValue = isJsonObject(value) ? value : {}
-  const properties = schema.properties ?? {}
-  const requiredSet = getRequiredProperties(schema, objectValue)
-  const propertyEntries = Object.entries(properties)
-  const additionalKeys = Object.keys(objectValue).filter(
-    (key) => !(key in properties),
-  )
+  const objectValue = isJsonObject(value) ? value : {};
+  const properties = schema.properties ?? {};
+  const requiredSet = getRequiredProperties(schema, objectValue);
+  const propertyEntries = Object.entries(properties);
+  const additionalKeys = Object.keys(objectValue).filter((key) => !(key in properties));
   const body = renderObjectBody(
     ctx,
     schema,
@@ -269,33 +282,26 @@ function renderObjectField(
     propertyEntries,
     requiredSet,
     additionalKeys,
-  )
+  );
 
-  const framed = options.framed ?? true
+  const framed = options.framed ?? true;
 
   if (!framed) {
-    return html`<div class="lipstick-object-embed">${body}</div>`
+    return html`<div class="lipstick-object-embed">${body}</div>`;
   }
 
-  const collapsed = isCollapsed(ctx, path)
+  const collapsed = isCollapsed(ctx, path);
 
   return html`
     <fieldset
-      class=${getFieldClassNames(
-        'lipstick-object',
-        shouldFrameContainer(ctx, schema, framed),
-      )}
+      class=${getFieldClassNames("lipstick-object", shouldFrameContainer(ctx, schema, framed))}
     >
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       ${collapsed
         ? nothing
-        : html`
-            ${renderDescription(schema)}
-            ${renderRefWarning(schema)}
-            ${body}
-          `}
+        : html` ${renderDescription(schema)} ${renderRefWarning(schema)} ${body} `}
     </fieldset>
-  `
+  `;
 }
 
 function renderObjectBody(
@@ -310,29 +316,18 @@ function renderObjectBody(
   return html`
     <div class="lipstick-object-body">
       ${propertyEntries.map(([key, childSchema]) => {
-        const required = requiredSet.has(key)
-        const present = required || key in objectValue
+        const required = requiredSet.has(key);
+        const present = required || key in objectValue;
 
-        return renderObjectProperty(
-          ctx,
-          key,
-          childSchema,
-          objectValue[key],
-          [...path, key],
-          {
-            label: childSchema.title ?? humanizeLabel(key),
-            required,
-            present,
-            framed: true,
-            collapsible: canCollapseSchema(ctx, childSchema),
-            onAdd: required
-              ? undefined
-              : () => addKnownProperty(ctx, path, key, childSchema),
-            onRemove: required
-              ? undefined
-              : () => removeProperty(ctx, [...path, key]),
-          },
-        )
+        return renderObjectProperty(ctx, key, childSchema, objectValue[key], [...path, key], {
+          label: childSchema.title ?? humanizeLabel(key),
+          required,
+          present,
+          framed: true,
+          collapsible: canCollapseSchema(ctx, childSchema),
+          onAdd: required ? undefined : () => addKnownProperty(ctx, path, key, childSchema),
+          onRemove: required ? undefined : () => removeProperty(ctx, [...path, key]),
+        });
       })}
       ${additionalKeys.map((key) =>
         renderObjectProperty(
@@ -346,10 +341,7 @@ function renderObjectBody(
             required: false,
             present: true,
             framed: true,
-            collapsible: canCollapseSchema(
-              ctx,
-              getAdditionalPropertySchema(schema),
-            ),
+            collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
             onRemove: () => removeProperty(ctx, [...path, key]),
           },
         ),
@@ -358,7 +350,7 @@ function renderObjectBody(
     ${schema.additionalProperties !== false
       ? renderAdditionalPropertyComposer(ctx, schema, path)
       : nothing}
-  `
+  `;
 }
 
 function renderObjectProperty(
@@ -373,7 +365,7 @@ function renderObjectProperty(
     <div class="lipstick-object-row" data-key=${key}>
       ${renderNode(ctx, schema, value, path, options)}
     </div>
-  `
+  `;
 }
 
 function renderAdditionalPropertyComposer(
@@ -381,12 +373,12 @@ function renderAdditionalPropertyComposer(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  const pathKey = pathToKey(path)
-  const draft = ctx.additionalPropertyDrafts.get(pathKey) ?? ''
-  const canAdd = canAddAdditionalProperty(schema)
+  const pathKey = pathToKey(path);
+  const draft = ctx.additionalPropertyDrafts.get(pathKey) ?? "";
+  const canAdd = canAddAdditionalProperty(schema);
 
   if (!canAdd) {
-    return nothing
+    return nothing;
   }
 
   return html`
@@ -406,23 +398,23 @@ function renderAdditionalPropertyComposer(
         .disabled=${ctx.formDisabled || !canAdd}
         .value=${draft}
         @input=${(event: Event) => {
-          const nextValue = (event.target as HTMLInputElement).value
+          const nextValue = (event.target as HTMLInputElement).value;
           ctx.additionalPropertyDrafts = new Map(ctx.additionalPropertyDrafts).set(
             pathKey,
             nextValue,
-          )
+          );
         }}
         @keydown=${(event: KeyboardEvent) => {
-          if (event.key !== 'Enter') {
-            return
+          if (event.key !== "Enter") {
+            return;
           }
 
-          event.preventDefault()
-          addAdditionalProperty(ctx, path, draft.trim(), schema)
+          event.preventDefault();
+          addAdditionalProperty(ctx, path, draft.trim(), schema);
         }}
       />
     </div>
-  `
+  `;
 }
 
 function renderArrayField(
@@ -432,47 +424,31 @@ function renderArrayField(
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
-  const arrayValue = Array.isArray(value) ? value : []
-  const nextIndex = arrayValue.length
-  const addSchema = getArrayItemSchema(schema, nextIndex) ?? {}
-  const addLabel = addSchema.title
-  const canAdd =
-    schema.items !== false || nextIndex < (schema.prefixItems?.length ?? 0)
-  const body = renderArrayBody(
-    ctx,
-    schema,
-    arrayValue,
-    path,
-    nextIndex,
-    addLabel,
-    canAdd,
-  )
+  const arrayValue = Array.isArray(value) ? value : [];
+  const nextIndex = arrayValue.length;
+  const addSchema = getArrayItemSchema(schema, nextIndex) ?? {};
+  const addLabel = addSchema.title;
+  const canAdd = schema.items !== false || nextIndex < (schema.prefixItems?.length ?? 0);
+  const body = renderArrayBody(ctx, schema, arrayValue, path, nextIndex, addLabel, canAdd);
 
-  const framed = options.framed ?? true
+  const framed = options.framed ?? true;
 
   if (!framed) {
-    return html`<div class="lipstick-array-embed">${body}</div>`
+    return html`<div class="lipstick-array-embed">${body}</div>`;
   }
 
-  const collapsed = isCollapsed(ctx, path)
+  const collapsed = isCollapsed(ctx, path);
 
   return html`
     <fieldset
-      class=${getFieldClassNames(
-        'lipstick-array',
-        shouldFrameContainer(ctx, schema, framed),
-      )}
+      class=${getFieldClassNames("lipstick-array", shouldFrameContainer(ctx, schema, framed))}
     >
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       ${collapsed
         ? nothing
-        : html`
-            ${renderDescription(schema)}
-            ${renderRefWarning(schema)}
-            ${body}
-          `}
+        : html` ${renderDescription(schema)} ${renderRefWarning(schema)} ${body} `}
     </fieldset>
-  `
+  `;
 }
 
 function renderArrayBody(
@@ -486,9 +462,7 @@ function renderArrayBody(
 ): TemplateResult {
   return html`
     <div class="lipstick-array-items">
-      ${arrayValue.map((item, index) =>
-        renderArrayItem(ctx, schema, item, path, index),
-      )}
+      ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
     </div>
     ${canAdd
       ? html`
@@ -496,14 +470,14 @@ function renderArrayBody(
             type="button"
             class="lipstick-array-add-button"
             ?disabled=${ctx.formDisabled}
-            aria-label=${addLabel ? `Add ${addLabel}` : 'Add item'}
+            aria-label=${addLabel ? `Add ${addLabel}` : "Add item"}
             @click=${() => addArrayItem(ctx, path, schema, nextIndex)}
           >
             +
           </button>
         `
       : nothing}
-  `
+  `;
 }
 
 function renderArrayItem(
@@ -513,22 +487,22 @@ function renderArrayItem(
   path: JsonPointerPath,
   index: number,
 ): TemplateResult {
-  const itemPath = [...path, index]
-  const itemSchema = getArrayItemSchema(schema, index) ?? {}
-  const canRemove = index >= (schema.minItems ?? 0)
-  const arrayValue = getValueAtPath(ctx.value, path)
-  const canMoveUp = index > 0
-  const canMoveDown = Array.isArray(arrayValue) && index < arrayValue.length - 1
-  const isSimpleItem = isSimpleArrayItemSchema(ctx, itemSchema)
-  const simpleItemLabel = formatSimpleArrayItemLabel(itemSchema, index)
-  const objectItemLabel = formatObjectArrayItemLabel(itemSchema, index)
+  const itemPath = [...path, index];
+  const itemSchema = getArrayItemSchema(schema, index) ?? {};
+  const canRemove = index >= (schema.minItems ?? 0);
+  const arrayValue = getValueAtPath(ctx.value, path);
+  const canMoveUp = index > 0;
+  const canMoveDown = Array.isArray(arrayValue) && index < arrayValue.length - 1;
+  const isSimpleItem = isSimpleArrayItemSchema(ctx, itemSchema);
+  const simpleItemLabel = formatSimpleArrayItemLabel(itemSchema, index);
+  const objectItemLabel = formatObjectArrayItemLabel(itemSchema, index);
 
   if (isSimpleItem) {
     return html`
       <div class="lipstick-array-row lipstick-array-row--simple">
         <div class="lipstick-array-item-body">
           ${renderNode(ctx, itemSchema, item, itemPath, {
-            label: simpleItemLabel ?? '',
+            label: simpleItemLabel ?? "",
             required: index < (schema.minItems ?? 0),
             present: true,
             framed: false,
@@ -537,17 +511,11 @@ function renderArrayItem(
           })}
         </div>
         <div class="lipstick-array-actions lipstick-array-actions--side">
-          ${renderArrayItemReorderActions(
-            ctx,
-            path,
-            index,
-            canMoveUp,
-            canMoveDown,
-          )}
+          ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
           ${renderArrayItemRemoveAction(ctx, itemPath, canRemove)}
         </div>
       </div>
-    `
+    `;
   }
 
   return html`
@@ -560,32 +528,23 @@ function renderArrayItem(
         collapsible: false,
         headerPrefix: html`
           <span class="lipstick-array-item-controls">
-            ${renderArrayItemReorderActions(
-              ctx,
-              path,
-              index,
-              canMoveUp,
-              canMoveDown,
-            )}
+            ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
           </span>
         `,
-        removeLabel: 'Delete array item',
+        removeLabel: "Delete array item",
         onRemove: canRemove ? () => removeArrayItem(ctx, itemPath) : undefined,
       })}
     </div>
-  `
+  `;
 }
 
-function isSimpleArrayItemSchema(
-  ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
-): boolean {
-  const resolved = resolveSchema(schema, ctx.rootSchema, undefined)
+function isSimpleArrayItemSchema(ctx: JsonSchemaFormContext, schema: JsonSchema202012): boolean {
+  const resolved = resolveSchema(schema, ctx.rootSchema, undefined);
   return !(
     describeUnion(resolved, undefined, ctx.rootSchema) ||
     isObjectSchema(resolved) ||
     isArraySchema(resolved)
-  )
+  );
 }
 
 function renderScalarField(
@@ -595,43 +554,33 @@ function renderScalarField(
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
-  const fieldLabel = options.label ?? schema.title ?? 'Value'
-  const inputId = createInputId(path)
-  const disabled = ctx.formDisabled || schema.readOnly === true
-  const inlineSimpleValue = !schema.description && !acceptsType(schema, 'boolean')
+  const fieldLabel = options.label ?? schema.title ?? "Value";
+  const inputId = createInputId(path);
+  const disabled = ctx.formDisabled || schema.readOnly === true;
+  const inlineSimpleValue = !schema.description && !acceptsType(schema, "boolean");
 
   if (schema.const !== undefined) {
     const control = html`
       <output class="lipstick-const-value" id=${inputId}>${String(schema.const)}</output>
-    `
+    `;
 
     if (inlineSimpleValue) {
-      return renderInlineSimpleField(
-        ctx,
-        fieldLabel,
-        options,
-        inputId,
-        schema,
-        control,
-        true,
-      )
+      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control, true);
     }
 
     return html`
       <div class="lipstick-leaf">
-        ${renderLeafHeader(ctx, fieldLabel, options, path)}
-        ${renderLeafBody(schema)}
-        ${control}
+        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
       </div>
-    `
+    `;
   }
 
   if (schema.enum?.length) {
-    const optionsList = schema.enum ?? []
+    const optionsList = schema.enum ?? [];
     const normalizedValue =
       value !== undefined && optionsList.includes(value as never)
         ? String(value)
-        : String(optionsList[0] ?? '')
+        : String(optionsList[0] ?? "");
     const control = html`
       <select
         id=${inputId}
@@ -641,45 +590,33 @@ function renderScalarField(
           const nextValue = parseLiteralOption(
             (event.target as HTMLSelectElement).value,
             optionsList,
-          )
-          updatePathValue(ctx, path, nextValue, schema, true)
+          );
+          updatePathValue(ctx, path, nextValue, schema, true);
         }}
       >
         ${optionsList.map(
-          (option) => html`
-            <option value=${String(option)}>${String(option)}</option>
-          `,
+          (option) => html` <option value=${String(option)}>${String(option)}</option> `,
         )}
       </select>
-    `
+    `;
 
     if (inlineSimpleValue) {
-      return renderInlineSimpleField(
-        ctx,
-        fieldLabel,
-        options,
-        inputId,
-        schema,
-        control,
-      )
+      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
     }
 
     return html`
       <div class="lipstick-leaf">
-        ${renderLeafHeader(ctx, fieldLabel, options, path)}
-        ${renderLeafBody(schema)}
-        ${control}
+        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
       </div>
-    `
+    `;
   }
 
-  if (acceptsType(schema, 'boolean')) {
+  if (acceptsType(schema, "boolean")) {
     return html`
       <div class="lipstick-leaf lipstick-toggle">
         <div class="lipstick-toggle-shell">
           <div class="lipstick-toggle-copy">
-            ${renderLeafHeader(ctx, fieldLabel, options, path)}
-            ${renderLeafBody(schema)}
+            ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)}
           </div>
           <label class="lipstick-switch" for=${inputId}>
             <input
@@ -702,20 +639,16 @@ function renderScalarField(
           </label>
         </div>
       </div>
-    `
+    `;
   }
 
-  if (acceptsType(schema, 'integer') || acceptsType(schema, 'number')) {
+  if (acceptsType(schema, "integer") || acceptsType(schema, "number")) {
     const numericValue =
-      typeof value === 'number'
-        ? value
-        : typeof schema.minimum === 'number'
-          ? schema.minimum
-          : 0
-    const step = getNumericInputStep(schema)
-    const formattedValue = formatNumericValue(numericValue, step)
+      typeof value === "number" ? value : typeof schema.minimum === "number" ? schema.minimum : 0;
+    const step = getNumericInputStep(schema);
+    const formattedValue = formatNumericValue(numericValue, step);
 
-    if (typeof schema.minimum === 'number' && typeof schema.maximum === 'number') {
+    if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
       const control = html`
         <div class="lipstick-range">
           <div class="lipstick-range-controls">
@@ -778,26 +711,17 @@ function renderScalarField(
             />
           </div>
         </div>
-      `
+      `;
 
       if (inlineSimpleValue) {
-        return renderInlineSimpleField(
-          ctx,
-          fieldLabel,
-          options,
-          inputId,
-          schema,
-          control,
-        )
+        return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
       }
 
       return html`
         <div class="lipstick-leaf">
-          ${renderLeafHeader(ctx, fieldLabel, options, path)}
-          ${renderLeafBody(schema)}
-          ${control}
+          ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
         </div>
-      `
+      `;
     }
 
     const control = html`
@@ -806,7 +730,7 @@ function renderScalarField(
         type="number"
         .disabled=${disabled}
         .step=${String(step)}
-        .value=${typeof value === 'number' ? formattedValue : ''}
+        .value=${typeof value === "number" ? formattedValue : ""}
         @input=${(event: Event) =>
           updatePathValue(
             ctx,
@@ -824,100 +748,60 @@ function renderScalarField(
             true,
           )}
       />
-    `
+    `;
 
     if (inlineSimpleValue) {
-      return renderInlineSimpleField(
-        ctx,
-        fieldLabel,
-        options,
-        inputId,
-        schema,
-        control,
-      )
+      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
     }
 
     return html`
       <div class="lipstick-leaf">
-        ${renderLeafHeader(ctx, fieldLabel, options, path)}
-        ${renderLeafBody(schema)}
-        ${control}
+        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
       </div>
-    `
+    `;
   }
 
   const multiline =
-    schema.format === 'textarea' ||
-    (typeof schema.maxLength === 'number' && schema.maxLength > 200)
-  const inputType = getStringInputType(schema)
-  const currentValue = typeof value === 'string' ? value : ''
+    schema.format === "textarea" ||
+    (typeof schema.maxLength === "number" && schema.maxLength > 200);
+  const inputType = getStringInputType(schema);
+  const currentValue = typeof value === "string" ? value : "";
   const control = multiline
     ? html`
         <textarea
           id=${inputId}
+          placeholder="Enter a value"
           .disabled=${disabled}
           .value=${currentValue}
           @input=${(event: Event) =>
-            updatePathValue(
-              ctx,
-              path,
-              (event.target as HTMLTextAreaElement).value,
-              schema,
-              false,
-            )}
+            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, false)}
           @change=${(event: Event) =>
-            updatePathValue(
-              ctx,
-              path,
-              (event.target as HTMLTextAreaElement).value,
-              schema,
-              true,
-            )}
+            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, true)}
         ></textarea>
       `
     : html`
         <input
           id=${inputId}
           type=${inputType}
+          placeholder="Enter a value"
           .disabled=${disabled}
           .value=${currentValue}
           @input=${(event: Event) =>
-            updatePathValue(
-              ctx,
-              path,
-              (event.target as HTMLInputElement).value,
-              schema,
-              false,
-            )}
+            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, false)}
           @change=${(event: Event) =>
-            updatePathValue(
-              ctx,
-              path,
-              (event.target as HTMLInputElement).value,
-              schema,
-              true,
-            )}
+            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, true)}
         />
-      `
+      `;
 
   if (inlineSimpleValue && !multiline) {
-    return renderInlineSimpleField(
-      ctx,
-      fieldLabel,
-      options,
-      inputId,
-      schema,
-      control,
-    )
+    return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
   }
 
   return html`
     <div class="lipstick-leaf">
-      ${renderLeafHeader(ctx, fieldLabel, options, path)}
-      ${renderLeafBody(schema)}
-      ${control}
+      ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
     </div>
-  `
+  `;
 }
 
 function renderFieldsetHeader(
@@ -927,17 +811,15 @@ function renderFieldsetHeader(
   path: JsonPointerPath,
   collapsed: boolean,
 ): TemplateResult | typeof nothing {
-  const text = options.label ?? schema.title
+  const text = options.label ?? schema.title;
   if (!text) {
-    return nothing
+    return nothing;
   }
 
   if (!options.present && options.onAdd) {
     return html`
-      <legend class="lipstick-legend">
-        ${renderOptionalAddTrigger(ctx, text, options.onAdd)}
-      </legend>
-    `
+      <legend class="lipstick-legend">${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend>
+    `;
   }
 
   return html`
@@ -955,15 +837,13 @@ function renderFieldsetHeader(
             >
               <span class="lipstick-collapse-toggle-label">${text}</span>
               <span class="lipstick-collapse-toggle-state" aria-hidden="true">
-                ${collapsed ? '+' : '−'}
+                ${collapsed ? "+" : "−"}
               </span>
             </button>
           `}
-      ${options.onRemove
-        ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
-        : nothing}
+      ${options.onRemove ? renderRemoveButton(ctx, options.onRemove, options.removeLabel) : nothing}
     </legend>
-  `
+  `;
 }
 
 function renderLeafHeader(
@@ -972,10 +852,10 @@ function renderLeafHeader(
   options: FieldRenderOptions,
   path: JsonPointerPath,
 ): TemplateResult {
-  const collapsed = isCollapsed(ctx, path)
+  const collapsed = isCollapsed(ctx, path);
 
   if (!options.present && options.onAdd) {
-    return renderOptionalAddTrigger(ctx, label, options.onAdd)
+    return renderOptionalAddTrigger(ctx, label, options.onAdd);
   }
 
   if (options.collapsible === false) {
@@ -987,7 +867,7 @@ function renderLeafHeader(
           ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
           : nothing}
       </div>
-    `
+    `;
   }
 
   return html`
@@ -1002,51 +882,39 @@ function renderLeafHeader(
       >
         <span class="lipstick-collapse-toggle-label">${label}</span>
         <span class="lipstick-collapse-toggle-state" aria-hidden="true">
-          ${collapsed ? '+' : '−'}
+          ${collapsed ? "+" : "−"}
         </span>
       </button>
       ${options.present && options.onRemove
         ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
         : nothing}
     </div>
-  `
+  `;
 }
 
-function renderDescription(
-  schema: JsonSchema202012,
-): TemplateResult | typeof nothing {
+function renderDescription(schema: JsonSchema202012): TemplateResult | typeof nothing {
   return schema.description
     ? html`<p class="lipstick-description">${schema.description}</p>`
-    : nothing
+    : nothing;
 }
 
-function renderRefWarning(
-  schema: JsonSchema202012,
-): TemplateResult | typeof nothing {
-  const refError = getRefError(schema)
-  return refError ? html`<p class="lipstick-note">${refError}</p>` : nothing
+function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof nothing {
+  const refError = getRefError(schema);
+  return refError ? html`<p class="lipstick-note">${refError}</p>` : nothing;
 }
 
-function renderLeafBody(
-  schema: JsonSchema202012,
-): TemplateResult | typeof nothing {
-  return html`${renderDescription(schema)}${renderRefWarning(schema)}`
+function renderLeafBody(schema: JsonSchema202012): TemplateResult | typeof nothing {
+  return html`${renderDescription(schema)}${renderRefWarning(schema)}`;
 }
 
-function formatSimpleArrayItemLabel(
-  schema: JsonSchema202012,
-  index: number,
-): string | undefined {
-  const title = schema.title?.trim()
-  return title ? `${title} ${index + 1}` : undefined
+function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
+  const title = schema.title?.trim();
+  return title ? `${title} ${index + 1}` : undefined;
 }
 
-function formatObjectArrayItemLabel(
-  schema: JsonSchema202012,
-  index: number,
-): string {
-  const title = schema.title?.trim() || 'Item'
-  return `${title} ${index + 1}`
+function formatObjectArrayItemLabel(schema: JsonSchema202012, index: number): string {
+  const title = schema.title?.trim() || "Item";
+  return `${title} ${index + 1}`;
 }
 
 function renderArrayItemReorderActions(
@@ -1075,7 +943,7 @@ function renderArrayItemReorderActions(
     >
       ↓
     </button>
-  `
+  `;
 }
 
 function renderArrayItemRemoveAction(
@@ -1093,7 +961,7 @@ function renderArrayItemRemoveAction(
     >
       ×
     </button>
-  `
+  `;
 }
 
 function renderOptionalAddTrigger(
@@ -1107,22 +975,22 @@ function renderOptionalAddTrigger(
       class="lipstick-optional-add"
       ?disabled=${ctx.formDisabled}
       @click=${(event: Event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        onAdd()
+        event.preventDefault();
+        event.stopPropagation();
+        onAdd();
       }}
       aria-label="Add optional field"
     >
       <span class="lipstick-inline-add-symbol">+</span>
       <span class="lipstick-optional-add-label">${label}</span>
     </button>
-  `
+  `;
 }
 
 function renderRemoveButton(
   ctx: JsonSchemaFormContext,
   action: () => void,
-  label = 'Remove optional field',
+  label = "Remove optional field",
 ): TemplateResult {
   return html`
     <button
@@ -1130,15 +998,15 @@ function renderRemoveButton(
       class="lipstick-remove-button"
       ?disabled=${ctx.formDisabled}
       @click=${(event: Event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        action()
+        event.preventDefault();
+        event.stopPropagation();
+        action();
       }}
       aria-label=${label}
     >
       ×
     </button>
-  `
+  `;
 }
 
 function renderInlineSimpleField(
@@ -1150,21 +1018,19 @@ function renderInlineSimpleField(
   control: TemplateResult,
   useSpanLabel = false,
 ): TemplateResult {
-  const hasLabel = Boolean(label.trim())
+  const hasLabel = Boolean(label.trim());
 
   return html`
     <div class="lipstick-leaf lipstick-leaf--inline">
       <div
         class=${hasLabel
-          ? 'lipstick-inline-value-row'
-          : 'lipstick-inline-value-row lipstick-inline-value-row--no-label'}
+          ? "lipstick-inline-value-row"
+          : "lipstick-inline-value-row lipstick-inline-value-row--no-label"}
       >
         ${hasLabel
           ? useSpanLabel
             ? html`<span class="lipstick-inline-value-label">${label}</span>`
-            : html`<label class="lipstick-inline-value-label" for=${inputId}>
-                ${label}
-              </label>`
+            : html`<label class="lipstick-inline-value-label" for=${inputId}> ${label} </label>`
           : nothing}
         ${control}
         ${options.present && options.onRemove
@@ -1173,5 +1039,5 @@ function renderInlineSimpleField(
       </div>
       ${renderLeafBody(schema)}
     </div>
-  `
+  `;
 }

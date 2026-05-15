@@ -14,7 +14,7 @@
   --lipstick-radius: 20px;
 }
 
-.lipstick-form {
+.lipstick {
   & .lipstick-field {
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);

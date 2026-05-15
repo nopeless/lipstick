@@ -13,6 +13,7 @@ import {
   resolveSchema,
   sanitizeValueForSchema,
 } from '../src/lib/schema.js'
+import { getStringInputType } from '../src/lib/input.js'
 import type { JsonSchema202012 } from '../src/lib/types.js'
 
 test('resolves refs and required properties', () => {
@@ -66,6 +67,10 @@ test('builds and sanitizes values by schema', () => {
     ),
     { mode: 'final', count: 0, tags: ['ok', ''] },
   )
+})
+
+test('maps string formats to input types', () => {
+  assert.equal(getStringInputType({ type: 'string', format: 'color' }), 'color')
 })
 
 test('detects union presentation and discriminators', () => {

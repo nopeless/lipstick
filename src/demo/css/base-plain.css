@@ -14,7 +14,7 @@
   --lipstick-radius: 0;
 }
 
-.lipstick-form {
+.lipstick {
   & .lipstick-field {
     box-shadow: none;
   }

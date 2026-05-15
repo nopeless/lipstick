@@ -15,7 +15,7 @@
   --lipstick-radius: 18px;
 }
 
-.lipstick-form {
+.lipstick {
   & .lipstick-field {
     padding: 1rem 1.15rem 1.15rem;
     border-radius: var(--lipstick-radius);
@@ -136,12 +136,12 @@
     transition: transform 140ms ease;
   }
 
-  & .lipstick-switch input:checked + .lipstick-switch-track {
+  & .lipstick-switch input:checked+.lipstick-switch-track {
     background: var(--lipstick-accent-soft);
     border-color: var(--lipstick-accent);
   }
 
-  & .lipstick-switch input:checked + .lipstick-switch-track .lipstick-switch-thumb {
+  & .lipstick-switch input:checked+.lipstick-switch-track .lipstick-switch-thumb {
     transform: translateX(1.37rem);
   }
 

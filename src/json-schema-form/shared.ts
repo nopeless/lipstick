@@ -26,6 +26,7 @@ export interface JsonSchemaFormContext extends EventTarget {
   branchSelections: Map<string, number>
   additionalPropertyDrafts: Map<string, string>
   collapsedSections: Set<string>
+  pendingFocusId?: string
   rootSchema: JsonSchema202012
   formDisabled: boolean
   dispatchEvent(event: Event): boolean

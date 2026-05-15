@@ -7,6 +7,7 @@ import {
   addArrayItem,
   addKnownProperty,
   createInputId,
+  canAddAdditionalProperty,
   getFieldClassNames,
   isCollapsed,
   removeArrayItem,
@@ -47,6 +48,7 @@ test('mutates object and array paths through helpers', () => {
     },
     additionalProperties: { type: 'number' },
   }
+  assert.equal(canAddAdditionalProperty(objectSchema), true)
   const knownPropertyCtx = createContext(objectSchema, { tags: ['a', 'b'], extra: 1 })
   addKnownProperty(knownPropertyCtx, [], 'name', objectSchema.properties!.name)
   assert.equal(knownPropertyCtx.events.length, 2)
@@ -69,6 +71,7 @@ test('mutates object and array paths through helpers', () => {
   assert.deepEqual(arrayItemCtx.events.at(-1)?.detail.value, {
     tags: ['a', 'b', ''],
   })
+  assert.equal(arrayItemCtx.pendingFocusId, createInputId(['tags', 2]))
 
   const reorderCtx = createContext(objectSchema, { tags: ['a', 'b', 'c'] })
   reorderArrayItem(reorderCtx, ['tags'], 0, 2)

@@ -7,6 +7,8 @@ export function getStringInputType(schema: JsonSchema202012): string {
   }
 
   switch (schema.format) {
+    case 'color':
+      return 'color'
     case 'email':
       return 'email'
     case 'uri':

@@ -104,6 +104,9 @@ export function addArrayItem(
     ? [...currentArray, buildInitialValue(itemSchema, ctx.rootSchema)]
     : [buildInitialValue(itemSchema, ctx.rootSchema)]
   const nextValue = setValueAtPath(ctx.value, path, nextArray)
+  ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
+    ? createInputId([...path, index])
+    : undefined
   commitRootValue(ctx, [...path, index], nextValue, itemSchema)
 }
 
@@ -135,7 +138,7 @@ export function getAdditionalPropertySchema(
 }
 
 export function canAddAdditionalProperty(schema: JsonSchema202012): boolean {
-  return schema.additionalProperties === true
+  return schema.additionalProperties !== false
 }
 
 export function omitObjectProperty(
@@ -276,4 +279,16 @@ export function getFieldClassNames(kind: string, framed: boolean): string {
   return framed
     ? `lipstick-field ${kind}`
     : `lipstick-field lipstick-field--bare ${kind}`
+}
+
+function isSimpleArrayItemSchema(
+  ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
+): boolean {
+  const resolved = resolveSchema(schema, ctx.rootSchema, undefined)
+  return !(
+    describeUnion(resolved, undefined, ctx.rootSchema) ||
+    isObjectSchema(resolved) ||
+    isArraySchema(resolved)
+  )
 }
