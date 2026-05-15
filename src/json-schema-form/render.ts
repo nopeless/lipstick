@@ -10,7 +10,6 @@ import {
   isObjectSchema,
   pathToKey,
   resolveSchema,
-  sanitizeValueForSchema,
 } from "../lib/schema.js";
 import {
   formatNumericValue,
@@ -35,6 +34,7 @@ import {
   reorderArrayItem,
   removeArrayItem,
   removeProperty,
+  switchUnionBranch,
   toggleCollapsed,
   updatePathValue,
 } from "./state.js";
@@ -129,13 +129,10 @@ function renderUnionField(
   const rootSchema = ctx.rootSchema;
   const branches = schema.oneOf ?? schema.anyOf ?? [];
   const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
-  const pathKey = pathToKey(path);
   const collapsed = isCollapsed(ctx, path);
 
   const changeBranch = (index: number) => {
-    ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
-    const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema);
-    updatePathValue(ctx, path, nextValue, branches[index], true);
+    switchUnionBranch(ctx, path, value, branches, rootSchema, index);
   };
 
   return html`
@@ -178,12 +175,9 @@ function renderPrimitiveUnionField(
   const rootSchema = ctx.rootSchema;
   const branches = schema.anyOf ?? [];
   const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
-  const pathKey = pathToKey(path);
   const inputId = createInputId(path);
   const changeBranch = (index: number) => {
-    ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
-    const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema);
-    updatePathValue(ctx, path, nextValue, branches[index], true);
+    switchUnionBranch(ctx, path, value, branches, rootSchema, index);
   };
 
   const cycleButton =

@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import type { JsonSchemaFormContext } from '../src/json-schema-form/shared.js'
-import type { JsonSchema202012, JsonValue } from '../src/lib/types.js'
+import type { JsonPointerPath, JsonSchema202012, JsonValue } from '../src/lib/types.js'
 import {
   addAdditionalProperty,
   addArrayItem,
@@ -12,6 +12,7 @@ import {
   removeArrayItem,
   removeProperty,
   reorderArrayItem,
+  switchUnionBranch,
   toggleCollapsed,
   updatePathValue,
 } from '../src/json-schema-form/state.js'
@@ -91,6 +92,62 @@ test('mutates object and array paths through helpers', () => {
   })
 })
 
+test('switches nested union branches by emitting the full root value', () => {
+  const schema: JsonSchema202012 = {
+    type: 'object',
+    properties: {
+      config: {
+        oneOf: [
+          {
+            title: 'Alpha',
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              kind: { const: 'alpha' },
+              value: { type: 'string' },
+            },
+            required: ['kind'],
+          },
+          {
+            title: 'Beta',
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              kind: { const: 'beta' },
+              count: { type: 'integer' },
+            },
+            required: ['kind', 'count'],
+          },
+        ],
+      },
+    },
+  }
+  const value = {
+    config: {
+      kind: 'alpha',
+      value: 'hello',
+    },
+  }
+  const ctx = createContext(schema, value)
+
+  const nextValue = switchUnionBranch(
+    ctx,
+    ['config'],
+    value.config,
+    schema.properties!.config.oneOf!,
+    schema,
+    1,
+  )
+
+  assert.deepEqual(nextValue, { kind: 'beta', count: 0 })
+  assert.equal(ctx.events.length, 2)
+  assert.deepEqual(ctx.events.at(-1)?.detail.value, {
+    config: { kind: 'beta', count: 0 },
+  })
+  assert.deepEqual(ctx.events.at(-1)?.detail.path, ['config'])
+  assert.equal(ctx.branchSelections.get('#/config'), 1)
+})
+
 test('tracks collapsed sections and generated metadata', () => {
   const ctx = createContext({ type: 'string' })
 
@@ -103,8 +160,16 @@ test('tracks collapsed sections and generated metadata', () => {
 function createContext(
   rootSchema: JsonSchema202012,
   value?: JsonValue,
-): JsonSchemaFormContext & { events: Array<{ type: string; detail: { value: JsonValue } }> } {
-  const events: Array<{ type: string; detail: { value: JsonValue } }> = []
+): JsonSchemaFormContext & {
+  events: Array<{
+    type: string
+    detail: { value: JsonValue; path: JsonPointerPath; schema: JsonSchema202012 }
+  }>
+} {
+  const events: Array<{
+    type: string
+    detail: { value: JsonValue; path: JsonPointerPath; schema: JsonSchema202012 }
+  }> = []
   return Object.assign(new EventTarget(), {
     schema: rootSchema,
     value,
@@ -117,7 +182,11 @@ function createContext(
     rootSchema,
     formDisabled: false,
     dispatchEvent(event: Event) {
-      const detail = (event as CustomEvent<{ value: JsonValue }>).detail
+      const detail = (event as CustomEvent<{
+        value: JsonValue
+        path: JsonPointerPath
+        schema: JsonSchema202012
+      }>).detail
       events.push({ type: event.type, detail })
       return true
     },

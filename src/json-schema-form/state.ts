@@ -6,6 +6,7 @@ import {
   isObjectSchema,
   pathToKey,
   resolveSchema,
+  sanitizeValueForSchema,
 } from '../lib/schema.js'
 import type { JsonSchemaFormContext } from './shared.js'
 import type {
@@ -23,6 +24,9 @@ import {
   setValueAtPath,
 } from '../lib/value.js'
 
+/**
+ * Emits a path-scoped value update by patching `ctx.value` at `path`.
+ */
 export function updatePathValue(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
@@ -38,7 +42,8 @@ export function updatePathValue(
   }
 }
 
-export function commitRootValue(
+/** Emits `nextValue` as the full form value without applying a path patch. */
+export function emitWholeValue(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
   nextValue: JsonValue,
@@ -46,6 +51,26 @@ export function commitRootValue(
 ) {
   emitValue(ctx, 'input', path, nextValue, schema)
   emitValue(ctx, 'change', path, nextValue, schema)
+}
+
+/**
+ * Selects a union branch, sanitizes the current value for that branch, and
+ * emits the path update from one shared place.
+ */
+export function switchUnionBranch(
+  ctx: JsonSchemaFormContext,
+  path: JsonPointerPath,
+  value: JsonValue | undefined,
+  branches: readonly JsonSchema202012[],
+  rootSchema: JsonSchema202012,
+  index: number,
+) {
+  const pathKey = pathToKey(path)
+  ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index)
+  const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema)
+  updatePathValue(ctx, path, nextValue, branches[index], true)
+
+  return nextValue
 }
 
 export function addKnownProperty(
@@ -59,7 +84,7 @@ export function addKnownProperty(
     [...objectPath, key],
     buildInitialValue(schema, ctx.rootSchema),
   )
-  commitRootValue(ctx, [...objectPath, key], nextValue, schema)
+  emitWholeValue(ctx, [...objectPath, key], nextValue, schema)
 }
 
 export function addAdditionalProperty(
@@ -81,7 +106,7 @@ export function addAdditionalProperty(
   const nextDrafts = new Map(ctx.additionalPropertyDrafts)
   nextDrafts.delete(pathToKey(objectPath))
   ctx.additionalPropertyDrafts = nextDrafts
-  commitRootValue(ctx, [...objectPath, key], nextValue, additionalSchema)
+  emitWholeValue(ctx, [...objectPath, key], nextValue, additionalSchema)
 }
 
 export function removeProperty(
@@ -89,7 +114,7 @@ export function removeProperty(
   path: JsonPointerPath,
 ) {
   const nextValue = deleteValueAtPath(ctx.value, path)
-  commitRootValue(ctx, path, nextValue, ctx.rootSchema)
+  emitWholeValue(ctx, path, nextValue, ctx.rootSchema)
 }
 
 export function addArrayItem(
@@ -107,7 +132,7 @@ export function addArrayItem(
   ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
     ? createInputId([...path, index])
     : undefined
-  commitRootValue(ctx, [...path, index], nextValue, itemSchema)
+  emitWholeValue(ctx, [...path, index], nextValue, itemSchema)
 }
 
 export function removeArrayItem(
@@ -115,7 +140,7 @@ export function removeArrayItem(
   path: JsonPointerPath,
 ) {
   const nextValue = deleteValueAtPath(ctx.value, path)
-  commitRootValue(ctx, path, nextValue, ctx.rootSchema)
+  emitWholeValue(ctx, path, nextValue, ctx.rootSchema)
 }
 
 export function reorderArrayItem(
@@ -125,7 +150,7 @@ export function reorderArrayItem(
   toIndex: number,
 ) {
   const nextValue = moveArrayItem(ctx.value, path, fromIndex, toIndex)
-  commitRootValue(ctx, path, nextValue, ctx.rootSchema)
+  emitWholeValue(ctx, path, nextValue, ctx.rootSchema)
 }
 
 export function getAdditionalPropertySchema(
