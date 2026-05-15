@@ -227,60 +227,6 @@ export function canCollapseSchema(
   )
 }
 
-export function shouldFrameContainer(
-  ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
-  framed: boolean,
-): boolean {
-  return framed && hasNestedContainerChild(ctx, schema)
-}
-
-export function hasNestedContainerChild(
-  ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
-): boolean {
-  const resolved = resolveSchema(schema, ctx.rootSchema, undefined)
-  const union = describeUnion(resolved, undefined, ctx.rootSchema)
-
-  if (union) {
-    const branches = resolved.oneOf ?? resolved.anyOf ?? []
-    return branches.some((branch) => canCollapseSchema(ctx, branch))
-  }
-
-  if (isObjectSchema(resolved)) {
-    const properties = Object.values(resolved.properties ?? {})
-    const additional =
-      typeof resolved.additionalProperties === 'object' &&
-      resolved.additionalProperties !== null
-        ? [resolved.additionalProperties]
-        : []
-
-    return [...properties, ...additional].some((child) =>
-      canCollapseSchema(ctx, child),
-    )
-  }
-
-  if (isArraySchema(resolved)) {
-    const prefixItems = resolved.prefixItems ?? []
-    const items =
-      typeof resolved.items === 'object' && resolved.items !== null
-        ? [resolved.items]
-        : []
-
-    return [...prefixItems, ...items].some((child) =>
-      canCollapseSchema(ctx, child),
-    )
-  }
-
-  return false
-}
-
-export function getFieldClassNames(kind: string, framed: boolean): string {
-  return framed
-    ? `lipstick-field ${kind}`
-    : `lipstick-field lipstick-field--bare ${kind}`
-}
-
 function isSimpleArrayItemSchema(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,

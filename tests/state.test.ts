@@ -8,7 +8,6 @@ import {
   addKnownProperty,
   createInputId,
   canAddAdditionalProperty,
-  getFieldClassNames,
   isCollapsed,
   removeArrayItem,
   removeProperty,
@@ -99,11 +98,6 @@ test('tracks collapsed sections and generated metadata', () => {
   toggleCollapsed(ctx, ['section'])
   assert.equal(isCollapsed(ctx, ['section']), true)
   assert.equal(createInputId(['section', 1]), 'lipstick---section-1')
-  assert.equal(getFieldClassNames('lipstick-object', true), 'lipstick-field lipstick-object')
-  assert.equal(
-    getFieldClassNames('lipstick-object', false),
-    'lipstick-field lipstick-field--bare lipstick-object',
-  )
 })
 
 function createContext(

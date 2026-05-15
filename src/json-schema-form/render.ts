@@ -30,14 +30,12 @@ import {
   commitRootValue,
   createInputId,
   getAdditionalPropertySchema,
-  getFieldClassNames,
   isCollapsed,
   omitObjectProperty,
   parseLiteralOption,
   reorderArrayItem,
   removeArrayItem,
   removeProperty,
-  shouldFrameContainer,
   toggleCollapsed,
   updatePathValue,
 } from "./state.js";
@@ -52,17 +50,13 @@ export function renderForm(ctx: JsonSchemaFormContext) {
   const serializedValue = JSON.stringify(ctx.value ?? null);
 
   return html`
-    <div class="lipstick" data-disabled=${String(ctx.disabled)}>
-      ${renderNode(ctx, schema, ctx.value, [], {
-        required: true,
-        present: true,
-        framed: true,
-        collapsible: false,
-      })}
-      ${ctx.name
-        ? html`<input type="hidden" name=${ctx.name} .value=${serializedValue} />`
-        : nothing}
-    </div>
+    ${renderNode(ctx, schema, ctx.value, [], {
+      required: true,
+      present: true,
+      framed: true,
+      collapsible: false,
+    })}
+    ${ctx.name ? html`<input type="hidden" name=${ctx.name} .value=${serializedValue} />` : nothing}
   `;
 }
 
@@ -115,9 +109,9 @@ function renderCollapsedOptionalField(
   const collapsedOptions = { ...options, collapsible: false };
 
   return html`
-    <div class="lipstick-leaf lipstick-leaf--collapsed">
+    <section class="lipstick-leaf lipstick-leaf--collapsed">
       ${renderLeafHeader(ctx, label, collapsedOptions, path)}
-    </div>
+    </section>
   `;
 }
 
@@ -142,21 +136,14 @@ function renderUnionField(
   };
 
   return html`
-    <fieldset
-      class=${getFieldClassNames(
-        "lipstick-union",
-        shouldFrameContainer(ctx, schema, options.framed !== false),
-      )}
-    >
+    <fieldset>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       ${collapsed
         ? nothing
         : html`
             ${renderDescription(schema)} ${renderRefWarning(schema)}
             ${renderUnionSelector(ctx, schema, union, changeBranch)}
-            <div class="lipstick-union-body">
-              ${renderUnionBranch(ctx, branchSchema, value, path, union)}
-            </div>
+            <div>${renderUnionBranch(ctx, branchSchema, value, path, union)}</div>
           `}
     </fieldset>
   `;
@@ -190,7 +177,7 @@ function renderUnionSelector(
 ): TemplateResult {
   if (schema.anyOf?.length && union.kind !== "discriminator") {
     return html`
-      <label class="lipstick-inline-field">
+      <label>
         <span>Variant</span>
         <select
           .disabled=${ctx.formDisabled}
@@ -208,7 +195,7 @@ function renderUnionSelector(
 
   if (union.kind === "discriminator" && union.discriminator) {
     return html`
-      <label class="lipstick-inline-field">
+      <label>
         <span>${humanizeLabel(union.discriminator.property)}</span>
         <select
           .disabled=${ctx.formDisabled}
@@ -228,7 +215,7 @@ function renderUnionSelector(
 
   if (union.kind === "generic") {
     return html`
-      <label class="lipstick-inline-field">
+      <label>
         <span>Variant</span>
         <select
           .disabled=${ctx.formDisabled}
@@ -245,12 +232,12 @@ function renderUnionSelector(
   }
 
   return html`
-    <div class="lipstick-choice-group" role="radiogroup">
+    <div role="radiogroup">
       ${union.options.map(
         (option) => html`
           <button
             type="button"
-            class=${option.index === union.selectedIndex ? "is-selected" : ""}
+            aria-pressed=${(option.index === union.selectedIndex).toString()}
             ?disabled=${ctx.formDisabled}
             @click=${() => changeBranch(option.index)}
           >
@@ -287,15 +274,13 @@ function renderObjectField(
   const framed = options.framed ?? true;
 
   if (!framed) {
-    return html`<div class="lipstick-object-embed">${body}</div>`;
+    return html`<section>${body}</section>`;
   }
 
   const collapsed = isCollapsed(ctx, path);
 
   return html`
-    <fieldset
-      class=${getFieldClassNames("lipstick-object", shouldFrameContainer(ctx, schema, framed))}
-    >
+    <fieldset>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       ${collapsed
         ? nothing
@@ -314,12 +299,12 @@ function renderObjectBody(
   additionalKeys: string[],
 ): TemplateResult {
   return html`
-    <div class="lipstick-object-body">
+    <div>
       ${propertyEntries.map(([key, childSchema]) => {
         const required = requiredSet.has(key);
         const present = required || key in objectValue;
 
-        return renderObjectProperty(ctx, key, childSchema, objectValue[key], [...path, key], {
+        return renderObjectProperty(ctx, childSchema, objectValue[key], [...path, key], {
           label: childSchema.title ?? humanizeLabel(key),
           required,
           present,
@@ -330,21 +315,14 @@ function renderObjectBody(
         });
       })}
       ${additionalKeys.map((key) =>
-        renderObjectProperty(
-          ctx,
-          key,
-          getAdditionalPropertySchema(schema),
-          objectValue[key],
-          [...path, key],
-          {
-            label: humanizeLabel(key),
-            required: false,
-            present: true,
-            framed: true,
-            collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
-            onRemove: () => removeProperty(ctx, [...path, key]),
-          },
-        ),
+        renderObjectProperty(ctx, getAdditionalPropertySchema(schema), objectValue[key], [...path, key], {
+          label: humanizeLabel(key),
+          required: false,
+          present: true,
+          framed: true,
+          collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
+          onRemove: () => removeProperty(ctx, [...path, key]),
+        }),
       )}
     </div>
     ${schema.additionalProperties !== false
@@ -355,16 +333,13 @@ function renderObjectBody(
 
 function renderObjectProperty(
   ctx: JsonSchemaFormContext,
-  key: string,
   schema: JsonSchema202012,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
   return html`
-    <div class="lipstick-object-row" data-key=${key}>
-      ${renderNode(ctx, schema, value, path, options)}
-    </div>
+    ${renderNode(ctx, schema, value, path, options)}
   `;
 }
 
@@ -385,12 +360,12 @@ function renderAdditionalPropertyComposer(
     <div class="lipstick-additional-composer">
       <button
         type="button"
-        class="lipstick-inline-add-button"
+        class="lipstick-add"
         ?disabled=${ctx.formDisabled || !canAdd || !draft.trim()}
         @click=${() => addAdditionalProperty(ctx, path, draft.trim(), schema)}
         aria-label="Add new property"
       >
-        <span class="lipstick-inline-add-symbol">+</span>
+        <span aria-hidden="true">+</span>
       </button>
       <input
         type="text"
@@ -434,15 +409,13 @@ function renderArrayField(
   const framed = options.framed ?? true;
 
   if (!framed) {
-    return html`<div class="lipstick-array-embed">${body}</div>`;
+    return html`<section>${body}</section>`;
   }
 
   const collapsed = isCollapsed(ctx, path);
 
   return html`
-    <fieldset
-      class=${getFieldClassNames("lipstick-array", shouldFrameContainer(ctx, schema, framed))}
-    >
+    <fieldset>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       ${collapsed
         ? nothing
@@ -461,14 +434,14 @@ function renderArrayBody(
   canAdd: boolean,
 ): TemplateResult {
   return html`
-    <div class="lipstick-array-items">
+    <div>
       ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
     </div>
     ${canAdd
       ? html`
           <button
             type="button"
-            class="lipstick-array-add-button"
+            class="lipstick-add"
             ?disabled=${ctx.formDisabled}
             aria-label=${addLabel ? `Add ${addLabel}` : "Add item"}
             @click=${() => addArrayItem(ctx, path, schema, nextIndex)}
@@ -500,7 +473,7 @@ function renderArrayItem(
   if (isSimpleItem) {
     return html`
       <div class="lipstick-array-row lipstick-array-row--simple">
-        <div class="lipstick-array-item-body">
+        <div>
           ${renderNode(ctx, itemSchema, item, itemPath, {
             label: simpleItemLabel ?? "",
             required: index < (schema.minItems ?? 0),
@@ -526,11 +499,7 @@ function renderArrayItem(
         present: true,
         framed: true,
         collapsible: false,
-        headerPrefix: html`
-          <span class="lipstick-array-item-controls">
-            ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
-          </span>
-        `,
+        headerPrefix: html`${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}`,
         removeLabel: "Delete array item",
         onRemove: canRemove ? () => removeArrayItem(ctx, itemPath) : undefined,
       })}
@@ -561,7 +530,7 @@ function renderScalarField(
 
   if (schema.const !== undefined) {
     const control = html`
-      <output class="lipstick-const-value" id=${inputId}>${String(schema.const)}</output>
+      <output id=${inputId}>${String(schema.const)}</output>
     `;
 
     if (inlineSimpleValue) {
@@ -569,9 +538,9 @@ function renderScalarField(
     }
 
     return html`
-      <div class="lipstick-leaf">
+      <section class="lipstick-leaf">
         ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-      </div>
+      </section>
     `;
   }
 
@@ -605,20 +574,19 @@ function renderScalarField(
     }
 
     return html`
-      <div class="lipstick-leaf">
+      <section class="lipstick-leaf">
         ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-      </div>
+      </section>
     `;
   }
 
   if (acceptsType(schema, "boolean")) {
     return html`
-      <div class="lipstick-leaf lipstick-toggle">
-        <div class="lipstick-toggle-shell">
-          <div class="lipstick-toggle-copy">
-            ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)}
-          </div>
-          <label class="lipstick-switch" for=${inputId}>
+      <section class="lipstick-leaf lipstick-toggle">
+        <header>
+          ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)}
+        </header>
+        <label class="lipstick-switch" for=${inputId}>
             <input
               id=${inputId}
               type="checkbox"
@@ -636,9 +604,8 @@ function renderScalarField(
             <span class="lipstick-switch-track" aria-hidden="true">
               <span class="lipstick-switch-thumb"></span>
             </span>
-          </label>
-        </div>
-      </div>
+        </label>
+      </section>
     `;
   }
 
@@ -718,9 +685,9 @@ function renderScalarField(
       }
 
       return html`
-        <div class="lipstick-leaf">
+        <section class="lipstick-leaf">
           ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-        </div>
+        </section>
       `;
     }
 
@@ -755,9 +722,9 @@ function renderScalarField(
     }
 
     return html`
-      <div class="lipstick-leaf">
+      <section class="lipstick-leaf">
         ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-      </div>
+      </section>
     `;
   }
 
@@ -798,9 +765,9 @@ function renderScalarField(
   }
 
   return html`
-    <div class="lipstick-leaf">
+    <section class="lipstick-leaf">
       ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-    </div>
+    </section>
   `;
 }
 
@@ -818,25 +785,24 @@ function renderFieldsetHeader(
 
   if (!options.present && options.onAdd) {
     return html`
-      <legend class="lipstick-legend">${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend>
+      <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend>
     `;
   }
 
   return html`
-    <legend class="lipstick-legend">
+    <legend>
       ${options.headerPrefix ?? nothing}
       ${options.collapsible === false
         ? text
         : html`
             <button
               type="button"
-              class="lipstick-collapse-toggle lipstick-collapse-toggle--title"
               @click=${() => toggleCollapsed(ctx, path)}
               aria-expanded=${(!collapsed).toString()}
               aria-label=${collapsed ? `Expand ${text}` : `Collapse ${text}`}
             >
-              <span class="lipstick-collapse-toggle-label">${text}</span>
-              <span class="lipstick-collapse-toggle-state" aria-hidden="true">
+              <span>${text}</span>
+              <span aria-hidden="true">
                 ${collapsed ? "+" : "−"}
               </span>
             </button>
@@ -860,35 +826,34 @@ function renderLeafHeader(
 
   if (options.collapsible === false) {
     return html`
-      <div class="lipstick-label-row">
+      <header>
         ${options.headerPrefix ?? nothing}
-        <label class="lipstick-label-text">${label}</label>
+        <span>${label}</span>
         ${options.present && options.onRemove
           ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
           : nothing}
-      </div>
+      </header>
     `;
   }
 
   return html`
-    <div class="lipstick-label-row">
+    <header>
       ${options.headerPrefix ?? nothing}
       <button
         type="button"
-        class="lipstick-collapse-toggle lipstick-collapse-toggle--leaf lipstick-collapse-toggle--title"
         @click=${() => toggleCollapsed(ctx, path)}
         aria-expanded=${(!collapsed).toString()}
         aria-label=${collapsed ? `Expand ${label}` : `Collapse ${label}`}
       >
-        <span class="lipstick-collapse-toggle-label">${label}</span>
-        <span class="lipstick-collapse-toggle-state" aria-hidden="true">
+        <span>${label}</span>
+        <span aria-hidden="true">
           ${collapsed ? "+" : "−"}
         </span>
       </button>
       ${options.present && options.onRemove
         ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
         : nothing}
-    </div>
+    </header>
   `;
 }
 
@@ -927,7 +892,7 @@ function renderArrayItemReorderActions(
   return html`
     <button
       type="button"
-      class="lipstick-direction-button"
+      class="lipstick-move-up"
       ?disabled=${ctx.formDisabled || !canMoveUp}
       @click=${() => reorderArrayItem(ctx, path, index, index - 1)}
       aria-label="Move item up"
@@ -936,7 +901,7 @@ function renderArrayItemReorderActions(
     </button>
     <button
       type="button"
-      class="lipstick-direction-button"
+      class="lipstick-move-down"
       ?disabled=${ctx.formDisabled || !canMoveDown}
       @click=${() => reorderArrayItem(ctx, path, index, index + 1)}
       aria-label="Move item down"
@@ -954,7 +919,7 @@ function renderArrayItemRemoveAction(
   return html`
     <button
       type="button"
-      class="lipstick-remove-button"
+      class="lipstick-remove"
       ?disabled=${ctx.formDisabled || !canRemove}
       @click=${() => removeArrayItem(ctx, itemPath)}
       aria-label="Delete array item"
@@ -972,7 +937,7 @@ function renderOptionalAddTrigger(
   return html`
     <button
       type="button"
-      class="lipstick-optional-add"
+      class="lipstick-add"
       ?disabled=${ctx.formDisabled}
       @click=${(event: Event) => {
         event.preventDefault();
@@ -981,8 +946,8 @@ function renderOptionalAddTrigger(
       }}
       aria-label="Add optional field"
     >
-      <span class="lipstick-inline-add-symbol">+</span>
-      <span class="lipstick-optional-add-label">${label}</span>
+      <span aria-hidden="true">+</span>
+      <span>${label}</span>
     </button>
   `;
 }
@@ -995,7 +960,7 @@ function renderRemoveButton(
   return html`
     <button
       type="button"
-      class="lipstick-remove-button"
+      class="lipstick-remove"
       ?disabled=${ctx.formDisabled}
       @click=${(event: Event) => {
         event.preventDefault();
@@ -1021,7 +986,7 @@ function renderInlineSimpleField(
   const hasLabel = Boolean(label.trim());
 
   return html`
-    <div class="lipstick-leaf lipstick-leaf--inline">
+    <section class="lipstick-leaf lipstick-leaf--inline">
       <div
         class=${hasLabel
           ? "lipstick-inline-value-row"
@@ -1029,8 +994,8 @@ function renderInlineSimpleField(
       >
         ${hasLabel
           ? useSpanLabel
-            ? html`<span class="lipstick-inline-value-label">${label}</span>`
-            : html`<label class="lipstick-inline-value-label" for=${inputId}> ${label} </label>`
+            ? html`<span>${label}</span>`
+            : html`<label for=${inputId}> ${label} </label>`
           : nothing}
         ${control}
         ${options.present && options.onRemove
@@ -1038,6 +1003,6 @@ function renderInlineSimpleField(
           : nothing}
       </div>
       ${renderLeafBody(schema)}
-    </div>
+    </section>
   `;
 }

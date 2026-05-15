@@ -15,34 +15,29 @@
   --lipstick-radius: 18px;
 }
 
-.lipstick {
-  & .lipstick-field {
-    padding: 1rem 1.15rem 1.15rem;
-    border-radius: var(--lipstick-radius);
-    box-shadow: var(--lipstick-shadow);
-  }
-
-  & .lipstick-field--bare {
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  & input,
-  & select,
-  & textarea,
-  & button {
+lip-stick {
+  & :is(input, select, textarea, button) {
     border-radius: 10px;
     border: 1px solid var(--lipstick-panel-border);
     background: #fff;
     color: inherit;
   }
 
-  & input,
-  & select,
-  & textarea {
+  & :is(select, textarea),
+  & input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
     width: 100%;
     box-sizing: border-box;
     padding: 0.75rem 0.85rem;
+    background: transparent;
+  }
+
+  & input[type="range"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   & textarea {
@@ -51,103 +46,32 @@
   }
 
   & button {
-    padding: 0.65rem 0.9rem;
     cursor: pointer;
-    transition:
-      transform 120ms ease,
-      border-color 120ms ease,
-      background-color 120ms ease,
-      box-shadow 120ms ease;
   }
 
-  & button:hover:not(:disabled),
-  & button:focus-visible:not(:disabled) {
-    border-color: var(--lipstick-accent);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(19, 93, 102, 0.12);
-  }
-
-  & .lipstick-leaf--inline input,
-  & .lipstick-leaf--inline select,
-  & .lipstick-leaf--inline textarea {
-    min-height: 2.15rem;
-    padding: 0.42rem 0.6rem;
-    border-color: transparent;
-    background: transparent;
-    box-shadow: none;
-    transition:
-      background-color 120ms ease,
-      border-color 120ms ease,
-      box-shadow 120ms ease;
-  }
-
-  & .lipstick-leaf--inline input:hover:not(:disabled):not(:focus-visible),
-  & .lipstick-leaf--inline select:hover:not(:disabled):not(:focus-visible),
-  & .lipstick-leaf--inline textarea:hover:not(:disabled):not(:focus-visible) {
-    background: rgba(255, 255, 255, 0.5);
-  }
-
-  & .lipstick-leaf--inline input:focus-visible,
-  & .lipstick-leaf--inline select:focus-visible,
-  & .lipstick-leaf--inline textarea:focus-visible {
+  & :is(select, textarea):focus-visible,
+  & input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visible {
     border-color: var(--lipstick-panel-border-strong);
     background: #fff;
     box-shadow: 0 0 0 3px rgba(19, 93, 102, 0.12);
     outline: none;
   }
 
-  & .lipstick-switch {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    width: 3rem;
-    height: 1.8rem;
-    flex: 0 0 auto;
-    cursor: pointer;
-  }
-
-  & .lipstick-switch input {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  & .lipstick-switch-track {
-    position: absolute;
-    inset: 0;
-    border-radius: 999px;
-    border: 1px solid var(--lipstick-panel-border-strong);
-    background: #ebe5da;
-    transition: background-color 140ms ease, border-color 140ms ease;
-    pointer-events: none;
-  }
-
-  & .lipstick-switch-thumb {
-    position: absolute;
-    top: 0.12rem;
-    left: 0.14rem;
-    width: 1.35rem;
-    height: 1.35rem;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(37, 29, 23, 0.18);
-    transition: transform 140ms ease;
-  }
-
-  & .lipstick-switch input:checked+.lipstick-switch-track {
-    background: var(--lipstick-accent-soft);
+  & button:not(:disabled):hover,
+  & button:not(:disabled):focus-visible {
     border-color: var(--lipstick-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(19, 93, 102, 0.12);
   }
 
-  & .lipstick-switch input:checked+.lipstick-switch-track .lipstick-switch-thumb {
-    transform: translateX(1.37rem);
+  & button.lipstick-remove:not(:disabled):hover,
+  & button.lipstick-remove:not(:disabled):focus-visible {
+    border-color: var(--lipstick-danger);
   }
 
-  & .lipstick-choice-group button.is-selected {
-    background: var(--lipstick-accent-soft);
-    border-color: var(--lipstick-accent);
+  & button.lipstick-add:not(:disabled):hover,
+  & button.lipstick-add:not(:disabled):focus-visible {
+    color: var(--lipstick-accent);
   }
 
   & button:disabled,
@@ -157,5 +81,9 @@
     cursor: not-allowed;
     opacity: 0.6;
     box-shadow: none;
+  }
+
+  & output {
+    font-weight: 600;
   }
 }

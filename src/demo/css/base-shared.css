@@ -1,53 +1,75 @@
-.lipstick {
+lip-stick {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+  color: var(--lipstick-text);
+  accent-color: var(--lipstick-accent);
 
-  & .lipstick-field {
-    display: grid;
-    gap: 0.7rem;
+  & fieldset,
+  & section.lipstick-leaf,
+  & div.lipstick-array-row,
+  & div.lipstick-array-actions,
+  & div.lipstick-additional-composer,
+  & div.lipstick-inline-value-row,
+  & div.lipstick-range,
+  & div[role="radiogroup"] {
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  & fieldset {
     margin: 0;
-    padding: 1rem;
-    border: 1px solid var(--lipstick-panel-border);
-    background: var(--lipstick-panel);
-  }
-
-  & .lipstick-field--bare {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  & .lipstick-object-embed,
-  & .lipstick-array-embed,
-  & .lipstick-union-body,
-  & .lipstick-object-body,
-  & .lipstick-array-items {
     display: grid;
     gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--lipstick-panel-border);
+    border-radius: var(--lipstick-radius);
+    background: var(--lipstick-panel);
+    box-shadow: var(--lipstick-shadow);
   }
 
-  & .lipstick-array-items {
-    padding-inline-start: 0.75rem;
+  & section.lipstick-leaf {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
   }
 
-  & .lipstick-label-row,
-  & .lipstick-legend {
+  & section.lipstick-leaf--inline {
+    gap: 0.45rem;
+  }
+
+  & fieldset > legend,
+  & section.lipstick-leaf > header {
     display: flex;
     align-items: center;
     gap: 0.55rem;
-    width: 100%;
     min-width: 0;
-    flex-wrap: nowrap;
   }
 
-  & .lipstick-legend {
+  & fieldset > legend {
     padding: 0;
     font-weight: 600;
     font-size: 1.05rem;
   }
 
-  & .lipstick-collapse-toggle-state {
+  & fieldset > legend > button,
+  & section.lipstick-leaf > header > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  & fieldset > legend > button:not(.lipstick-add) > span:last-child,
+  & section.lipstick-leaf > header > button > span:last-child {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -59,193 +81,216 @@
     color: var(--lipstick-muted);
   }
 
-  & .lipstick-leaf {
-    display: grid;
-    gap: 0.65rem;
+  & fieldset > legend > .lipstick-remove,
+  & section.lipstick-leaf > header > .lipstick-remove {
+    margin-inline-start: auto;
   }
 
-  & .lipstick-collapse-toggle-label,
-  & .lipstick-label-text {
-    min-width: 0;
-  }
-
-  & .lipstick-collapse-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.35rem;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  & .lipstick-collapse-toggle--title,
-  & .lipstick-collapse-toggle--leaf {
-    flex: 0 0 auto;
-    min-width: 0;
-    justify-content: flex-start;
-    gap: 0.75rem;
-  }
-
-  & .lipstick-description,
-  & .lipstick-note {
+  & section.lipstick-leaf > p,
+  & fieldset > p {
     margin: 0;
     font-size: 0.95rem;
     color: var(--lipstick-muted);
   }
 
-  & .lipstick-note {
+  & p.lipstick-note {
     color: var(--lipstick-danger);
   }
 
-  & .lipstick-object-row,
-  & .lipstick-array-row {
+  & label {
     display: grid;
-    gap: 0.85rem;
-  }
-
-  & .lipstick-array-row {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-  }
-
-  & .lipstick-array-row--simple {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.4rem;
-  }
-
-  & .lipstick-array-row--object {
-    gap: 0;
-  }
-
-  & .lipstick-array-item-body {
+    gap: 0.35rem;
     min-width: 0;
   }
 
-  & .lipstick-inline-value-row {
+  & label > span {
+    font-weight: 600;
+  }
+
+  & div[role="radiogroup"] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  & div[role="radiogroup"] > button {
+    border-radius: 999px;
+    padding: 0.55rem 0.85rem;
+  }
+
+  & div[role="radiogroup"] > button[aria-pressed="true"] {
+    background: var(--lipstick-accent-soft);
+    border-color: var(--lipstick-accent);
+  }
+
+  & section.lipstick-toggle {
+    gap: 0.7rem;
+  }
+
+  & section.lipstick-toggle > header {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.35rem;
+  }
+
+  & label.lipstick-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 3rem;
+    height: 1.8rem;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+
+  & label.lipstick-switch > input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  & label.lipstick-switch > .lipstick-switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    border: 1px solid var(--lipstick-panel-border-strong);
+    background: #ebe5da;
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease;
+    pointer-events: none;
+  }
+
+  & label.lipstick-switch > .lipstick-switch-thumb {
+    position: absolute;
+    top: 0.12rem;
+    left: 0.14rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(37, 29, 23, 0.18);
+    transition: transform 140ms ease;
+  }
+
+  & label.lipstick-switch > input:checked + .lipstick-switch-track {
+    background: var(--lipstick-accent-soft);
+    border-color: var(--lipstick-accent);
+  }
+
+  & label.lipstick-switch > input:checked + .lipstick-switch-track .lipstick-switch-thumb {
+    transform: translateX(1.37rem);
+  }
+
+  & label.lipstick-switch > input:focus-visible + .lipstick-switch-track {
+    box-shadow: 0 0 0 3px rgba(19, 93, 102, 0.12);
+  }
+
+  & section.lipstick-range {
+    gap: 0.55rem;
+  }
+
+  & section.lipstick-range > .lipstick-range-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7rem;
     gap: 0.75rem;
     align-items: center;
   }
 
-  & .lipstick-inline-value-row--no-label {
-    grid-template-columns: minmax(0, 1fr);
+  & section.lipstick-range > .lipstick-range-controls > .lipstick-range-main {
+    display: grid;
+    gap: 0.35rem;
+    align-content: center;
   }
 
-  & .lipstick-inline-value-label {
-    font-weight: 600;
+  & .lipstick-range-number {
+    text-align: right;
+  }
+
+  & div.lipstick-array-row {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  & div.lipstick-array-row--simple {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.4rem;
+  }
+
+  & div.lipstick-array-row--object {
+    gap: 0;
+  }
+
+  & div.lipstick-array-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.15rem;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  & div.lipstick-array-row > div {
     min-width: 0;
   }
 
-  & .lipstick-array-actions,
-  & .lipstick-array-item-actions,
-  & .lipstick-inline-field,
-  & .lipstick-choice-group,
-  & .lipstick-optional-add,
-  & .lipstick-toggle-shell,
-  & .lipstick-toggle-copy,
-  & .lipstick-range,
-  & .lipstick-range-controls,
-  & .lipstick-range-main {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.65rem;
-    align-items: center;
-  }
-
-  & .lipstick-array-item-actions {
-    flex-wrap: nowrap;
-    gap: 0.15rem;
-  }
-
-  & .lipstick-array-actions--side {
-    justify-content: flex-end;
-    gap: 0.15rem;
-  }
-
-  & .lipstick-array-item-controls {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    flex: 0 0 auto;
-  }
-
-  & .lipstick-additional-composer {
+  & div.lipstick-additional-composer {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 0.65rem;
     align-items: center;
   }
 
-  & .lipstick-inline-field {
+  & div.lipstick-inline-value-row {
     display: grid;
-    gap: 0.35rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
   }
 
-  & .lipstick-choice-group {
-    gap: 0.5rem;
+  & div.lipstick-inline-value-row--no-label {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  & .lipstick-inline-add-button,
-  & .lipstick-optional-add,
-  & .lipstick-direction-button,
-  & .lipstick-remove-button,
-  & .lipstick-array-add-button,
-  & .lipstick-action-symbol {
+  & div.lipstick-inline-value-row > :is(label, span) {
+    min-width: 0;
+    font-weight: 600;
+  }
+
+  & div.lipstick-inline-value-row > label {
+    display: block;
+  }
+
+  & :is(button.lipstick-add, button.lipstick-remove, button.lipstick-move-up, button.lipstick-move-down) {
     padding: 0;
     border: 0;
     background: transparent;
   }
 
-  & .lipstick-inline-add-button {
+  & button.lipstick-add {
     display: inline-flex;
     align-items: center;
-    font-weight: 600;
+    gap: 0.45rem;
     color: var(--lipstick-accent);
   }
 
-  & .lipstick-optional-add {
+  & fieldset > legend > .lipstick-add,
+  & section.lipstick-leaf > .lipstick-add {
     justify-content: flex-start;
-    width: 100%;
     color: var(--lipstick-muted);
     text-align: left;
   }
 
-  & .lipstick-optional-add-label,
-  & .lipstick-const-value {
-    color: inherit;
-  }
-
-  & .lipstick-direction-button,
-  & .lipstick-remove-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.8rem;
-    height: 1.8rem;
-    line-height: 1;
-  }
-
-  & .lipstick-direction-button {
-    color: var(--lipstick-muted);
-    font-size: 1rem;
-  }
-
-  & .lipstick-remove-button {
-    color: var(--lipstick-danger);
-  }
-
-  & .lipstick-inline-add-symbol {
+  & fieldset > legend > .lipstick-add > span:first-child,
+  & section.lipstick-leaf > .lipstick-add > span:first-child {
     color: var(--lipstick-accent);
-    line-height: 1;
   }
 
-  & .lipstick-array-add-button {
+  & fieldset > .lipstick-add,
+  & section:not(.lipstick-leaf) > .lipstick-add,
+  & div.lipstick-additional-composer > .lipstick-add {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -258,53 +303,47 @@
     line-height: 1;
   }
 
-  & .lipstick-range {
-    gap: 0.55rem;
-  }
-
-  & .lipstick-range-controls {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 7rem;
-    gap: 0.75rem;
+  & button.lipstick-remove,
+  & button.lipstick-move-up,
+  & button.lipstick-move-down {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    line-height: 1;
   }
 
-  & .lipstick-range-main {
-    display: grid;
-    gap: 0.35rem;
-    align-content: center;
-  }
-
-  & .lipstick-range-number {
-    text-align: right;
-  }
-
-  & .lipstick-range-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.88rem;
+  & button.lipstick-move-up,
+  & button.lipstick-move-down {
     color: var(--lipstick-muted);
   }
 
+  & button.lipstick-remove {
+    color: var(--lipstick-danger);
+  }
+
+  & button:disabled,
+  & input:disabled,
+  & select:disabled,
+  & textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+
   @media (max-width: 720px) {
-    & .lipstick-array-row {
-      grid-template-columns: 1fr;
+    & div.lipstick-array-row,
+    & div.lipstick-array-row--simple {
+      grid-template-columns: minmax(0, 1fr);
     }
 
-    & .lipstick-array-row--simple {
-      grid-template-columns: 1fr;
-    }
-
-    & .lipstick-array-actions--side {
+    & div.lipstick-array-actions {
       flex-direction: row;
     }
 
-    & .lipstick-range-controls {
-      grid-template-columns: 1fr;
-    }
-
-    & .lipstick-toggle-shell {
-      flex-direction: column;
+    & section.lipstick-range > .lipstick-range-controls {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 }

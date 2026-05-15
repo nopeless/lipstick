@@ -14,23 +14,24 @@
   --lipstick-radius: 20px;
 }
 
-.lipstick {
-  & .lipstick-field {
+lip-stick {
+  & fieldset {
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
   }
 
-  & .lipstick-field--bare {
+  & section.lipstick-leaf--inline,
+  & section.lipstick-leaf--collapsed {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
 
-  & .lipstick-switch-track {
+  & label.lipstick-switch > .lipstick-switch-track {
     background: rgba(255, 255, 255, 0.74);
     backdrop-filter: blur(10px);
   }
 
-  & .lipstick-switch-thumb {
+  & label.lipstick-switch > .lipstick-switch-thumb {
     box-shadow: 0 3px 10px rgba(47, 109, 165, 0.2);
   }
 
@@ -38,19 +39,19 @@
     box-shadow: 0 10px 20px rgba(64, 94, 124, 0.08);
   }
 
-  & button:hover:not(:disabled),
-  & button:focus-visible:not(:disabled) {
+  & button:not(:disabled):hover,
+  & button:not(:disabled):focus-visible {
     color: var(--lipstick-accent);
     box-shadow: none;
   }
 
-  & .lipstick-array-add-button:hover:not(:disabled),
-  & .lipstick-array-add-button:focus-visible:not(:disabled) {
+  & button.lipstick-add:not(:disabled):hover,
+  & button.lipstick-add:not(:disabled):focus-visible {
     transform: none;
     box-shadow: none;
   }
 
-  & .lipstick-choice-group button.is-selected {
+  & div[role="radiogroup"] > button[aria-pressed="true"] {
     background: rgba(47, 109, 165, 0.18);
     border-color: rgba(47, 109, 165, 0.3);
   }

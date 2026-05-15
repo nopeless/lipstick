@@ -14,17 +14,17 @@
   --lipstick-radius: 0;
 }
 
-.lipstick {
-  & .lipstick-field {
+lip-stick {
+  & fieldset {
     box-shadow: none;
   }
 
-  & .lipstick-switch-track {
+  & label.lipstick-switch > .lipstick-switch-track {
     background: #ececec;
     border-radius: 0;
   }
 
-  & .lipstick-switch-thumb {
+  & label.lipstick-switch > .lipstick-switch-thumb {
     border: 1px solid var(--lipstick-panel-border);
   }
 }
