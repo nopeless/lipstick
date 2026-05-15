@@ -3,6 +3,7 @@ import type { JsonSchemaFormElement } from '../json-schema-form.js'
 export interface DemoRefs {
   form: JsonSchemaFormElement
   output: HTMLElement
+  schemaSourcePicker: HTMLSelectElement
   schemaUrlInput: HTMLInputElement
   schemaJson: HTMLTextAreaElement
   schemaStatus: HTMLElement
@@ -13,6 +14,9 @@ export interface DemoRefs {
 export function getDemoRefs(): DemoRefs {
   const form = document.querySelector<JsonSchemaFormElement>('lipstick-form')
   const output = document.querySelector<HTMLElement>('[data-role="output"]')
+  const schemaSourcePicker = document.querySelector<HTMLSelectElement>(
+    '[data-role="schema-source-picker"]',
+  )
   const schemaUrlInput = document.querySelector<HTMLInputElement>(
     '[data-role="schema-url"]',
   )
@@ -32,6 +36,7 @@ export function getDemoRefs(): DemoRefs {
   if (
     !form ||
     !output ||
+    !schemaSourcePicker ||
     !schemaUrlInput ||
     !schemaJson ||
     !schemaStatus ||
@@ -44,6 +49,7 @@ export function getDemoRefs(): DemoRefs {
   return {
     form,
     output,
+    schemaSourcePicker,
     schemaUrlInput,
     schemaJson,
     schemaStatus,

@@ -8,8 +8,9 @@ import type { JsonSchemaFormEventDetail, JsonValue } from '../index.js'
 import { getDemoRefs } from './dom.js'
 import {
   getErrorMessage,
-  loadDemoExample,
+  loadDemoFixture,
   assertSchema,
+  type DemoFixtureName,
 } from './data.js'
 import type { JsonSchema202012 } from '../index.js'
 
@@ -27,7 +28,8 @@ let value: JsonValue = null
 const refs = getDemoRefs()
 
 applyTheme('balanced')
-setStatus('Loading demo example...')
+refs.schemaSourcePicker.value = 'editor'
+setStatus('Loading editor demo...')
 void bootstrap()
 
 refs.form.addEventListener('input', (event: Event) => {
@@ -67,11 +69,26 @@ refs.themePicker.addEventListener('change', (event: Event) => {
   applyTheme((event.target as HTMLSelectElement).value as ThemeName)
 })
 
+refs.schemaSourcePicker.addEventListener('change', (event: Event) => {
+  void loadSelectedDemo((event.target as HTMLSelectElement).value as DemoFixtureName)
+})
+
 async function bootstrap() {
   try {
-    const example = await loadDemoExample()
+    await loadSelectedDemo(refs.schemaSourcePicker.value as DemoFixtureName)
+    setStatus('Loaded editor demo.')
+  } catch (error) {
+    setStatus(getErrorMessage(error), true)
+  }
+}
+
+async function loadSelectedDemo(fixture: DemoFixtureName) {
+  try {
+    setStatus(`Loading ${fixture} demo...`)
+    const example = await loadDemoFixture(fixture)
     applySchema(example.schema, example.value)
-    setStatus('Loaded demo example.')
+    refs.schemaSourcePicker.value = fixture
+    setStatus(`Loaded ${fixture} demo.`)
   } catch (error) {
     setStatus(getErrorMessage(error), true)
   }

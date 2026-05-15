@@ -1,0 +1,1646 @@
+{
+  "schema": {
+    "title": "Content Editor Lab",
+    "description": "An exhaustive JSON Schema 2020-12 demo for stress-testing the editor UI.",
+    "type": "object",
+    "required": [
+      "document",
+      "content",
+      "layout",
+      "publishing",
+      "collaboration",
+      "styleGuide",
+      "integrations",
+      "analytics",
+      "access",
+      "compliance",
+      "customFields",
+      "featureFlags"
+    ],
+    "$defs": {
+      "money": {
+        "type": "object",
+        "title": "Money",
+        "required": [
+          "currency",
+          "amount"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP",
+              "CAD"
+            ],
+            "default": "USD"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "minimum": 0,
+            "maximum": 100000,
+            "multipleOf": 0.01
+          }
+        },
+        "additionalProperties": false
+      },
+      "person": {
+        "type": "object",
+        "title": "Person",
+        "required": [
+          "name",
+          "email"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "enum": [
+              "editor",
+              "designer",
+              "marketer",
+              "reviewer",
+              "owner"
+            ]
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          }
+        },
+        "additionalProperties": false
+      },
+      "image": {
+        "type": "object",
+        "title": "Image",
+        "required": [
+          "url",
+          "alt"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Image URL",
+            "format": "uri"
+          },
+          "alt": {
+            "type": "string",
+            "title": "Alt text"
+          },
+          "caption": {
+            "type": "string",
+            "title": "Caption",
+            "maxLength": 140
+          },
+          "focalPoint": {
+            "type": "string",
+            "title": "Focal point",
+            "enum": [
+              "center",
+              "top",
+              "bottom",
+              "left",
+              "right"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "link": {
+        "type": "object",
+        "title": "Link",
+        "required": [
+          "href",
+          "label"
+        ],
+        "properties": {
+          "href": {
+            "type": "string",
+            "title": "Href",
+            "format": "uri"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "external": {
+            "type": "boolean",
+            "title": "External",
+            "default": false
+          },
+          "ariaLabel": {
+            "type": "string",
+            "title": "ARIA label"
+          }
+        },
+        "additionalProperties": false
+      },
+      "seoBase": {
+        "type": "object",
+        "title": "SEO Base",
+        "required": [
+          "slug",
+          "title",
+          "description"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Meta title",
+            "maxLength": 70
+          },
+          "description": {
+            "type": "string",
+            "title": "Meta description",
+            "maxLength": 180
+          },
+          "canonicalUrl": {
+            "type": "string",
+            "title": "Canonical URL",
+            "format": "uri"
+          },
+          "keywords": {
+            "type": "array",
+            "title": "Keywords",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "seoAdvanced": {
+        "type": "object",
+        "title": "SEO Advanced",
+        "properties": {
+          "robots": {
+            "type": "string",
+            "title": "Robots",
+            "enum": [
+              "index,follow",
+              "noindex,follow",
+              "noindex,nofollow"
+            ],
+            "default": "index,follow"
+          },
+          "openGraphTitle": {
+            "type": "string",
+            "title": "Open Graph title"
+          },
+          "openGraphDescription": {
+            "type": "string",
+            "title": "Open Graph description",
+            "maxLength": 200
+          },
+          "openGraphImage": {
+            "$ref": "#/$defs/image"
+          }
+        },
+        "additionalProperties": false
+      },
+      "styleGuideCore": {
+        "type": "object",
+        "title": "Style Guide Core",
+        "required": [
+          "voice",
+          "tone",
+          "audience"
+        ],
+        "properties": {
+          "voice": {
+            "type": "string",
+            "title": "Voice",
+            "enum": [
+              "playful",
+              "direct",
+              "technical",
+              "luxury"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "title": "Tone",
+            "enum": [
+              "confident",
+              "friendly",
+              "formal",
+              "bold"
+            ]
+          },
+          "audience": {
+            "type": "string",
+            "title": "Audience"
+          },
+          "emojiUsage": {
+            "type": "boolean",
+            "title": "Emoji usage",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "styleGuideAdvanced": {
+        "type": "object",
+        "title": "Style Guide Advanced",
+        "properties": {
+          "readingLevel": {
+            "type": "integer",
+            "title": "Reading level",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "lineLength": {
+            "type": "number",
+            "title": "Target line length",
+            "minimum": 40,
+            "maximum": 120
+          },
+          "useOxfordComma": {
+            "type": "boolean",
+            "title": "Use Oxford comma",
+            "default": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "sso": {
+        "type": "object",
+        "title": "Single Sign-On",
+        "required": [
+          "provider"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "enum": [
+              "saml",
+              "oauth",
+              "passwordless"
+            ]
+          },
+          "issuerUrl": {
+            "type": "string",
+            "title": "Issuer URL",
+            "format": "uri"
+          },
+          "certificate": {
+            "type": "string",
+            "title": "Certificate",
+            "writeOnly": true
+          },
+          "clientId": {
+            "type": "string",
+            "title": "Client ID"
+          },
+          "clientSecret": {
+            "type": "string",
+            "title": "Client secret",
+            "writeOnly": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          }
+        },
+        "dependentRequired": {
+          "provider": [
+            "issuerUrl",
+            "certificate",
+            "clientId",
+            "clientSecret"
+          ]
+        },
+        "additionalProperties": false
+      },
+      "heroBlock": {
+        "type": "object",
+        "title": "Hero block",
+        "required": [
+          "kind",
+          "heading",
+          "primaryCta"
+        ],
+        "properties": {
+          "kind": {
+            "const": "hero",
+            "title": "Kind"
+          },
+          "heading": {
+            "type": "string",
+            "title": "Heading"
+          },
+          "subheading": {
+            "type": "string",
+            "title": "Subheading",
+            "maxLength": 220
+          },
+          "align": {
+            "type": "string",
+            "title": "Alignment",
+            "enum": [
+              "left",
+              "center",
+              "right"
+            ]
+          },
+          "backgroundColor": {
+            "type": "string",
+            "title": "Background color"
+          },
+          "primaryCta": {
+            "$ref": "#/$defs/link"
+          },
+          "secondaryCta": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "additionalProperties": false
+      },
+      "richTextBlock": {
+        "type": "object",
+        "title": "Rich text block",
+        "required": [
+          "kind",
+          "body"
+        ],
+        "properties": {
+          "kind": {
+            "const": "richText",
+            "title": "Kind"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "format": "textarea",
+            "maxLength": 4000
+          },
+          "style": {
+            "type": "string",
+            "title": "Style",
+            "enum": [
+              "article",
+              "note",
+              "pullquote"
+            ]
+          },
+          "footnotes": {
+            "type": "array",
+            "title": "Footnotes",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "galleryBlock": {
+        "type": "object",
+        "title": "Gallery block",
+        "required": [
+          "kind",
+          "images"
+        ],
+        "properties": {
+          "kind": {
+            "const": "gallery",
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "images": {
+            "type": "array",
+            "title": "Images",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": {
+              "$ref": "#/$defs/image"
+            }
+          },
+          "layout": {
+            "type": "string",
+            "title": "Layout",
+            "enum": [
+              "grid",
+              "carousel",
+              "masonry"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "quoteBlock": {
+        "type": "object",
+        "title": "Quote block",
+        "required": [
+          "kind",
+          "quote",
+          "author"
+        ],
+        "properties": {
+          "kind": {
+            "const": "quote",
+            "title": "Kind"
+          },
+          "quote": {
+            "type": "string",
+            "title": "Quote",
+            "format": "textarea",
+            "maxLength": 600
+          },
+          "author": {
+            "type": "string",
+            "title": "Author"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "sourceLink": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "additionalProperties": false
+      },
+      "statsBlock": {
+        "type": "object",
+        "title": "Stats block",
+        "required": [
+          "kind",
+          "items"
+        ],
+        "properties": {
+          "kind": {
+            "const": "stats",
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "items": {
+            "type": "array",
+            "title": "Items",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": [
+                "label",
+                "value"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "title": "Label"
+                },
+                "value": {
+                  "type": "number",
+                  "title": "Value",
+                  "minimum": 0
+                },
+                "trend": {
+                  "type": "string",
+                  "title": "Trend",
+                  "enum": [
+                    "up",
+                    "down",
+                    "flat"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "calloutBlock": {
+        "type": "object",
+        "title": "Callout block",
+        "required": [
+          "kind",
+          "message"
+        ],
+        "properties": {
+          "kind": {
+            "const": "callout",
+            "title": "Kind"
+          },
+          "tone": {
+            "type": "string",
+            "title": "Tone",
+            "enum": [
+              "info",
+              "success",
+              "warning",
+              "danger"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "format": "textarea",
+            "maxLength": 500
+          },
+          "action": {
+            "$ref": "#/$defs/link"
+          },
+          "dismissible": {
+            "type": "boolean",
+            "title": "Dismissible",
+            "default": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "emailIntegration": {
+        "type": "object",
+        "title": "Email integration",
+        "required": [
+          "enabled",
+          "fromAddress"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "fromAddress": {
+            "type": "string",
+            "title": "From address",
+            "format": "email"
+          },
+          "replyTo": {
+            "type": "string",
+            "title": "Reply-to",
+            "format": "email"
+          },
+          "templates": {
+            "type": "array",
+            "title": "Templates",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "webhookIntegration": {
+        "type": "object",
+        "title": "Webhook integration",
+        "required": [
+          "enabled",
+          "url",
+          "events"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "url": {
+            "type": "string",
+            "title": "URL",
+            "format": "uri"
+          },
+          "secret": {
+            "type": "string",
+            "title": "Secret",
+            "writeOnly": true
+          },
+          "events": {
+            "type": "array",
+            "title": "Events",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "publish",
+                "update",
+                "archive",
+                "delete"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "analyticsGoal": {
+        "type": "object",
+        "title": "Analytics goal",
+        "required": [
+          "name",
+          "enabled"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "sampleRate": {
+            "type": "number",
+            "title": "Sample rate",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "properties": {
+      "document": {
+        "type": "object",
+        "title": "Document",
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "type",
+          "status",
+          "locale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "ID",
+            "readOnly": true
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "enum": [
+              "article",
+              "landing-page",
+              "product-page",
+              "guide"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "enum": [
+              "draft",
+              "review",
+              "scheduled",
+              "published",
+              "archived"
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "title": "Locale",
+            "enum": [
+              "en-US",
+              "en-GB",
+              "es-ES",
+              "fr-FR"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "maxLength": 240
+          },
+          "internalRevision": {
+            "type": "integer",
+            "title": "Internal revision",
+            "readOnly": true
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "title": "Featured",
+            "default": false
+          },
+          "owner": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "additionalProperties": false
+      },
+      "content": {
+        "type": "object",
+        "title": "Content",
+        "required": [
+          "blocks"
+        ],
+        "properties": {
+          "deck": {
+            "type": "array",
+            "title": "Deck",
+            "minItems": 2,
+            "maxItems": 4,
+            "items": {
+              "type": "string"
+            }
+          },
+          "blocks": {
+            "type": "array",
+            "title": "Blocks",
+            "minItems": 4,
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/heroBlock"
+                },
+                {
+                  "$ref": "#/$defs/richTextBlock"
+                },
+                {
+                  "$ref": "#/$defs/galleryBlock"
+                },
+                {
+                  "$ref": "#/$defs/quoteBlock"
+                },
+                {
+                  "$ref": "#/$defs/statsBlock"
+                },
+                {
+                  "$ref": "#/$defs/calloutBlock"
+                }
+              ]
+            }
+          },
+          "featureMatrix": {
+            "type": "array",
+            "title": "Feature matrix",
+            "prefixItems": [
+              {
+                "type": "string",
+                "title": "Primary feature"
+              },
+              {
+                "type": "number",
+                "title": "Priority",
+                "minimum": 0,
+                "maximum": 10
+              },
+              {
+                "type": "boolean",
+                "title": "Enabled"
+              }
+            ],
+            "items": false
+          },
+          "supportingAssets": {
+            "type": "array",
+            "title": "Supporting assets",
+            "items": {
+              "$ref": "#/$defs/image"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "layout": {
+        "type": "object",
+        "title": "Layout",
+        "required": [
+          "columns",
+          "gutter"
+        ],
+        "properties": {
+          "columns": {
+            "type": "integer",
+            "title": "Columns",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "gutter": {
+            "type": "number",
+            "title": "Gutter",
+            "minimum": 0,
+            "maximum": 64
+          },
+          "safeArea": {
+            "type": "array",
+            "title": "Safe area",
+            "prefixItems": [
+              {
+                "type": "number",
+                "title": "Top",
+                "minimum": 0,
+                "maximum": 128
+              },
+              {
+                "type": "number",
+                "title": "Right",
+                "minimum": 0,
+                "maximum": 128
+              },
+              {
+                "type": "number",
+                "title": "Bottom",
+                "minimum": 0,
+                "maximum": 128
+              },
+              {
+                "type": "number",
+                "title": "Left",
+                "minimum": 0,
+                "maximum": 128
+              }
+            ],
+            "items": false
+          },
+          "breakpoints": {
+            "type": "object",
+            "title": "Breakpoints",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "density": {
+            "type": "string",
+            "title": "Density",
+            "enum": [
+              "comfortable",
+              "compact",
+              "spacious"
+            ],
+            "default": "comfortable"
+          }
+        },
+        "additionalProperties": false
+      },
+      "publishing": {
+        "type": "object",
+        "title": "Publishing",
+        "required": [
+          "schedule",
+          "channels"
+        ],
+        "properties": {
+          "schedule": {
+            "type": "object",
+            "title": "Schedule",
+            "required": [
+              "mode"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "title": "Mode",
+                "enum": [
+                  "immediate",
+                  "scheduled"
+                ]
+              },
+              "publishAt": {
+                "type": "string",
+                "title": "Publish at",
+                "format": "date-time"
+              },
+              "timezone": {
+                "type": "string",
+                "title": "Timezone"
+              },
+              "notes": {
+                "type": "string",
+                "title": "Notes",
+                "format": "textarea",
+                "maxLength": 240
+              }
+            },
+            "if": {
+              "properties": {
+                "mode": {
+                  "const": "scheduled"
+                }
+              },
+              "required": [
+                "mode"
+              ]
+            },
+            "then": {
+              "required": [
+                "publishAt",
+                "timezone"
+              ]
+            },
+            "else": {
+              "required": [
+                "notes"
+              ]
+            },
+            "additionalProperties": false
+          },
+          "channels": {
+            "type": "array",
+            "title": "Channels",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "web",
+                "mobile",
+                "email",
+                "social",
+                "api"
+              ]
+            }
+          },
+          "priority": {
+            "type": "integer",
+            "title": "Priority",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "expiresAt": {
+            "type": "string",
+            "title": "Expires at",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "collaboration": {
+        "type": "object",
+        "title": "Collaboration",
+        "required": [
+          "approvalRequired"
+        ],
+        "properties": {
+          "approvalRequired": {
+            "type": "boolean",
+            "title": "Approval required",
+            "default": true
+          },
+          "approvers": {
+            "type": "array",
+            "title": "Approvers",
+            "items": {
+              "$ref": "#/$defs/person"
+            }
+          },
+          "primaryContact": {
+            "title": "Primary contact",
+            "anyOf": [
+              {
+                "type": "string",
+                "title": "Email address",
+                "format": "email"
+              },
+              {
+                "type": "object",
+                "title": "Contact card",
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "title": "Email",
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "title": "Phone"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "reviewers": {
+            "type": "array",
+            "title": "Reviewers",
+            "items": {
+              "$ref": "#/$defs/person"
+            }
+          },
+          "notifications": {
+            "type": "object",
+            "title": "Notifications",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "dependentSchemas": {
+          "approvalRequired": {
+            "required": [
+              "approvers"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "styleGuide": {
+        "title": "Style guide",
+        "allOf": [
+          {
+            "$ref": "#/$defs/styleGuideCore"
+          },
+          {
+            "$ref": "#/$defs/styleGuideAdvanced"
+          }
+        ]
+      },
+      "integrations": {
+        "type": "object",
+        "title": "Integrations",
+        "required": [
+          "email",
+          "webhook",
+          "sso"
+        ],
+        "properties": {
+          "email": {
+            "$ref": "#/$defs/emailIntegration"
+          },
+          "webhook": {
+            "$ref": "#/$defs/webhookIntegration"
+          },
+          "sso": {
+            "$ref": "#/$defs/sso"
+          },
+          "apiEndpoint": {
+            "type": "string",
+            "title": "API endpoint",
+            "format": "uri"
+          },
+          "headers": {
+            "type": "object",
+            "title": "Headers",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "toggles": {
+            "type": "object",
+            "title": "Feature toggles",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "analytics": {
+        "type": "object",
+        "title": "Analytics",
+        "required": [
+          "enabled",
+          "provider"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "enum": [
+              "none",
+              "ga4",
+              "plausible",
+              "mixpanel"
+            ]
+          },
+          "ga4MeasurementId": {
+            "type": "string",
+            "title": "GA4 measurement ID"
+          },
+          "siteId": {
+            "type": "string",
+            "title": "Site ID"
+          },
+          "sampleRate": {
+            "type": "number",
+            "title": "Sample rate",
+            "minimum": 0,
+            "maximum": 1,
+            "multipleOf": 0.05
+          },
+          "goals": {
+            "type": "array",
+            "title": "Goals",
+            "items": {
+              "$ref": "#/$defs/analyticsGoal"
+            }
+          }
+        },
+        "if": {
+          "properties": {
+            "provider": {
+              "const": "ga4"
+            }
+          },
+          "required": [
+            "provider"
+          ]
+        },
+        "then": {
+          "required": [
+            "ga4MeasurementId"
+          ]
+        },
+        "else": {
+          "required": [
+            "siteId"
+          ]
+        },
+        "additionalProperties": false
+      },
+      "access": {
+        "type": "object",
+        "title": "Access",
+        "required": [
+          "visibility"
+        ],
+        "properties": {
+          "visibility": {
+            "type": "string",
+            "title": "Visibility",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ]
+          },
+          "audiences": {
+            "type": "array",
+            "title": "Audiences",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "all",
+                "staff",
+                "partners",
+                "beta-testers"
+              ]
+            }
+          },
+          "restrictByRegion": {
+            "type": "boolean",
+            "title": "Restrict by region",
+            "default": false
+          },
+          "allowedRegions": {
+            "type": "array",
+            "title": "Allowed regions",
+            "items": {
+              "type": "string",
+              "enum": [
+                "north-america",
+                "europe",
+                "asia-pacific",
+                "latin-america"
+              ]
+            }
+          },
+          "customRoles": {
+            "type": "object",
+            "title": "Custom roles",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "apiSecret": {
+            "type": "string",
+            "title": "API secret",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "compliance": {
+        "type": "object",
+        "title": "Compliance",
+        "required": [
+          "regulatedGoods",
+          "ageRestricted"
+        ],
+        "properties": {
+          "regulatedGoods": {
+            "type": "boolean",
+            "title": "Regulated goods",
+            "default": true
+          },
+          "ageRestricted": {
+            "type": "boolean",
+            "title": "Age restricted",
+            "default": false
+          },
+          "hazardClass": {
+            "type": "string",
+            "title": "Hazard class",
+            "enum": [
+              "class-1",
+              "class-2",
+              "class-3"
+            ]
+          },
+          "contact": {
+            "type": "string",
+            "title": "Compliance contact",
+            "format": "email"
+          },
+          "certifications": {
+            "type": "array",
+            "title": "Certifications",
+            "items": {
+              "type": "string",
+              "enum": [
+                "cpsia",
+                "organic",
+                "fair-trade",
+                "energy-star",
+                "ce"
+              ]
+            }
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes",
+            "format": "textarea",
+            "maxLength": 500
+          }
+        },
+        "if": {
+          "properties": {
+            "regulatedGoods": {
+              "const": true
+            }
+          },
+          "required": [
+            "regulatedGoods"
+          ]
+        },
+        "then": {
+          "required": [
+            "hazardClass",
+            "contact"
+          ]
+        },
+        "additionalProperties": false
+      },
+      "customFields": {
+        "type": "object",
+        "title": "Custom fields",
+        "description": "Additional keys stay editable with a string-only schema.",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "featureFlags": {
+        "type": "object",
+        "title": "Feature flags",
+        "description": "Dynamic boolean entries exercise additionalProperties object schemas.",
+        "additionalProperties": {
+          "type": "boolean"
+        }
+      }
+    },
+    "additionalProperties": false
+  },
+  "value": {
+    "document": {
+      "id": "doc_01HZX9QK7B3Q5F9M8N6C2V1A4",
+      "title": "Content Editor Lab",
+      "slug": "content-editor-lab",
+      "type": "landing-page",
+      "status": "scheduled",
+      "locale": "en-US",
+      "summary": "A full-spectrum prototype document for testing the editor UI.",
+      "internalRevision": 7,
+      "isFeatured": true,
+      "owner": {
+        "name": "Avery Stone",
+        "email": "avery@example.com",
+        "role": "owner",
+        "phone": "+1-312-555-0144"
+      }
+    },
+    "content": {
+      "deck": [
+        "Launch copy",
+        "Block editor",
+        "Schema coverage"
+      ],
+      "blocks": [
+        {
+          "kind": "hero",
+          "heading": "Design the page before you build it",
+          "subheading": "A realistic editor schema that stresses unions, refs, defaults, and nested object editing.",
+          "align": "center",
+          "backgroundColor": "#1f2937",
+          "primaryCta": {
+            "href": "https://example.com/start",
+            "label": "Get started",
+            "external": true,
+            "ariaLabel": "Start editing"
+          },
+          "secondaryCta": {
+            "href": "https://example.com/docs",
+            "label": "Read docs",
+            "external": true
+          }
+        },
+        {
+          "kind": "richText",
+          "body": "The editor should make every common schema shape easy to inspect and edit, while still handling union branches and nested references without losing context.",
+          "style": "article",
+          "footnotes": [
+            "Focus on editing speed.",
+            "Keep the data model inspectable."
+          ]
+        },
+        {
+          "kind": "gallery",
+          "title": "Reference screens",
+          "layout": "grid",
+          "images": [
+            {
+              "url": "https://example.com/images/editor-1.jpg",
+              "alt": "Editor overview",
+              "caption": "Main editing surface",
+              "focalPoint": "center"
+            },
+            {
+              "url": "https://example.com/images/editor-2.jpg",
+              "alt": "Inspector panel",
+              "caption": "Nested object support",
+              "focalPoint": "top"
+            }
+          ]
+        },
+        {
+          "kind": "quote",
+          "quote": "This prototype needs enough depth that we can trust the editor on real-world schemas, not just toy samples.",
+          "author": "Maya Chen",
+          "role": "Product designer",
+          "sourceLink": {
+            "href": "https://example.com/notes",
+            "label": "Design notes",
+            "external": true
+          }
+        },
+        {
+          "kind": "stats",
+          "title": "Launch metrics",
+          "items": [
+            {
+              "label": "Blocks",
+              "value": 5,
+              "trend": "up"
+            },
+            {
+              "label": "Schema sections",
+              "value": 12,
+              "trend": "flat"
+            },
+            {
+              "label": "Defaulted fields",
+              "value": 18,
+              "trend": "up"
+            }
+          ]
+        },
+        {
+          "kind": "callout",
+          "tone": "warning",
+          "message": "This editor demo intentionally mixes optional, required, read-only, and write-only fields so the UI can be exercised end to end.",
+          "action": {
+            "href": "https://example.com/guide",
+            "label": "View implementation guide",
+            "external": true
+          },
+          "dismissible": true
+        }
+      ],
+      "featureMatrix": [
+        "Union branch rendering",
+        9,
+        true
+      ],
+      "supportingAssets": [
+        {
+          "url": "https://example.com/images/support-1.jpg",
+          "alt": "Supporting asset one",
+          "caption": "Used for nested image editing"
+        },
+        {
+          "url": "https://example.com/images/support-2.jpg",
+          "alt": "Supporting asset two"
+        }
+      ]
+    },
+    "layout": {
+      "columns": 12,
+      "gutter": 24,
+      "safeArea": [
+        24,
+        24,
+        32,
+        24
+      ],
+      "breakpoints": {
+        "sm": 480,
+        "md": 768,
+        "lg": 1024,
+        "xl": 1440
+      },
+      "density": "comfortable"
+    },
+    "publishing": {
+      "schedule": {
+        "mode": "scheduled",
+        "publishAt": "2026-06-15T09:30:00",
+        "timezone": "America/Chicago"
+      },
+      "channels": [
+        "web",
+        "email",
+        "api"
+      ],
+      "priority": 4,
+      "expiresAt": "2026-08-01T00:00:00"
+    },
+    "collaboration": {
+      "approvalRequired": true,
+      "approvers": [
+        {
+          "name": "Avery Stone",
+          "email": "avery@example.com",
+          "role": "owner"
+        },
+        {
+          "name": "Jordan Lee",
+          "email": "jordan@example.com",
+          "role": "reviewer"
+        }
+      ],
+      "primaryContact": {
+        "name": "Avery Stone",
+        "email": "avery@example.com",
+        "phone": "+1-312-555-0144"
+      },
+      "reviewers": [
+        {
+          "name": "Jordan Lee",
+          "email": "jordan@example.com",
+          "role": "reviewer"
+        },
+        {
+          "name": "Nina Patel",
+          "email": "nina@example.com",
+          "role": "designer"
+        }
+      ],
+      "notifications": {
+        "slack": true,
+        "email": true,
+        "webhook": false
+      }
+    },
+    "styleGuide": {
+      "voice": "direct",
+      "tone": "confident",
+      "audience": "Designers and developers",
+      "emojiUsage": false,
+      "readingLevel": 8,
+      "lineLength": 88,
+      "useOxfordComma": true
+    },
+    "integrations": {
+      "email": {
+        "enabled": true,
+        "fromAddress": "editor@example.com",
+        "replyTo": "reply@example.com",
+        "templates": [
+          "publish-confirmation",
+          "review-request"
+        ]
+      },
+      "webhook": {
+        "enabled": true,
+        "url": "https://example.com/webhooks/editor",
+        "secret": "super-secret-token",
+        "events": [
+          "publish",
+          "update",
+          "archive"
+        ]
+      },
+      "sso": {
+        "provider": "saml",
+        "issuerUrl": "https://idp.example.com/metadata",
+        "certificate": "-----BEGIN CERTIFICATE-----\nMIIC...demo...\n-----END CERTIFICATE-----",
+        "clientId": "editor-client",
+        "clientSecret": "editor-secret",
+        "enabled": true
+      },
+      "apiEndpoint": "https://api.example.com/editor",
+      "headers": {
+        "x-editor-source": "prototype",
+        "x-editor-owner": "platform"
+      },
+      "toggles": {
+        "betaPublishing": true,
+        "legacyImport": false
+      }
+    },
+    "analytics": {
+      "enabled": true,
+      "provider": "ga4",
+      "ga4MeasurementId": "G-ABCDE12345",
+      "sampleRate": 0.5,
+      "goals": [
+        {
+          "name": "publish",
+          "enabled": true,
+          "sampleRate": 1
+        },
+        {
+          "name": "review",
+          "enabled": true,
+          "sampleRate": 0.75
+        }
+      ]
+    },
+    "access": {
+      "visibility": "private",
+      "audiences": [
+        "staff",
+        "partners"
+      ],
+      "restrictByRegion": true,
+      "allowedRegions": [
+        "north-america",
+        "europe"
+      ],
+      "customRoles": {
+        "publisher": "Can publish content",
+        "observer": "Can view content only"
+      },
+      "apiSecret": "api-secret-value"
+    },
+    "compliance": {
+      "regulatedGoods": true,
+      "ageRestricted": false,
+      "hazardClass": "class-2",
+      "contact": "compliance@example.com",
+      "certifications": [
+        "ce",
+        "organic"
+      ],
+      "notes": "This is a non-production prototype used to validate schema editing and event wiring."
+    },
+    "customFields": {
+      "internalCampaign": "spring-launch",
+      "regionNote": "north-america",
+      "editorTheme": "ink"
+    },
+    "featureFlags": {
+      "smartSave": true,
+      "inlineValidation": true,
+      "experimentalBlocks": false
+    }
+  }
+}
