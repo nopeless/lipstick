@@ -263,7 +263,7 @@ lip-stick {
     display: block;
   }
 
-  & :is(button.lipstick-add, button.lipstick-remove, button.lipstick-move-up, button.lipstick-move-down) {
+  & :is(button.lipstick-add, button.lipstick-remove, button.lipstick-cycle, button.lipstick-move-up, button.lipstick-move-down) {
     padding: 0;
     border: 0;
     background: transparent;
@@ -321,6 +321,24 @@ lip-stick {
 
   & button.lipstick-remove {
     color: var(--lipstick-danger);
+  }
+
+  & button.lipstick-cycle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.8rem;
+    height: 1.8rem;
+    padding: 0 0.45rem;
+    border: 1px solid var(--lipstick-panel-border-strong);
+    border-radius: 999px;
+    color: var(--lipstick-accent);
+    text-transform: lowercase;
+  }
+
+  & code.lipstick-null-value {
+    font: inherit;
+    letter-spacing: 0;
   }
 
   & button:disabled,

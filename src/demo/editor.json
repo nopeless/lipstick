@@ -181,10 +181,19 @@
         ],
         "properties": {
           "shortText": {
-            "type": "string",
             "title": "Short text",
-            "minLength": 1,
-            "maxLength": 24
+            "anyOf": [
+              {
+                "type": "string",
+                "title": "Text value",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              {
+                "type": "null",
+                "title": "Null value"
+              }
+            ]
           },
           "slug": {
             "type": "string",
@@ -212,11 +221,20 @@
             "format": "date-time"
           },
           "score": {
-            "type": "number",
             "title": "Score",
-            "minimum": 0,
-            "maximum": 100,
-            "multipleOf": 0.5
+            "anyOf": [
+              {
+                "type": "number",
+                "title": "Number value",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.5
+              },
+              {
+                "type": "null",
+                "title": "Null value"
+              }
+            ]
           },
           "count": {
             "type": "integer",
@@ -225,9 +243,18 @@
             "maximum": 10
           },
           "enabled": {
-            "type": "boolean",
             "title": "Enabled",
-            "default": false
+            "default": false,
+            "anyOf": [
+              {
+                "type": "boolean",
+                "title": "Boolean value"
+              },
+              {
+                "type": "null",
+                "title": "Null value"
+              }
+            ]
           },
           "nullableNote": {
             "title": "Nullable note",

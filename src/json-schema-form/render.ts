@@ -27,7 +27,6 @@ import {
   addKnownProperty,
   canAddAdditionalProperty,
   canCollapseSchema,
-  commitRootValue,
   createInputId,
   getAdditionalPropertySchema,
   isCollapsed,
@@ -81,6 +80,10 @@ function renderNode(
   }
 
   if (union) {
+    if (schema.anyOf?.length && isCycledPrimitiveUnion(schema, rootSchema)) {
+      return renderPrimitiveUnionField(ctx, schema, value, path, options, union)
+    }
+
     return renderUnionField(ctx, resolved, value, path, options, union);
   }
 
@@ -132,7 +135,7 @@ function renderUnionField(
   const changeBranch = (index: number) => {
     ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
     const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema);
-    commitRootValue(ctx, path, nextValue, branches[index]);
+    updatePathValue(ctx, path, nextValue, branches[index], true);
   };
 
   return html`
@@ -147,6 +150,267 @@ function renderUnionField(
           `}
     </fieldset>
   `;
+}
+
+function isCycledPrimitiveUnion(
+  schema: JsonSchema202012,
+  rootSchema: JsonSchema202012,
+): boolean {
+  const branches = schema.anyOf ?? [];
+
+  return (
+    branches.length > 1 &&
+    branches.every((branch) => {
+      const resolved = resolveSchema(branch, rootSchema, undefined);
+      return !isObjectSchema(resolved) && !isArraySchema(resolved);
+    })
+  );
+}
+
+function renderPrimitiveUnionField(
+  ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
+  value: JsonValue | undefined,
+  path: JsonPointerPath,
+  options: FieldRenderOptions,
+  union: NonNullable<ReturnType<typeof describeUnion>>,
+): TemplateResult {
+  const rootSchema = ctx.rootSchema;
+  const branches = schema.anyOf ?? [];
+  const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
+  const pathKey = pathToKey(path);
+  const inputId = createInputId(path);
+  const changeBranch = (index: number) => {
+    ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
+    const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema);
+    updatePathValue(ctx, path, nextValue, branches[index], true);
+  };
+
+  const cycleButton =
+    branches.length > 1
+      ? html`
+          <button
+            type="button"
+            class="lipstick-cycle"
+            ?disabled=${ctx.formDisabled}
+            @click=${() => changeBranch((union.selectedIndex + 1) % branches.length)}
+            aria-label="Cycle variant"
+          >
+            cycle
+          </button>
+        `
+      : nothing;
+
+  return renderInlineSimpleField(
+    ctx,
+    options.label ?? schema.title ?? "Value",
+    options,
+    inputId,
+    schema,
+    renderPrimitiveUnionControl(ctx, branchSchema, value, path, inputId, ctx.formDisabled || branchSchema.readOnly === true),
+    acceptsType(branchSchema, "boolean") || acceptsType(branchSchema, "null"),
+    cycleButton,
+  );
+}
+
+function renderPrimitiveUnionControl(
+  ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
+  value: JsonValue | undefined,
+  path: JsonPointerPath,
+  inputId: string,
+  disabled: boolean,
+): TemplateResult {
+  if (schema.const !== undefined) {
+    return html`<output id=${inputId}>${String(schema.const)}</output>`;
+  }
+
+  if (schema.enum?.length) {
+    const optionsList = schema.enum ?? [];
+    const normalizedValue =
+      value !== undefined && optionsList.includes(value as never)
+        ? String(value)
+        : String(optionsList[0] ?? "");
+
+    return html`
+      <select
+        id=${inputId}
+        .disabled=${disabled}
+        .value=${normalizedValue}
+        @change=${(event: Event) => {
+          const nextValue = parseLiteralOption(
+            (event.target as HTMLSelectElement).value,
+            optionsList,
+          );
+          updatePathValue(ctx, path, nextValue, schema, true);
+        }}
+      >
+        ${optionsList.map(
+          (option) => html`<option value=${String(option)}>${String(option)}</option>`,
+        )}
+      </select>
+    `;
+  }
+
+  if (acceptsType(schema, "boolean")) {
+    return html`
+      <label class="lipstick-switch" for=${inputId}>
+        <input
+          id=${inputId}
+          type="checkbox"
+          .disabled=${disabled}
+          .checked=${value === true}
+          @change=${(event: Event) =>
+            updatePathValue(
+              ctx,
+              path,
+              (event.target as HTMLInputElement).checked,
+              schema,
+              true,
+            )}
+        />
+        <span class="lipstick-switch-track" aria-hidden="true">
+          <span class="lipstick-switch-thumb"></span>
+        </span>
+      </label>
+    `;
+  }
+
+  if (acceptsType(schema, "integer") || acceptsType(schema, "number")) {
+    const numericValue =
+      typeof value === "number" ? value : typeof schema.minimum === "number" ? schema.minimum : 0;
+    const step = getNumericInputStep(schema);
+    const formattedValue = formatNumericValue(numericValue, step);
+
+    if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
+      return html`
+        <div class="lipstick-range">
+          <div class="lipstick-range-controls">
+            <div class="lipstick-range-main">
+              <input
+                id=${inputId}
+                type="range"
+                .disabled=${disabled}
+                .min=${String(schema.minimum)}
+                .max=${String(schema.maximum)}
+                .step=${String(step)}
+                .value=${String(numericValue)}
+                @input=${(event: Event) =>
+                  updatePathValue(
+                    ctx,
+                    path,
+                    parseNumericInputValue(event.target as HTMLInputElement),
+                    schema,
+                    false,
+                  )}
+                @change=${(event: Event) =>
+                  updatePathValue(
+                    ctx,
+                    path,
+                    parseNumericInputValue(event.target as HTMLInputElement),
+                    schema,
+                    true,
+                  )}
+              />
+              <div class="lipstick-range-meta">
+                <span>${schema.minimum}</span>
+                <span>${schema.maximum}</span>
+              </div>
+            </div>
+            <input
+              id=${`${inputId}-manual`}
+              class="lipstick-range-number"
+              type="number"
+              .disabled=${disabled}
+              .min=${String(schema.minimum)}
+              .max=${String(schema.maximum)}
+              .step=${String(step)}
+              .value=${formattedValue}
+              @input=${(event: Event) =>
+                updatePathValue(
+                  ctx,
+                  path,
+                  parseNumericInputValue(event.target as HTMLInputElement),
+                  schema,
+                  false,
+                )}
+              @change=${(event: Event) =>
+                updatePathValue(
+                  ctx,
+                  path,
+                  parseNumericInputValue(event.target as HTMLInputElement),
+                  schema,
+                  true,
+                )}
+            />
+          </div>
+        </div>
+      `;
+    }
+
+    return html`
+      <input
+        id=${inputId}
+        type="number"
+        .disabled=${disabled}
+        .step=${String(step)}
+        .value=${typeof value === "number" ? formattedValue : ""}
+        @input=${(event: Event) =>
+          updatePathValue(
+            ctx,
+            path,
+            parseNumericInputValue(event.target as HTMLInputElement),
+            schema,
+            false,
+          )}
+        @change=${(event: Event) =>
+          updatePathValue(
+            ctx,
+            path,
+            parseNumericInputValue(event.target as HTMLInputElement),
+            schema,
+            true,
+          )}
+      />
+    `;
+  }
+
+  if (acceptsType(schema, "null")) {
+    return html`<code class="lipstick-null-value">null</code>`;
+  }
+
+  const multiline =
+    schema.format === "textarea" ||
+    (typeof schema.maxLength === "number" && schema.maxLength > 200);
+  const inputType = getStringInputType(schema);
+  const currentValue = typeof value === "string" ? value : "";
+
+  return multiline
+    ? html`
+        <textarea
+          id=${inputId}
+          placeholder="Enter a value"
+          .disabled=${disabled}
+          .value=${currentValue}
+          @input=${(event: Event) =>
+            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, false)}
+          @change=${(event: Event) =>
+            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, true)}
+        ></textarea>
+      `
+    : html`
+        <input
+          id=${inputId}
+          type=${inputType}
+          placeholder="Enter a value"
+          .disabled=${disabled}
+          .value=${currentValue}
+          @input=${(event: Event) =>
+            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, false)}
+          @change=${(event: Event) =>
+            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, true)}
+        />
+      `;
 }
 
 function renderUnionBranch(
@@ -728,6 +992,20 @@ function renderScalarField(
     `;
   }
 
+  if (acceptsType(schema, "null")) {
+    const control = html`<code id=${inputId} class="lipstick-null-value">null</code>`;
+
+    if (inlineSimpleValue) {
+      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control, true);
+    }
+
+    return html`
+      <section class="lipstick-leaf">
+        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
+      </section>
+    `;
+  }
+
   const multiline =
     schema.format === "textarea" ||
     (typeof schema.maxLength === "number" && schema.maxLength > 200);
@@ -982,6 +1260,7 @@ function renderInlineSimpleField(
   schema: JsonSchema202012,
   control: TemplateResult,
   useSpanLabel = false,
+  afterControl: TemplateResult | typeof nothing = nothing,
 ): TemplateResult {
   const hasLabel = Boolean(label.trim());
 
@@ -998,6 +1277,7 @@ function renderInlineSimpleField(
             : html`<label for=${inputId}> ${label} </label>`
           : nothing}
         ${control}
+        ${afterControl}
         ${options.present && options.onRemove
           ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
           : nothing}
