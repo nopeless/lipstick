@@ -1,8 +1,5 @@
 import '../define.js'
 import './css/demo.css'
-import balancedThemeUrl from './css/base.css?url'
-import plainThemeUrl from './css/base-plain.css?url'
-import glassThemeUrl from './css/base-ink.css?url'
 import { buildInitialValue } from '../lib/schema.js'
 import type { JsonSchemaFormEventDetail, JsonValue } from '../index.js'
 import { getDemoRefs } from './dom.js'
@@ -14,20 +11,10 @@ import {
 } from './data.js'
 import type { JsonSchema202012 } from '../index.js'
 
-const THEMES = {
-  balanced: balancedThemeUrl,
-  plain: plainThemeUrl,
-  glass: glassThemeUrl,
-  none: null,
-} as const
-
-type ThemeName = keyof typeof THEMES
-
 let value: JsonValue = null
 
 const refs = getDemoRefs()
 
-applyTheme('balanced')
 refs.schemaSourcePicker.value = 'editor'
 setStatus('Loading editor demo...')
 void bootstrap()
@@ -65,10 +52,6 @@ refs.schemaJson.addEventListener('change', () => {
   applyPastedSchema()
 })
 
-refs.themePicker.addEventListener('change', (event: Event) => {
-  applyTheme((event.target as HTMLSelectElement).value as ThemeName)
-})
-
 refs.schemaSourcePicker.addEventListener('change', (event: Event) => {
   void loadSelectedDemo((event.target as HTMLSelectElement).value as DemoFixtureName)
 })
@@ -103,16 +86,6 @@ function applySchema(nextSchema: JsonSchema202012, nextValue?: JsonValue) {
   refs.form.value = value
   refs.schemaJson.value = JSON.stringify(nextSchema, null, 2)
   updateOutput()
-}
-
-function applyTheme(theme: ThemeName) {
-  const themeHref = THEMES[theme]
-  if (themeHref) {
-    refs.themeStylesheet.href = themeHref
-  } else {
-    refs.themeStylesheet.removeAttribute('href')
-  }
-  refs.themePicker.value = theme
 }
 
 function updateOutput() {

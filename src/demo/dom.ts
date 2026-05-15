@@ -8,7 +8,6 @@ export interface DemoRefs {
   schemaJson: HTMLTextAreaElement;
   schemaStatus: HTMLElement;
   themePicker: HTMLSelectElement;
-  themeStylesheet: HTMLLinkElement;
 }
 
 export function getDemoRefs(): DemoRefs {
@@ -21,7 +20,6 @@ export function getDemoRefs(): DemoRefs {
   const schemaJson = document.querySelector<HTMLTextAreaElement>('[data-role="schema-json"]');
   const schemaStatus = document.querySelector<HTMLElement>('[data-role="schema-status"]');
   const themePicker = document.querySelector<HTMLSelectElement>('[data-role="theme-picker"]');
-  const themeStylesheet = document.querySelector<HTMLLinkElement>('[data-role="theme-stylesheet"]');
 
   if (
     !form ||
@@ -30,8 +28,7 @@ export function getDemoRefs(): DemoRefs {
     !schemaUrlInput ||
     !schemaJson ||
     !schemaStatus ||
-    !themePicker ||
-    !themeStylesheet
+    !themePicker
   ) {
     throw new Error("Demo root not found.");
   }
@@ -44,6 +41,5 @@ export function getDemoRefs(): DemoRefs {
     schemaJson,
     schemaStatus,
     themePicker,
-    themeStylesheet,
   };
 }
