@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": false,
+    "outDir": "./.test-dist",
+    "rootDir": ".",
+    "allowImportingTsExtensions": false,
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["dist", "demo-dist", ".test-dist"]
+}

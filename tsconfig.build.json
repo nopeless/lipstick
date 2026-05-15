@@ -8,5 +8,5 @@
     "allowImportingTsExtensions": false
   },
   "include": ["src"],
-  "exclude": ["src/demo.ts"]
+  "exclude": ["src/demo/**/*"]
 }

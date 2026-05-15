@@ -1,0 +1,309 @@
+.lipstick-form {
+  display: grid;
+  gap: 1rem;
+
+  & .lipstick-field {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--lipstick-panel-border);
+    background: var(--lipstick-panel);
+  }
+
+  & .lipstick-field--bare {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  & .lipstick-object-embed,
+  & .lipstick-array-embed,
+  & .lipstick-union-body,
+  & .lipstick-object-body,
+  & .lipstick-array-items {
+    display: grid;
+    gap: 1rem;
+  }
+
+  & .lipstick-array-items {
+    padding-inline-start: 0.75rem;
+  }
+
+  & .lipstick-label-row,
+  & .lipstick-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+  }
+
+  & .lipstick-legend {
+    padding: 0;
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  & .lipstick-collapse-toggle-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 999px;
+    line-height: 1;
+    color: var(--lipstick-muted);
+  }
+
+  & .lipstick-leaf {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  & .lipstick-collapse-toggle-label,
+  & .lipstick-label-text {
+    min-width: 0;
+  }
+
+  & .lipstick-collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  & .lipstick-collapse-toggle--title,
+  & .lipstick-collapse-toggle--leaf {
+    flex: 0 0 auto;
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+
+  & .lipstick-description,
+  & .lipstick-note {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--lipstick-muted);
+  }
+
+  & .lipstick-note {
+    color: var(--lipstick-danger);
+  }
+
+  & .lipstick-object-row,
+  & .lipstick-array-row {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  & .lipstick-array-row {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  & .lipstick-array-row--simple {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.4rem;
+  }
+
+  & .lipstick-array-row--object {
+    gap: 0;
+  }
+
+  & .lipstick-array-item-body {
+    min-width: 0;
+  }
+
+  & .lipstick-inline-value-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  & .lipstick-inline-value-row--no-label {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  & .lipstick-inline-value-label {
+    font-weight: 600;
+    min-width: 0;
+  }
+
+  & .lipstick-array-actions,
+  & .lipstick-array-item-actions,
+  & .lipstick-inline-field,
+  & .lipstick-choice-group,
+  & .lipstick-optional-add,
+  & .lipstick-toggle-shell,
+  & .lipstick-toggle-copy,
+  & .lipstick-range,
+  & .lipstick-range-controls,
+  & .lipstick-range-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  & .lipstick-array-item-actions {
+    flex-wrap: nowrap;
+    gap: 0.15rem;
+  }
+
+  & .lipstick-array-actions--side {
+    justify-content: flex-end;
+    gap: 0.15rem;
+  }
+
+  & .lipstick-array-item-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 0 0 auto;
+  }
+
+  & .lipstick-additional-composer {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  & .lipstick-inline-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  & .lipstick-choice-group {
+    gap: 0.5rem;
+  }
+
+  & .lipstick-inline-add-button,
+  & .lipstick-optional-add,
+  & .lipstick-direction-button,
+  & .lipstick-remove-button,
+  & .lipstick-array-add-button,
+  & .lipstick-action-symbol {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  & .lipstick-inline-add-button {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--lipstick-accent);
+  }
+
+  & .lipstick-optional-add {
+    justify-content: flex-start;
+    width: 100%;
+    color: var(--lipstick-muted);
+    text-align: left;
+  }
+
+  & .lipstick-optional-add-label,
+  & .lipstick-const-value {
+    color: inherit;
+  }
+
+  & .lipstick-direction-button,
+  & .lipstick-remove-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    line-height: 1;
+  }
+
+  & .lipstick-direction-button {
+    color: var(--lipstick-muted);
+    font-size: 1rem;
+  }
+
+  & .lipstick-remove-button {
+    color: var(--lipstick-danger);
+  }
+
+  & .lipstick-inline-add-symbol {
+    color: var(--lipstick-accent);
+    line-height: 1;
+  }
+
+  & .lipstick-array-add-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border: 1px dashed var(--lipstick-panel-border-strong);
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--lipstick-accent);
+    line-height: 1;
+  }
+
+  & .lipstick-range {
+    gap: 0.55rem;
+  }
+
+  & .lipstick-range-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7rem;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  & .lipstick-range-main {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  & .lipstick-range-number {
+    text-align: right;
+  }
+
+  & .lipstick-range-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    color: var(--lipstick-muted);
+  }
+
+  @media (max-width: 720px) {
+    & .lipstick-array-row {
+      grid-template-columns: 1fr;
+    }
+
+    & .lipstick-array-row--simple {
+      grid-template-columns: 1fr;
+    }
+
+    & .lipstick-array-actions--side {
+      flex-direction: row;
+    }
+
+    & .lipstick-range-controls {
+      grid-template-columns: 1fr;
+    }
+
+    & .lipstick-toggle-shell {
+      flex-direction: column;
+    }
+  }
+}

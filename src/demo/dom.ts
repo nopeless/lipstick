@@ -1,4 +1,4 @@
-import type { JsonSchemaFormElement } from './json-schema-form.js'
+import type { JsonSchemaFormElement } from '../json-schema-form.js'
 
 export interface DemoRefs {
   form: JsonSchemaFormElement
@@ -11,7 +11,7 @@ export interface DemoRefs {
 }
 
 export function getDemoRefs(): DemoRefs {
-  const form = document.querySelector<JsonSchemaFormElement>('json-schema-form')
+  const form = document.querySelector<JsonSchemaFormElement>('lipstick-form')
   const output = document.querySelector<HTMLElement>('[data-role="output"]')
   const schemaUrlInput = document.querySelector<HTMLInputElement>(
     '[data-role="schema-url"]',

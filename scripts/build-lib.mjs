@@ -13,6 +13,6 @@ execSync('tsc -p tsconfig.build.json', {
   stdio: 'inherit',
 })
 
-for (const file of ['base.css', 'base-plain.css', 'base-ink.css']) {
-  cpSync(resolve(root, 'src', file), resolve(dist, file))
+for (const file of ['base-shared.css', 'base.css', 'base-plain.css', 'base-ink.css']) {
+  cpSync(resolve(root, 'src', 'demo', 'css', file), resolve(dist, file))
 }

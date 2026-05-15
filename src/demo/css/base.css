@@ -1,0 +1,161 @@
+@import './base-shared.css';
+
+:root {
+  color-scheme: light;
+  --lipstick-font-mono: "IBM Plex Mono", "SFMono-Regular", monospace;
+  --lipstick-panel: #fffdf8;
+  --lipstick-panel-border: #d8cfbf;
+  --lipstick-panel-border-strong: #beb19c;
+  --lipstick-text: #251d17;
+  --lipstick-muted: #6f6255;
+  --lipstick-accent: #135d66;
+  --lipstick-accent-soft: #ddeff0;
+  --lipstick-danger: #b9381d;
+  --lipstick-shadow: 0 10px 24px rgba(37, 29, 23, 0.06);
+  --lipstick-radius: 18px;
+}
+
+.lipstick-form {
+  & .lipstick-field {
+    padding: 1rem 1.15rem 1.15rem;
+    border-radius: var(--lipstick-radius);
+    box-shadow: var(--lipstick-shadow);
+  }
+
+  & .lipstick-field--bare {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  & input,
+  & select,
+  & textarea,
+  & button {
+    border-radius: 10px;
+    border: 1px solid var(--lipstick-panel-border);
+    background: #fff;
+    color: inherit;
+  }
+
+  & input,
+  & select,
+  & textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 0.85rem;
+  }
+
+  & textarea {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  & button {
+    padding: 0.65rem 0.9rem;
+    cursor: pointer;
+    transition:
+      transform 120ms ease,
+      border-color 120ms ease,
+      background-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  & button:hover:not(:disabled),
+  & button:focus-visible:not(:disabled) {
+    border-color: var(--lipstick-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(19, 93, 102, 0.12);
+  }
+
+  & .lipstick-leaf--inline input,
+  & .lipstick-leaf--inline select,
+  & .lipstick-leaf--inline textarea {
+    min-height: 2.15rem;
+    padding: 0.42rem 0.6rem;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  & .lipstick-leaf--inline input:hover:not(:disabled):not(:focus-visible),
+  & .lipstick-leaf--inline select:hover:not(:disabled):not(:focus-visible),
+  & .lipstick-leaf--inline textarea:hover:not(:disabled):not(:focus-visible) {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  & .lipstick-leaf--inline input:focus-visible,
+  & .lipstick-leaf--inline select:focus-visible,
+  & .lipstick-leaf--inline textarea:focus-visible {
+    border-color: var(--lipstick-panel-border-strong);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(19, 93, 102, 0.12);
+    outline: none;
+  }
+
+  & .lipstick-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 3rem;
+    height: 1.8rem;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+
+  & .lipstick-switch input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  & .lipstick-switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    border: 1px solid var(--lipstick-panel-border-strong);
+    background: #ebe5da;
+    transition: background-color 140ms ease, border-color 140ms ease;
+    pointer-events: none;
+  }
+
+  & .lipstick-switch-thumb {
+    position: absolute;
+    top: 0.12rem;
+    left: 0.14rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(37, 29, 23, 0.18);
+    transition: transform 140ms ease;
+  }
+
+  & .lipstick-switch input:checked + .lipstick-switch-track {
+    background: var(--lipstick-accent-soft);
+    border-color: var(--lipstick-accent);
+  }
+
+  & .lipstick-switch input:checked + .lipstick-switch-track .lipstick-switch-thumb {
+    transform: translateX(1.37rem);
+  }
+
+  & .lipstick-choice-group button.is-selected {
+    background: var(--lipstick-accent-soft);
+    border-color: var(--lipstick-accent);
+  }
+
+  & button:disabled,
+  & input:disabled,
+  & select:disabled,
+  & textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+}

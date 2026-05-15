@@ -1,4 +1,4 @@
-import type { JsonSchema202012, JsonValue } from './index.js'
+import type { JsonSchema202012, JsonValue } from '../index.js'
 
 export interface DemoExample {
   schema: JsonSchema202012
@@ -6,7 +6,7 @@ export interface DemoExample {
 }
 
 export async function loadDemoExample(): Promise<DemoExample> {
-  const response = await fetch(new URL('./demo-example.json', import.meta.url))
+  const response = await fetch(new URL('./example.json', import.meta.url))
 
   if (!response.ok) {
     throw new Error(`Failed to load demo example with ${response.status}.`)

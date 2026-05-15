@@ -22,6 +22,7 @@
     "dev": "vite",
     "build": "node scripts/build-lib.mjs",
     "build:demo": "vite build",
+    "test": "node scripts/test.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json"
   },

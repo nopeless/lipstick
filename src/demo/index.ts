@@ -1,22 +1,23 @@
-import './define'
-import './demo.css'
-import balancedThemeUrl from './base.css?url'
-import plainThemeUrl from './base-plain.css?url'
-import glassThemeUrl from './base-ink.css?url'
-import { buildInitialValue } from './lib/schema.js'
-import type { JsonSchemaFormEventDetail, JsonValue } from './index.js'
-import { getDemoRefs } from './demo-dom.js'
+import '../define.js'
+import './css/demo.css'
+import balancedThemeUrl from './css/base.css?url'
+import plainThemeUrl from './css/base-plain.css?url'
+import glassThemeUrl from './css/base-ink.css?url'
+import { buildInitialValue } from '../lib/schema.js'
+import type { JsonSchemaFormEventDetail, JsonValue } from '../index.js'
+import { getDemoRefs } from './dom.js'
 import {
   getErrorMessage,
   loadDemoExample,
   assertSchema,
-} from './demo-data.js'
-import type { JsonSchema202012 } from './index.js'
+} from './data.js'
+import type { JsonSchema202012 } from '../index.js'
 
 const THEMES = {
   balanced: balancedThemeUrl,
   plain: plainThemeUrl,
   glass: glassThemeUrl,
+  none: null,
 } as const
 
 type ThemeName = keyof typeof THEMES
@@ -88,7 +89,12 @@ function applySchema(nextSchema: JsonSchema202012, nextValue?: JsonValue) {
 }
 
 function applyTheme(theme: ThemeName) {
-  refs.themeStylesheet.href = THEMES[theme]
+  const themeHref = THEMES[theme]
+  if (themeHref) {
+    refs.themeStylesheet.href = themeHref
+  } else {
+    refs.themeStylesheet.removeAttribute('href')
+  }
   refs.themePicker.value = theme
 }
 
