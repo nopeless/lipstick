@@ -1,0 +1,127 @@
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font: 16px/1.5 "IBM Plex Sans", "Segoe UI", sans-serif;
+  color: #251d17;
+  background:
+    radial-gradient(circle at top, rgba(19, 93, 102, 0.12), transparent 35%),
+    linear-gradient(180deg, #fcfbf7 0%, #f5f2eb 100%);
+}
+
+.demo-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+  display: grid;
+  gap: 28px;
+}
+
+.demo-header {
+  display: grid;
+  gap: 10px;
+}
+
+.demo-kicker {
+  margin: 0;
+  font: 700 0.84rem/1.2 "IBM Plex Mono", monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #135d66;
+}
+
+.demo-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 0.95;
+}
+
+.demo-intro {
+  margin: 0;
+  max-width: 70ch;
+  color: #6f6255;
+}
+
+.demo-layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  align-items: start;
+}
+
+.demo-sidebar {
+  display: grid;
+  gap: 24px;
+}
+
+.demo-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.demo-panel h2,
+.demo-panel h3 {
+  margin: 0;
+}
+
+.demo-panel p {
+  margin: 0;
+  color: #6f6255;
+}
+
+.demo-field {
+  display: grid;
+  gap: 6px;
+}
+
+.demo-field span {
+  font-weight: 600;
+}
+
+.demo-input,
+.demo-select,
+.demo-textarea,
+.demo-button {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d8cfbf;
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+
+.demo-textarea {
+  min-height: 180px;
+  resize: vertical;
+  font: 0.9rem/1.5 "IBM Plex Mono", monospace;
+}
+
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.demo-row .demo-button {
+  width: auto;
+}
+
+.demo-output {
+  margin: 0;
+  padding: 16px 18px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: 0.92rem/1.55 "IBM Plex Mono", monospace;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid #d8cfbf;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(37, 29, 23, 0.06);
+}
+
+@media (max-width: 900px) {
+  .demo-layout {
+    grid-template-columns: 1fr;
+  }
+}

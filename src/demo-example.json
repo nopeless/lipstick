@@ -1,0 +1,1021 @@
+{
+  "schema": {
+    "title": "Marketplace Listing Builder",
+    "description": "A larger JSON Schema 2020-12 demo with refs, nested objects, arrays, unions, conditionals, and additional properties.",
+    "type": "object",
+    "required": [
+      "product",
+      "pricing",
+      "inventory",
+      "fulfillment",
+      "marketing",
+      "compliance"
+    ],
+    "$defs": {
+      "category": {
+        "type": "string",
+        "title": "Category",
+        "enum": [
+          "beauty",
+          "fashion",
+          "home",
+          "wellness",
+          "electronics",
+          "grocery"
+        ]
+      },
+      "money": {
+        "type": "object",
+        "title": "Money",
+        "required": [
+          "currency",
+          "amount"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "default": "USD"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "address": {
+        "type": "object",
+        "title": "Address",
+        "required": [
+          "name",
+          "line1",
+          "city",
+          "region",
+          "postalCode",
+          "country"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Recipient"
+          },
+          "line1": {
+            "type": "string",
+            "title": "Street line 1"
+          },
+          "line2": {
+            "type": "string",
+            "title": "Street line 2"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "region": {
+            "type": "string",
+            "title": "State / Region"
+          },
+          "postalCode": {
+            "type": "string",
+            "title": "Postal code"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country",
+            "default": "US"
+          }
+        },
+        "additionalProperties": false
+      },
+      "image": {
+        "type": "object",
+        "title": "Image",
+        "required": [
+          "url",
+          "alt"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Image URL"
+          },
+          "alt": {
+            "type": "string",
+            "title": "Alt text"
+          },
+          "caption": {
+            "type": "string",
+            "title": "Caption"
+          }
+        },
+        "additionalProperties": false
+      },
+      "seo": {
+        "type": "object",
+        "title": "SEO",
+        "required": [
+          "slug",
+          "title",
+          "description"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Meta title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Meta description",
+            "maxLength": 180
+          },
+          "keywords": {
+            "type": "array",
+            "title": "Keywords",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "warehouse": {
+        "type": "object",
+        "title": "Warehouse",
+        "required": [
+          "name",
+          "location",
+          "priority"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Warehouse name"
+          },
+          "location": {
+            "$ref": "#/$defs/address"
+          },
+          "priority": {
+            "type": "number",
+            "title": "Priority",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "testimonial": {
+        "type": "object",
+        "title": "Testimonial",
+        "required": [
+          "quote",
+          "author",
+          "role"
+        ],
+        "properties": {
+          "quote": {
+            "type": "string",
+            "title": "Quote"
+          },
+          "author": {
+            "type": "string",
+            "title": "Author"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          }
+        },
+        "additionalProperties": false
+      },
+      "variant": {
+        "type": "object",
+        "title": "Variant",
+        "required": [
+          "sku",
+          "label",
+          "price"
+        ],
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "SKU"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "price": {
+            "$ref": "#/$defs/money"
+          },
+          "barcode": {
+            "type": "string",
+            "title": "Barcode"
+          },
+          "attributes": {
+            "type": "object",
+            "title": "Attributes",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "faqItem": {
+        "type": "object",
+        "title": "FAQ item",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "properties": {
+      "product": {
+        "type": "object",
+        "title": "Product",
+        "required": [
+          "name",
+          "slug",
+          "category",
+          "primaryImage"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "brand": {
+            "type": "string",
+            "title": "Brand"
+          },
+          "category": {
+            "$ref": "#/$defs/category"
+          },
+          "shortDescription": {
+            "type": "string",
+            "title": "Short description",
+            "maxLength": 280
+          },
+          "longDescription": {
+            "type": "string",
+            "title": "Long description"
+          },
+          "tags": {
+            "type": "array",
+            "title": "Tags",
+            "items": {
+              "type": "string"
+            }
+          },
+          "primaryImage": {
+            "$ref": "#/$defs/image"
+          },
+          "gallery": {
+            "type": "array",
+            "title": "Gallery",
+            "items": {
+              "$ref": "#/$defs/image"
+            }
+          },
+          "features": {
+            "type": "array",
+            "title": "Features",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "pricing": {
+        "title": "Pricing strategy",
+        "oneOf": [
+          {
+            "title": "Fixed",
+            "type": "object",
+            "required": [
+              "mode",
+              "listPrice"
+            ],
+            "properties": {
+              "mode": {
+                "const": "fixed",
+                "title": "Mode"
+              },
+              "listPrice": {
+                "$ref": "#/$defs/money"
+              },
+              "salePrice": {
+                "$ref": "#/$defs/money"
+              },
+              "compareAt": {
+                "$ref": "#/$defs/money"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "title": "Tiered",
+            "type": "object",
+            "required": [
+              "mode",
+              "tiers"
+            ],
+            "properties": {
+              "mode": {
+                "const": "tiered",
+                "title": "Mode"
+              },
+              "tiers": {
+                "type": "array",
+                "title": "Tiers",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "minimum",
+                    "price"
+                  ],
+                  "properties": {
+                    "minimum": {
+                      "type": "number",
+                      "title": "Minimum quantity",
+                      "minimum": 1
+                    },
+                    "price": {
+                      "$ref": "#/$defs/money"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "title": "Subscription",
+            "type": "object",
+            "required": [
+              "mode",
+              "cadence",
+              "amount"
+            ],
+            "properties": {
+              "mode": {
+                "const": "subscription",
+                "title": "Mode"
+              },
+              "cadence": {
+                "type": "string",
+                "title": "Cadence",
+                "enum": [
+                  "monthly",
+                  "quarterly",
+                  "yearly"
+                ]
+              },
+              "amount": {
+                "$ref": "#/$defs/money"
+              },
+              "trialDays": {
+                "type": "number",
+                "title": "Trial days",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "inventory": {
+        "type": "object",
+        "title": "Inventory",
+        "required": [
+          "sku",
+          "trackStock",
+          "warehouses"
+        ],
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Internal SKU"
+          },
+          "trackStock": {
+            "type": "boolean",
+            "title": "Track stock",
+            "default": true
+          },
+          "safetyStock": {
+            "type": "number",
+            "title": "Safety stock",
+            "minimum": 0
+          },
+          "backorderPolicy": {
+            "type": "string",
+            "title": "Backorder policy",
+            "enum": [
+              "deny",
+              "allow",
+              "notify"
+            ]
+          },
+          "allowOversell": {
+            "type": "boolean",
+            "title": "Allow oversell",
+            "default": false
+          },
+          "warehouses": {
+            "type": "array",
+            "title": "Warehouses",
+            "items": {
+              "$ref": "#/$defs/warehouse"
+            }
+          },
+          "bundleComponents": {
+            "type": "array",
+            "title": "Bundle components",
+            "items": {
+              "type": "object",
+              "required": [
+                "sku",
+                "quantity"
+              ],
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "title": "Component SKU"
+                },
+                "quantity": {
+                  "type": "number",
+                  "title": "Quantity",
+                  "minimum": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "fulfillment": {
+        "type": "object",
+        "title": "Fulfillment",
+        "required": [
+          "shippingRequired",
+          "originAddress"
+        ],
+        "properties": {
+          "shippingRequired": {
+            "type": "boolean",
+            "title": "Shipping required",
+            "default": true
+          },
+          "packageWeight": {
+            "type": "number",
+            "title": "Package weight",
+            "minimum": 0
+          },
+          "packageDimensions": {
+            "type": "object",
+            "title": "Package dimensions",
+            "properties": {
+              "width": {
+                "type": "number",
+                "title": "Width",
+                "minimum": 0
+              },
+              "height": {
+                "type": "number",
+                "title": "Height",
+                "minimum": 0
+              },
+              "depth": {
+                "type": "number",
+                "title": "Depth",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          },
+          "originAddress": {
+            "$ref": "#/$defs/address"
+          },
+          "carriers": {
+            "type": "array",
+            "title": "Carriers",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ups",
+                "fedex",
+                "usps",
+                "dhl"
+              ]
+            }
+          },
+          "international": {
+            "type": "object",
+            "title": "International shipping",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "title": "Enabled",
+                "default": false
+              },
+              "regions": {
+                "type": "array",
+                "title": "Regions",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "north-america",
+                    "europe",
+                    "asia-pacific",
+                    "latin-america"
+                  ]
+                }
+              },
+              "customsDeclaration": {
+                "type": "string",
+                "title": "Customs declaration"
+              }
+            },
+            "if": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              },
+              "required": [
+                "enabled"
+              ]
+            },
+            "then": {
+              "required": [
+                "regions"
+              ]
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "marketing": {
+        "type": "object",
+        "title": "Marketing",
+        "required": [
+          "seo",
+          "launchDate",
+          "campaignBudget"
+        ],
+        "properties": {
+          "seo": {
+            "$ref": "#/$defs/seo"
+          },
+          "launchDate": {
+            "type": "string",
+            "title": "Launch date",
+            "format": "date"
+          },
+          "campaignBudget": {
+            "$ref": "#/$defs/money"
+          },
+          "channels": {
+            "type": "array",
+            "title": "Channels",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "active"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "title": "Type",
+                  "enum": [
+                    "email",
+                    "social",
+                    "search",
+                    "affiliate"
+                  ]
+                },
+                "active": {
+                  "type": "boolean",
+                  "title": "Active",
+                  "default": true
+                },
+                "notes": {
+                  "type": "string",
+                  "title": "Notes"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "testimonials": {
+            "type": "array",
+            "title": "Testimonials",
+            "items": {
+              "$ref": "#/$defs/testimonial"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "compliance": {
+        "type": "object",
+        "title": "Compliance",
+        "required": [
+          "ageRestricted",
+          "regulatedGoods"
+        ],
+        "properties": {
+          "ageRestricted": {
+            "type": "boolean",
+            "title": "Age restricted",
+            "default": false
+          },
+          "certifications": {
+            "type": "array",
+            "title": "Certifications",
+            "items": {
+              "type": "string",
+              "enum": [
+                "cpsia",
+                "organic",
+                "fair-trade",
+                "energy-star",
+                "ce"
+              ]
+            }
+          },
+          "regulatedGoods": {
+            "type": "boolean",
+            "title": "Regulated goods",
+            "default": false
+          },
+          "hazardClass": {
+            "type": "string",
+            "title": "Hazard class"
+          },
+          "contact": {
+            "type": "string",
+            "title": "Compliance contact"
+          }
+        },
+        "if": {
+          "properties": {
+            "regulatedGoods": {
+              "const": true
+            }
+          },
+          "required": [
+            "regulatedGoods"
+          ]
+        },
+        "then": {
+          "required": [
+            "hazardClass",
+            "contact"
+          ]
+        },
+        "additionalProperties": false
+      },
+      "analytics": {
+        "type": "object",
+        "title": "Analytics",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "pixelIds": {
+            "type": "array",
+            "title": "Pixel IDs",
+            "items": {
+              "type": "string"
+            }
+          },
+          "events": {
+            "type": "array",
+            "title": "Events",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "enabled"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                },
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enabled",
+                  "default": true
+                },
+                "sampleRate": {
+                  "type": "number",
+                  "title": "Sample rate",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "support": {
+        "type": "object",
+        "title": "Support",
+        "properties": {
+          "contactEmail": {
+            "type": "string",
+            "title": "Contact email"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "faq": {
+            "type": "array",
+            "title": "FAQ",
+            "items": {
+              "$ref": "#/$defs/faqItem"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "metadata": {
+        "type": "object",
+        "title": "Metadata",
+        "description": "Additional keys stay editable with local schema only.",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "additionalProperties": false
+  },
+  "value": {
+    "product": {
+      "name": "Velvet Serum",
+      "slug": "velvet-serum",
+      "brand": "Northstar Beauty",
+      "category": "beauty",
+      "shortDescription": "A lightweight daily serum with hydration and glow.",
+      "longDescription": "This serum layers under moisturizer and makeup, with a fast-absorbing finish and a fragrance-free formula.",
+      "tags": [
+        "hydrating",
+        "fragrance-free",
+        "daily-care"
+      ],
+      "primaryImage": {
+        "url": "https://example.com/images/velvet-serum-hero.jpg",
+        "alt": "Bottle of Velvet Serum on a stone surface",
+        "caption": "Hero image"
+      },
+      "gallery": [
+        {
+          "url": "https://example.com/images/velvet-serum-1.jpg",
+          "alt": "Velvet Serum front view"
+        },
+        {
+          "url": "https://example.com/images/velvet-serum-2.jpg",
+          "alt": "Velvet Serum texture swatch"
+        },
+        {
+          "url": "https://example.com/images/velvet-serum-3.jpg",
+          "alt": "Velvet Serum in packaging"
+        }
+      ],
+      "features": [
+        "Fast absorbing",
+        "Fragrance free",
+        "Suitable for daily use"
+      ]
+    },
+    "pricing": {
+      "mode": "fixed",
+      "listPrice": {
+        "currency": "USD",
+        "amount": 34
+      },
+      "salePrice": {
+        "currency": "USD",
+        "amount": 28
+      },
+      "compareAt": {
+        "currency": "USD",
+        "amount": 36
+      }
+    },
+    "inventory": {
+      "sku": "VLS-001",
+      "trackStock": true,
+      "safetyStock": 24,
+      "backorderPolicy": "notify",
+      "allowOversell": false,
+      "warehouses": [
+        {
+          "name": "Chicago Fulfillment",
+          "location": {
+            "name": "Northstar Beauty",
+            "line1": "1200 W Lake St",
+            "city": "Chicago",
+            "region": "IL",
+            "postalCode": "60607",
+            "country": "US"
+          },
+          "priority": 1,
+          "active": true
+        },
+        {
+          "name": "Dallas Overflow",
+          "location": {
+            "name": "Northstar Beauty",
+            "line1": "800 S Pearl Expy",
+            "city": "Dallas",
+            "region": "TX",
+            "postalCode": "75201",
+            "country": "US"
+          },
+          "priority": 2,
+          "active": true
+        }
+      ],
+      "bundleComponents": [
+        {
+          "sku": "VLS-001-BASE",
+          "quantity": 1
+        },
+        {
+          "sku": "VLS-001-BOX",
+          "quantity": 1
+        }
+      ]
+    },
+    "fulfillment": {
+      "shippingRequired": true,
+      "packageWeight": 0.42,
+      "packageDimensions": {
+        "width": 4.2,
+        "height": 12.1,
+        "depth": 4.2
+      },
+      "originAddress": {
+        "name": "Northstar Beauty",
+        "line1": "1200 W Lake St",
+        "city": "Chicago",
+        "region": "IL",
+        "postalCode": "60607",
+        "country": "US"
+      },
+      "carriers": [
+        "ups",
+        "usps"
+      ],
+      "international": {
+        "enabled": true,
+        "regions": [
+          "north-america",
+          "europe"
+        ],
+        "customsDeclaration": "Cosmetic serum, non-hazardous, retail packaging."
+      }
+    },
+    "marketing": {
+      "seo": {
+        "slug": "velvet-serum",
+        "title": "Velvet Serum | Hydrating Daily Glow",
+        "description": "A fragrance-free hydrating serum designed for daily use.",
+        "keywords": [
+          "serum",
+          "hydration",
+          "skincare",
+          "fragrance-free"
+        ]
+      },
+      "launchDate": "2026-06-01",
+      "campaignBudget": {
+        "currency": "USD",
+        "amount": 15000
+      },
+      "channels": [
+        {
+          "type": "email",
+          "active": true,
+          "notes": "Launch announcement and abandoned cart sequence."
+        },
+        {
+          "type": "social",
+          "active": true,
+          "notes": "Short-form product demo clips."
+        },
+        {
+          "type": "search",
+          "active": true,
+          "notes": "Brand and competitor conquest terms."
+        }
+      ],
+      "testimonials": [
+        {
+          "quote": "It leaves my skin looking fresh without feeling heavy.",
+          "author": "Maya",
+          "role": "Customer"
+        },
+        {
+          "quote": "Easy to merchandize and simple for the team to explain.",
+          "author": "Jordan",
+          "role": "Retail buyer"
+        }
+      ]
+    },
+    "compliance": {
+      "ageRestricted": false,
+      "certifications": [
+        "organic",
+        "ce"
+      ],
+      "regulatedGoods": false
+    },
+    "analytics": {
+      "enabled": true,
+      "pixelIds": [
+        "PIX-12345",
+        "PIX-67890"
+      ],
+      "events": [
+        {
+          "name": "view_item",
+          "enabled": true,
+          "sampleRate": 1
+        },
+        {
+          "name": "add_to_cart",
+          "enabled": true,
+          "sampleRate": 0.85
+        },
+        {
+          "name": "purchase",
+          "enabled": true,
+          "sampleRate": 1
+        }
+      ]
+    },
+    "support": {
+      "contactEmail": "support@example.com",
+      "phone": "+1-800-555-0182",
+      "faq": [
+        {
+          "question": "How often should the serum be used?",
+          "answer": "Use once or twice daily after cleansing."
+        },
+        {
+          "question": "Is it fragrance free?",
+          "answer": "Yes, the formula is fragrance free."
+        }
+      ]
+    },
+    "metadata": {
+      "season": "spring",
+      "launchOwner": "marketing",
+      "region": "NA"
+    }
+  }
+}

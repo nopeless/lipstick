@@ -1,0 +1,136 @@
+import './define'
+import './demo.css'
+import balancedThemeUrl from './base.css?url'
+import plainThemeUrl from './base-plain.css?url'
+import glassThemeUrl from './base-ink.css?url'
+import { buildInitialValue } from './lib/schema.js'
+import type { JsonSchemaFormEventDetail, JsonValue } from './index.js'
+import { getDemoRefs } from './demo-dom.js'
+import {
+  getErrorMessage,
+  loadDemoExample,
+  assertSchema,
+} from './demo-data.js'
+import type { JsonSchema202012 } from './index.js'
+
+const THEMES = {
+  balanced: balancedThemeUrl,
+  plain: plainThemeUrl,
+  glass: glassThemeUrl,
+} as const
+
+type ThemeName = keyof typeof THEMES
+
+let value: JsonValue = null
+
+const refs = getDemoRefs()
+
+applyTheme('balanced')
+setStatus('Loading demo example...')
+void bootstrap()
+
+refs.form.addEventListener('input', (event: Event) => {
+  const detail = (event as CustomEvent<JsonSchemaFormEventDetail>).detail
+  if (!detail) {
+    return
+  }
+
+  value = detail.value
+  refs.form.value = value
+  updateOutput()
+})
+
+refs.schemaUrlInput.addEventListener('paste', (event: ClipboardEvent) => {
+  const rawUrl = event.clipboardData?.getData('text/plain').trim()
+  if (rawUrl) {
+    void loadSchemaFromUrl(rawUrl)
+  }
+})
+
+refs.schemaUrlInput.addEventListener('change', () => {
+  void loadSchemaFromUrl()
+})
+
+refs.schemaJson.addEventListener('paste', (event: ClipboardEvent) => {
+  const schemaText = event.clipboardData?.getData('text/plain')
+  if (schemaText) {
+    applyPastedSchema(schemaText)
+  }
+})
+
+refs.schemaJson.addEventListener('change', () => {
+  applyPastedSchema()
+})
+
+refs.themePicker.addEventListener('change', (event: Event) => {
+  applyTheme((event.target as HTMLSelectElement).value as ThemeName)
+})
+
+async function bootstrap() {
+  try {
+    const example = await loadDemoExample()
+    applySchema(example.schema, example.value)
+    setStatus('Loaded demo example.')
+  } catch (error) {
+    setStatus(getErrorMessage(error), true)
+  }
+}
+
+function applySchema(nextSchema: JsonSchema202012, nextValue?: JsonValue) {
+  value =
+    nextValue !== undefined
+      ? nextValue
+      : buildInitialValue(nextSchema, nextSchema)
+  refs.form.schema = nextSchema
+  refs.form.value = value
+  refs.schemaJson.value = JSON.stringify(nextSchema, null, 2)
+  updateOutput()
+}
+
+function applyTheme(theme: ThemeName) {
+  refs.themeStylesheet.href = THEMES[theme]
+  refs.themePicker.value = theme
+}
+
+function updateOutput() {
+  refs.output.textContent = JSON.stringify(value, null, 2)
+}
+
+function setStatus(message: string, isError = false) {
+  refs.schemaStatus.textContent = message
+  refs.schemaStatus.style.color = isError ? '#b9381d' : '#6f6255'
+}
+
+async function loadSchemaFromUrl(rawUrl = refs.schemaUrlInput.value.trim()) {
+  if (!rawUrl) {
+    setStatus('Enter a schema URL first.', true)
+    return
+  }
+
+  try {
+    setStatus('Loading schema...')
+    const response = await fetch(rawUrl)
+
+    if (!response.ok) {
+      throw new Error(`Request failed with ${response.status}`)
+    }
+
+    const payload = (await response.json()) as unknown
+    assertSchema(payload)
+    applySchema(payload)
+    setStatus('Loaded schema from URL.')
+  } catch (error) {
+    setStatus(getErrorMessage(error), true)
+  }
+}
+
+function applyPastedSchema(schemaText = refs.schemaJson.value) {
+  try {
+    const payload = JSON.parse(schemaText) as unknown
+    assertSchema(payload)
+    applySchema(payload)
+    setStatus('Applied pasted schema.')
+  } catch (error) {
+    setStatus(getErrorMessage(error), true)
+  }
+}

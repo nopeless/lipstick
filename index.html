@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lipstick</title>
+    <link rel="stylesheet" data-role="theme-stylesheet" />
+    <script type="module" src="/src/demo.ts"></script>
+  </head>
+  <body>
+    <main class="demo-shell">
+      <header class="demo-header">
+        <p class="demo-kicker">lipstick</p>
+        <h1 class="demo-title">JSON Schema forms without a framework lock-in</h1>
+        <p class="demo-intro">
+          The demo below exercises local refs, tuples, discriminated unions, conditional fields,
+          additional properties, and controlled updates through standard custom events.
+        </p>
+      </header>
+
+      <section class="demo-layout">
+        <json-schema-form></json-schema-form>
+        <aside class="demo-sidebar">
+          <section class="demo-panel">
+            <h2>Theme</h2>
+            <label class="demo-field">
+              <span>Base CSS</span>
+              <select class="demo-select" data-role="theme-picker">
+                <option value="balanced">Balanced</option>
+                <option value="plain">Plain</option>
+                <option value="glass">Glass</option>
+              </select>
+            </label>
+          </section>
+
+          <section class="demo-panel">
+            <h2>Schema Source</h2>
+            <p>
+              Paste a JSON Schema directly or paste a URL to load one.
+            </p>
+            <label class="demo-field">
+              <span>Schema URL</span>
+              <input
+                data-role="schema-url"
+                class="demo-input"
+                type="url"
+                placeholder="https://example.com/schema.json"
+              />
+            </label>
+            <label class="demo-field">
+              <span>Schema JSON</span>
+              <textarea
+                data-role="schema-json"
+                class="demo-textarea"
+                placeholder='{"type":"object","properties":{"name":{"type":"string"}}}'
+              ></textarea>
+            </label>
+            <p data-role="schema-status"></p>
+          </section>
+
+          <section class="demo-panel">
+            <h2>Live JSON</h2>
+            <pre class="demo-output" data-role="output"></pre>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

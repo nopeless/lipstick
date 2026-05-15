@@ -1,0 +1,35 @@
+{
+  "name": "lipstick",
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./define": {
+      "types": "./dist/define.d.ts",
+      "import": "./dist/define.js"
+    },
+    "./base.css": "./dist/base.css",
+    "./base-plain.css": "./dist/base-plain.css",
+    "./base-ink.css": "./dist/base-ink.css"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build-lib.mjs",
+    "build:demo": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "lit": "^3.3.2"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12"
+  }
+}
