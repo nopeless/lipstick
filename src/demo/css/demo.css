@@ -75,11 +75,6 @@ body {
 .demo-panel {
   display: grid;
   gap: 0.7rem;
-  padding: 1rem;
-  border: 1px solid var(--demo-panel-border);
-  border-radius: var(--demo-radius);
-  background: var(--demo-panel-bg);
-  box-shadow: var(--demo-panel-shadow);
 }
 
 .demo-panel :is(h2, h3) {
