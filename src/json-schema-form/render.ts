@@ -144,7 +144,7 @@ function renderUnionField(
   };
 
   return html`
-    <fieldset data-collapsed=${collapsed ? "true" : "false"}>
+    <fieldset ?data-collapsed=${collapsed}>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       <div data-lipstick-body>
         ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
@@ -621,7 +621,7 @@ function renderObjectField(
   const collapsed = isCollapsed(ctx, path);
 
   return html`
-    <fieldset data-collapsed=${collapsed ? "true" : "false"}>
+    <fieldset ?data-collapsed=${collapsed}>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       <div data-lipstick-body>
         ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
@@ -755,7 +755,7 @@ function renderArrayField(
   const collapsed = isCollapsed(ctx, path);
 
   return html`
-    <fieldset data-collapsed=${collapsed ? "true" : "false"}>
+    <fieldset ?data-collapsed=${collapsed}>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       <div data-lipstick-body>
         ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
@@ -914,7 +914,7 @@ function renderScalarField(
   }
 
   return html`
-    <section data-lipstick-field data-collapsed=${collapsed ? "true" : "false"}>
+    <section data-lipstick-field ?data-collapsed=${collapsed}>
       ${renderLeafHeader(ctx, fieldLabel, options, path)}
       <div data-lipstick-body>
         ${renderLeafBody(ctx, schema, path)} ${control.control}
@@ -1216,7 +1216,7 @@ function renderInlineSimpleField(
       data-lipstick-field
       data-lipstick-inline
       data-lipstick-inline-row
-      data-collapsed=${isCollapsed(ctx, path) ? "true" : "false"}
+      ?data-collapsed=${isCollapsed(ctx, path)}
     >
       <div data-lipstick-body data-lipstick-inline-content>
       ${hasLabel
