@@ -7,10 +7,6 @@ lip-stick {
     margin: 0;
   }
 
-  & fieldset {
-    padding: 0.6rem 0.75rem 0.75rem;
-  }
-
   & :where(input, select, textarea) {
     box-sizing: border-box;
     width: 100%;
@@ -44,8 +40,8 @@ lip-stick {
     display: none;
   }
 
-  /* Shared inline row layout for simple items and composer rows. */
-  & :where(section[data-lipstick-inline] > div, [data-lipstick-simple-array-item], [data-lipstick-composer]) {
+  /* Shared inline row layout for leaf rows and composer rows. */
+  & :where(section[data-lipstick-inline] > div, [data-lipstick-composer]) {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr) auto;
     align-items: stretch;
@@ -61,6 +57,26 @@ lip-stick {
 
     >.lipstick-actions {
       grid-column: 3;
+    }
+  }
+
+  /* Simple array items wrap an inline section; keep actions in a side column. */
+  & [data-lipstick-simple-array-item] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+
+    >section {
+      min-width: 0;
+    }
+
+    >.lipstick-actions {
+      grid-column: 2;
+      align-self: center;
+    }
+
+    >p {
+      grid-column: 1 / -1;
     }
   }
 
