@@ -719,36 +719,40 @@ function renderAdditionalPropertyComposer(
 
   return html`
     <div data-lipstick-composer>
-      <button
-        type="button"
-        class="lipstick-add"
-        ?disabled=${ctx.formDisabled || !canAdd || !draft.trim()}
-        @click=${() => addAdditionalProperty(ctx, path, draft.trim(), schema)}
-        aria-label="Add new property"
-      >
-        <span aria-hidden="true">+</span>
-      </button>
-      <input
-        type="text"
-        placeholder="add new property"
-        .disabled=${ctx.formDisabled || !canAdd}
-        .value=${draft}
-        @input=${(event: Event) => {
-          const nextValue = (event.target as HTMLInputElement).value;
-          ctx.additionalPropertyDrafts = new Map(ctx.additionalPropertyDrafts).set(
-            pathKey,
-            nextValue,
-          );
-        }}
-        @keydown=${(event: KeyboardEvent) => {
-          if (event.key !== "Enter") {
-            return;
-          }
+      <div data-lipstick-input>
+        <input
+          type="text"
+          placeholder="add new property"
+          .disabled=${ctx.formDisabled || !canAdd}
+          .value=${draft}
+          @input=${(event: Event) => {
+            const nextValue = (event.target as HTMLInputElement).value;
+            ctx.additionalPropertyDrafts = new Map(ctx.additionalPropertyDrafts).set(
+              pathKey,
+              nextValue,
+            );
+          }}
+          @keydown=${(event: KeyboardEvent) => {
+            if (event.key !== "Enter") {
+              return;
+            }
 
-          event.preventDefault();
-          addAdditionalProperty(ctx, path, draft.trim(), schema);
-        }}
-      />
+            event.preventDefault();
+            addAdditionalProperty(ctx, path, draft.trim(), schema);
+          }}
+        />
+      </div>
+      <nav aria-label="Property controls" data-lipstick-controls>
+        <button
+          type="button"
+          class="lipstick-add"
+          ?disabled=${ctx.formDisabled || !canAdd || !draft.trim()}
+          @click=${() => addAdditionalProperty(ctx, path, draft.trim(), schema)}
+          aria-label="Add new property"
+        >
+          <span aria-hidden="true">+</span>
+        </button>
+      </nav>
     </div>
   `;
 }
@@ -837,7 +841,7 @@ function renderArrayItem(
   if (isSimpleItem) {
     return html`
       <article data-lipstick-array-item="simple">
-        <div>
+        <div data-lipstick-input>
           ${renderNode(ctx, itemSchema, item, itemPath, {
             label: simpleItemLabel ?? "",
             required: index < (schema.minItems ?? 0),
@@ -847,7 +851,7 @@ function renderArrayItem(
             onRemove: undefined,
           })}
         </div>
-        <nav aria-label="Array item actions">
+        <nav aria-label="Array item actions" data-lipstick-controls>
           ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
           ${renderArrayItemRemoveAction(ctx, itemPath, canRemove)}
         </nav>
@@ -1222,18 +1226,24 @@ function renderInlineSimpleField(
   path: JsonPointerPath = [],
 ): TemplateResult {
   const hasLabel = Boolean(label.trim());
+  const controls = html`
+    ${afterControl}
+    ${options.present && options.onRemove
+      ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
+      : nothing}
+  `;
 
   return html`
     <section data-lipstick-field data-lipstick-inline>
-      <div data-lipstick-inline-row ?data-lipstick-no-label=${!hasLabel}>
+      <div data-lipstick-inline-row>
         ${hasLabel
           ? useSpanLabel
-            ? html`<span>${label}</span>`
-            : html`<label for=${inputId}> ${label} </label>`
+            ? html`<div data-lipstick-properties><span>${label}</span></div>`
+            : html`<div data-lipstick-properties><label for=${inputId}>${label}</label></div>`
           : nothing}
-        ${control} ${afterControl}
-        ${options.present && options.onRemove
-          ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
+        <div data-lipstick-input>${control}</div>
+        ${afterControl !== nothing || (options.present && options.onRemove)
+          ? html`<nav aria-label="Field controls" data-lipstick-controls>${controls}</nav>`
           : nothing}
       </div>
       ${renderLeafBody(ctx, schema, path)}

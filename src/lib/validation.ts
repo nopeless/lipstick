@@ -176,18 +176,6 @@ function expandErrorPointers(error: TLocalizedValidationError): string[] {
     }
   }
 
-  if (error.keyword === 'additionalProperties') {
-    const additionalProperties = readStringList(
-      (error.params as { additionalProperties?: unknown }).additionalProperties,
-    )
-
-    if (additionalProperties.length > 0) {
-      return additionalProperties.map((property) =>
-        appendPointer(error.instancePath, property),
-      )
-    }
-  }
-
   return [error.instancePath]
 }
 

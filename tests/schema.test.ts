@@ -164,6 +164,26 @@ test('validates values with TypeBox and maps field errors', () => {
   )
 })
 
+test('keeps additionalProperties errors on the object path', () => {
+  const schema: JsonSchema202012 = {
+    $schema: DRAFT_2020_12_SCHEMA_URI,
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+    },
+    additionalProperties: false,
+  }
+
+  const result = validateValueAgainstSchema(schema, {
+    name: 'Casey',
+    email: 'casey@example.com',
+  })
+
+  assert.equal(result.valid, false)
+  assert.ok((result.fieldMessages.get('#') ?? []).length > 0)
+  assert.equal(result.fieldMessages.has('#/email'), false)
+})
+
 test('accepts only draft 2020-12 dialect declarations', () => {
   const supportedSchema: JsonSchema202012 = {
     $schema: DRAFT_2020_12_SCHEMA_URI,
