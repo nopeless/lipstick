@@ -1,8 +1,14 @@
 export { JsonSchemaFormElement } from './json-schema-form.js'
+export {
+  DRAFT_2020_12_SCHEMA_URI,
+  getSchemaDialectError,
+  validateValueAgainstSchema,
+} from './lib/validation.js'
 export type {
   JsonPointerPath,
   JsonPrimitive,
   JsonSchema202012,
-  JsonSchemaFormEventDetail,
   JsonValue,
+  JsonSchemaFormEventDetail,
 } from './lib/types.js'
+export type { ValidationIssue, ValidationSnapshot } from './lib/validation.js'

@@ -4,6 +4,7 @@ import type {
   JsonSchema202012,
   JsonValue,
 } from '../lib/types.js'
+import type { ValidationSnapshot } from '../lib/validation.js'
 
 export interface FieldRenderOptions {
   label?: string
@@ -29,6 +30,7 @@ export interface JsonSchemaFormContext extends EventTarget {
   pendingFocusId?: string
   rootSchema: JsonSchema202012
   formDisabled: boolean
+  validation: ValidationSnapshot
   dispatchEvent(event: Event): boolean
 }
 

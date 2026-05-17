@@ -97,6 +97,10 @@ lip-stick {
     color: var(--lipstick-danger);
   }
 
+  & p.lipstick-note--validation {
+    font-size: 0.9rem;
+  }
+
   & label {
     display: grid;
     gap: 0.35rem;
@@ -339,6 +343,10 @@ lip-stick {
   & code.lipstick-null-value {
     font: inherit;
     letter-spacing: 0;
+  }
+
+  & :is(input, select, textarea)[aria-invalid="true"] {
+    border-color: var(--lipstick-danger);
   }
 
   & button:disabled,

@@ -1,4 +1,5 @@
 import { html, nothing, type TemplateResult } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
 import {
   acceptsType,
   describeUnion,
@@ -12,14 +13,17 @@ import {
   resolveSchema,
 } from "../lib/schema.js";
 import {
+  formatDateTimeForInput,
   formatNumericValue,
   getNumericInputStep,
   getStringInputType,
+  normalizeDateTimeFromInput,
   parseNumericInputValue,
 } from "../lib/input.js";
 import type { JsonSchemaFormContext, FieldRenderOptions } from "./shared.js";
 import type { JsonPointerPath, JsonSchema202012, JsonValue } from "../lib/types.js";
 import { getValueAtPath, isJsonObject } from "../lib/value.js";
+import { getFieldMessagesForSchema } from "../lib/validation.js";
 import {
   addAdditionalProperty,
   addArrayItem,
@@ -42,6 +46,10 @@ import {
 export function renderForm(ctx: JsonSchemaFormContext) {
   if (!ctx.schema) {
     return nothing;
+  }
+
+  if (ctx.validation.schemaError) {
+    return html`<p class="lipstick-note" role="alert">${ctx.validation.schemaError}</p>`;
   }
 
   const rootSchema = ctx.rootSchema;
@@ -81,7 +89,7 @@ function renderNode(
 
   if (union) {
     if (schema.anyOf?.length && isCycledPrimitiveUnion(schema, rootSchema)) {
-      return renderPrimitiveUnionField(ctx, schema, value, path, options, union)
+      return renderPrimitiveUnionField(ctx, schema, value, path, options, union);
     }
 
     return renderUnionField(ctx, resolved, value, path, options, union);
@@ -141,7 +149,8 @@ function renderUnionField(
       ${collapsed
         ? nothing
         : html`
-            ${renderDescription(schema)} ${renderRefWarning(schema)}
+            ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+            ${renderValidationMessages(ctx, path, schema, value)}
             ${renderUnionSelector(ctx, schema, union, changeBranch)}
             <div>${renderUnionBranch(ctx, branchSchema, value, path, union)}</div>
           `}
@@ -149,10 +158,7 @@ function renderUnionField(
   `;
 }
 
-function isCycledPrimitiveUnion(
-  schema: JsonSchema202012,
-  rootSchema: JsonSchema202012,
-): boolean {
+function isCycledPrimitiveUnion(schema: JsonSchema202012, rootSchema: JsonSchema202012): boolean {
   const branches = schema.anyOf ?? [];
 
   return (
@@ -176,9 +182,17 @@ function renderPrimitiveUnionField(
   const branches = schema.anyOf ?? [];
   const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
   const inputId = createInputId(path);
+  const messages = getFieldMessages(ctx, path, schema, value);
   const changeBranch = (index: number) => {
     switchUnionBranch(ctx, path, value, branches, rootSchema, index);
   };
+  const scalarControl = renderScalarControl(ctx, branchSchema, value, path, {
+    inputId,
+    disabled: ctx.formDisabled || branchSchema.readOnly === true,
+    required: options.required,
+    invalid: messages.length > 0,
+    describedBy: getControlDescribedBy(schema, path, messages.length > 0),
+  });
 
   const cycleButton =
     branches.length > 1
@@ -190,7 +204,7 @@ function renderPrimitiveUnionField(
             @click=${() => changeBranch((union.selectedIndex + 1) % branches.length)}
             aria-label="Cycle variant"
           >
-            cycle
+            ⇄
           </button>
         `
       : nothing;
@@ -201,22 +215,44 @@ function renderPrimitiveUnionField(
     options,
     inputId,
     schema,
-    renderPrimitiveUnionControl(ctx, branchSchema, value, path, inputId, ctx.formDisabled || branchSchema.readOnly === true),
-    acceptsType(branchSchema, "boolean") || acceptsType(branchSchema, "null"),
+    scalarControl.control,
+    scalarControl.useSpanLabel,
     cycleButton,
+    path,
   );
 }
 
-function renderPrimitiveUnionControl(
+interface ScalarControlOptions {
+  inputId: string;
+  disabled: boolean;
+  required: boolean;
+  invalid: boolean;
+  describedBy?: string;
+}
+
+interface ScalarControlResult {
+  control: TemplateResult;
+  useSpanLabel: boolean;
+  multiline: boolean;
+  isBoolean: boolean;
+}
+
+function renderScalarControl(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
   value: JsonValue | undefined,
   path: JsonPointerPath,
-  inputId: string,
-  disabled: boolean,
-): TemplateResult {
+  options: ScalarControlOptions,
+): ScalarControlResult {
+  const ariaErrorMessage = options.invalid ? getFieldErrorId(path) : undefined;
+
   if (schema.const !== undefined) {
-    return html`<output id=${inputId}>${String(schema.const)}</output>`;
+    return {
+      control: html`<output id=${options.inputId}>${String(schema.const)}</output>`,
+      useSpanLabel: true,
+      multiline: false,
+      isBoolean: false,
+    };
   }
 
   if (schema.enum?.length) {
@@ -226,48 +262,59 @@ function renderPrimitiveUnionControl(
         ? String(value)
         : String(optionsList[0] ?? "");
 
-    return html`
-      <select
-        id=${inputId}
-        .disabled=${disabled}
-        .value=${normalizedValue}
-        @change=${(event: Event) => {
-          const nextValue = parseLiteralOption(
-            (event.target as HTMLSelectElement).value,
-            optionsList,
-          );
-          updatePathValue(ctx, path, nextValue, schema, true);
-        }}
-      >
-        ${optionsList.map(
-          (option) => html`<option value=${String(option)}>${String(option)}</option>`,
-        )}
-      </select>
-    `;
+    return {
+      control: html`
+        <select
+          id=${options.inputId}
+          .disabled=${options.disabled}
+          .value=${normalizedValue}
+          ?required=${options.required}
+          aria-invalid=${options.invalid ? "true" : "false"}
+          aria-describedby=${ifDefined(options.describedBy)}
+          aria-errormessage=${ifDefined(ariaErrorMessage)}
+          @change=${(event: Event) => {
+            const nextValue = parseLiteralOption(
+              (event.target as HTMLSelectElement).value,
+              optionsList,
+            );
+            updatePathValue(ctx, path, nextValue, schema, true);
+          }}
+        >
+          ${optionsList.map(
+            (option) => html`<option value=${String(option)}>${String(option)}</option>`,
+          )}
+        </select>
+      `,
+      useSpanLabel: false,
+      multiline: false,
+      isBoolean: false,
+    };
   }
 
   if (acceptsType(schema, "boolean")) {
-    return html`
-      <label class="lipstick-switch" for=${inputId}>
-        <input
-          id=${inputId}
-          type="checkbox"
-          .disabled=${disabled}
-          .checked=${value === true}
-          @change=${(event: Event) =>
-            updatePathValue(
-              ctx,
-              path,
-              (event.target as HTMLInputElement).checked,
-              schema,
-              true,
-            )}
-        />
-        <span class="lipstick-switch-track" aria-hidden="true">
-          <span class="lipstick-switch-thumb"></span>
-        </span>
-      </label>
-    `;
+    return {
+      control: html`
+        <label class="lipstick-switch" for=${options.inputId}>
+          <input
+            id=${options.inputId}
+            type="checkbox"
+            .disabled=${options.disabled}
+            .checked=${value === true}
+            aria-invalid=${options.invalid ? "true" : "false"}
+            aria-describedby=${ifDefined(options.describedBy)}
+            aria-errormessage=${ifDefined(ariaErrorMessage)}
+            @change=${(event: Event) =>
+              updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
+          />
+          <span class="lipstick-switch-track" aria-hidden="true">
+            <span class="lipstick-switch-thumb"></span>
+          </span>
+        </label>
+      `,
+      useSpanLabel: false,
+      multiline: false,
+      isBoolean: true,
+    };
   }
 
   if (acceptsType(schema, "integer") || acceptsType(schema, "number")) {
@@ -277,18 +324,57 @@ function renderPrimitiveUnionControl(
     const formattedValue = formatNumericValue(numericValue, step);
 
     if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
-      return html`
-        <div class="lipstick-range">
-          <div class="lipstick-range-controls">
-            <div class="lipstick-range-main">
+      return {
+        control: html`
+          <div class="lipstick-range">
+            <div class="lipstick-range-controls">
+              <div class="lipstick-range-main">
+                <input
+                  id=${options.inputId}
+                  type="range"
+                  .disabled=${options.disabled}
+                  .min=${String(schema.minimum)}
+                  .max=${String(schema.maximum)}
+                  .step=${String(step)}
+                  .value=${String(numericValue)}
+                  aria-invalid=${options.invalid ? "true" : "false"}
+                  aria-describedby=${ifDefined(options.describedBy)}
+                  aria-errormessage=${ifDefined(ariaErrorMessage)}
+                  @input=${(event: Event) =>
+                    updatePathValue(
+                      ctx,
+                      path,
+                      parseNumericInputValue(event.target as HTMLInputElement),
+                      schema,
+                      false,
+                    )}
+                  @change=${(event: Event) =>
+                    updatePathValue(
+                      ctx,
+                      path,
+                      parseNumericInputValue(event.target as HTMLInputElement),
+                      schema,
+                      true,
+                    )}
+                />
+                <div class="lipstick-range-meta">
+                  <span>${schema.minimum}</span>
+                  <span>${schema.maximum}</span>
+                </div>
+              </div>
               <input
-                id=${inputId}
-                type="range"
-                .disabled=${disabled}
+                id=${`${options.inputId}-manual`}
+                class="lipstick-range-number"
+                type="number"
+                .disabled=${options.disabled}
                 .min=${String(schema.minimum)}
                 .max=${String(schema.maximum)}
                 .step=${String(step)}
-                .value=${String(numericValue)}
+                .value=${formattedValue}
+                ?required=${options.required}
+                aria-invalid=${options.invalid ? "true" : "false"}
+                aria-describedby=${ifDefined(options.describedBy)}
+                aria-errormessage=${ifDefined(ariaErrorMessage)}
                 @input=${(event: Event) =>
                   updatePathValue(
                     ctx,
@@ -306,86 +392,78 @@ function renderPrimitiveUnionControl(
                     true,
                   )}
               />
-              <div class="lipstick-range-meta">
-                <span>${schema.minimum}</span>
-                <span>${schema.maximum}</span>
-              </div>
             </div>
-            <input
-              id=${`${inputId}-manual`}
-              class="lipstick-range-number"
-              type="number"
-              .disabled=${disabled}
-              .min=${String(schema.minimum)}
-              .max=${String(schema.maximum)}
-              .step=${String(step)}
-              .value=${formattedValue}
-              @input=${(event: Event) =>
-                updatePathValue(
-                  ctx,
-                  path,
-                  parseNumericInputValue(event.target as HTMLInputElement),
-                  schema,
-                  false,
-                )}
-              @change=${(event: Event) =>
-                updatePathValue(
-                  ctx,
-                  path,
-                  parseNumericInputValue(event.target as HTMLInputElement),
-                  schema,
-                  true,
-                )}
-            />
           </div>
-        </div>
-      `;
+        `,
+        useSpanLabel: false,
+        multiline: false,
+        isBoolean: false,
+      };
     }
 
-    return html`
-      <input
-        id=${inputId}
-        type="number"
-        .disabled=${disabled}
-        .step=${String(step)}
-        .value=${typeof value === "number" ? formattedValue : ""}
-        @input=${(event: Event) =>
-          updatePathValue(
-            ctx,
-            path,
-            parseNumericInputValue(event.target as HTMLInputElement),
-            schema,
-            false,
-          )}
-        @change=${(event: Event) =>
-          updatePathValue(
-            ctx,
-            path,
-            parseNumericInputValue(event.target as HTMLInputElement),
-            schema,
-            true,
-          )}
-      />
-    `;
+    return {
+      control: html`
+        <input
+          id=${options.inputId}
+          type="number"
+          .disabled=${options.disabled}
+          .step=${String(step)}
+          .value=${typeof value === "number" ? formattedValue : ""}
+          ?required=${options.required}
+          aria-invalid=${options.invalid ? "true" : "false"}
+          aria-describedby=${ifDefined(options.describedBy)}
+          aria-errormessage=${ifDefined(ariaErrorMessage)}
+          @input=${(event: Event) =>
+            updatePathValue(
+              ctx,
+              path,
+              parseNumericInputValue(event.target as HTMLInputElement),
+              schema,
+              false,
+            )}
+          @change=${(event: Event) =>
+            updatePathValue(
+              ctx,
+              path,
+              parseNumericInputValue(event.target as HTMLInputElement),
+              schema,
+              true,
+            )}
+        />
+      `,
+      useSpanLabel: false,
+      multiline: false,
+      isBoolean: false,
+    };
   }
 
   if (acceptsType(schema, "null")) {
-    return html`<code class="lipstick-null-value">null</code>`;
+    return {
+      control: html`<code id=${options.inputId} class="lipstick-null-value">null</code>`,
+      useSpanLabel: true,
+      multiline: false,
+      isBoolean: false,
+    };
   }
 
   const multiline =
     schema.format === "textarea" ||
     (typeof schema.maxLength === "number" && schema.maxLength > 200);
   const inputType = getStringInputType(schema);
-  const currentValue = typeof value === "string" ? value : "";
-
-  return multiline
+  const isDateTimeInput = inputType === "datetime-local";
+  const currentValue =
+    typeof value === "string" ? (isDateTimeInput ? formatDateTimeForInput(value) : value) : "";
+  const control = multiline
     ? html`
         <textarea
-          id=${inputId}
+          id=${options.inputId}
           placeholder="Enter a value"
-          .disabled=${disabled}
+          .disabled=${options.disabled}
           .value=${currentValue}
+          ?required=${options.required}
+          aria-invalid=${options.invalid ? "true" : "false"}
+          aria-describedby=${ifDefined(options.describedBy)}
+          aria-errormessage=${ifDefined(ariaErrorMessage)}
           @input=${(event: Event) =>
             updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, false)}
           @change=${(event: Event) =>
@@ -394,17 +472,35 @@ function renderPrimitiveUnionControl(
       `
     : html`
         <input
-          id=${inputId}
+          id=${options.inputId}
           type=${inputType}
           placeholder="Enter a value"
-          .disabled=${disabled}
+          .disabled=${options.disabled}
           .value=${currentValue}
-          @input=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, false)}
-          @change=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, true)}
+          step=${ifDefined(isDateTimeInput ? "60" : undefined)}
+          ?required=${options.required}
+          aria-invalid=${options.invalid ? "true" : "false"}
+          aria-describedby=${ifDefined(options.describedBy)}
+          aria-errormessage=${ifDefined(ariaErrorMessage)}
+          @input=${(event: Event) => {
+            const rawValue = (event.target as HTMLInputElement).value;
+            const nextValue = isDateTimeInput ? normalizeDateTimeFromInput(rawValue) : rawValue;
+            updatePathValue(ctx, path, nextValue, schema, false);
+          }}
+          @change=${(event: Event) => {
+            const rawValue = (event.target as HTMLInputElement).value;
+            const nextValue = isDateTimeInput ? normalizeDateTimeFromInput(rawValue) : rawValue;
+            updatePathValue(ctx, path, nextValue, schema, true);
+          }}
         />
       `;
+
+  return {
+    control,
+    useSpanLabel: false,
+    multiline,
+    isBoolean: false,
+  };
 }
 
 function renderUnionBranch(
@@ -542,7 +638,10 @@ function renderObjectField(
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       ${collapsed
         ? nothing
-        : html` ${renderDescription(schema)} ${renderRefWarning(schema)} ${body} `}
+        : html`
+            ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+            ${renderValidationMessages(ctx, path, schema, value)} ${body}
+          `}
     </fieldset>
   `;
 }
@@ -573,14 +672,20 @@ function renderObjectBody(
         });
       })}
       ${additionalKeys.map((key) =>
-        renderObjectProperty(ctx, getAdditionalPropertySchema(schema), objectValue[key], [...path, key], {
-          label: humanizeLabel(key),
-          required: false,
-          present: true,
-          framed: true,
-          collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
-          onRemove: () => removeProperty(ctx, [...path, key]),
-        }),
+        renderObjectProperty(
+          ctx,
+          getAdditionalPropertySchema(schema),
+          objectValue[key],
+          [...path, key],
+          {
+            label: humanizeLabel(key),
+            required: false,
+            present: true,
+            framed: true,
+            collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
+            onRemove: () => removeProperty(ctx, [...path, key]),
+          },
+        ),
       )}
     </div>
     ${schema.additionalProperties !== false
@@ -596,9 +701,7 @@ function renderObjectProperty(
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
-  return html`
-    ${renderNode(ctx, schema, value, path, options)}
-  `;
+  return html` ${renderNode(ctx, schema, value, path, options)} `;
 }
 
 function renderAdditionalPropertyComposer(
@@ -677,7 +780,10 @@ function renderArrayField(
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       ${collapsed
         ? nothing
-        : html` ${renderDescription(schema)} ${renderRefWarning(schema)} ${body} `}
+        : html`
+            ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+            ${renderValidationMessages(ctx, path, schema, value)} ${body}
+          `}
     </fieldset>
   `;
 }
@@ -692,9 +798,7 @@ function renderArrayBody(
   canAdd: boolean,
 ): TemplateResult {
   return html`
-    <div>
-      ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
-    </div>
+    <div>${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}</div>
     ${canAdd
       ? html`
           <button
@@ -757,7 +861,13 @@ function renderArrayItem(
         present: true,
         framed: true,
         collapsible: false,
-        headerPrefix: html`${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}`,
+        headerPrefix: html`${renderArrayItemReorderActions(
+          ctx,
+          path,
+          index,
+          canMoveUp,
+          canMoveDown,
+        )}`,
         removeLabel: "Delete array item",
         onRemove: canRemove ? () => removeArrayItem(ctx, itemPath) : undefined,
       })}
@@ -784,261 +894,46 @@ function renderScalarField(
   const fieldLabel = options.label ?? schema.title ?? "Value";
   const inputId = createInputId(path);
   const disabled = ctx.formDisabled || schema.readOnly === true;
-  const inlineSimpleValue = !schema.description && !acceptsType(schema, "boolean");
+  const messages = getFieldMessages(ctx, path, schema, value);
+  const invalid = messages.length > 0;
+  const control = renderScalarControl(ctx, schema, value, path, {
+    inputId,
+    disabled,
+    required: options.required,
+    invalid,
+    describedBy: getControlDescribedBy(schema, path, invalid),
+  });
+  const inlineSimpleValue = !schema.description && !control.isBoolean && !control.multiline;
 
-  if (schema.const !== undefined) {
-    const control = html`
-      <output id=${inputId}>${String(schema.const)}</output>
-    `;
-
-    if (inlineSimpleValue) {
-      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control, true);
-    }
-
-    return html`
-      <section class="lipstick-leaf">
-        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-      </section>
-    `;
+  if (inlineSimpleValue) {
+    return renderInlineSimpleField(
+      ctx,
+      fieldLabel,
+      options,
+      inputId,
+      schema,
+      control.control,
+      control.useSpanLabel,
+      nothing,
+      path,
+    );
   }
 
-  if (schema.enum?.length) {
-    const optionsList = schema.enum ?? [];
-    const normalizedValue =
-      value !== undefined && optionsList.includes(value as never)
-        ? String(value)
-        : String(optionsList[0] ?? "");
-    const control = html`
-      <select
-        id=${inputId}
-        .disabled=${disabled}
-        .value=${normalizedValue}
-        @change=${(event: Event) => {
-          const nextValue = parseLiteralOption(
-            (event.target as HTMLSelectElement).value,
-            optionsList,
-          );
-          updatePathValue(ctx, path, nextValue, schema, true);
-        }}
-      >
-        ${optionsList.map(
-          (option) => html` <option value=${String(option)}>${String(option)}</option> `,
-        )}
-      </select>
-    `;
-
-    if (inlineSimpleValue) {
-      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
-    }
-
-    return html`
-      <section class="lipstick-leaf">
-        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-      </section>
-    `;
-  }
-
-  if (acceptsType(schema, "boolean")) {
+  if (control.isBoolean) {
     return html`
       <section class="lipstick-leaf lipstick-toggle">
         <header>
-          ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)}
+          ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(ctx, schema, path)}
         </header>
-        <label class="lipstick-switch" for=${inputId}>
-            <input
-              id=${inputId}
-              type="checkbox"
-              .disabled=${disabled}
-              .checked=${value === true}
-              @change=${(event: Event) =>
-                updatePathValue(
-                  ctx,
-                  path,
-                  (event.target as HTMLInputElement).checked,
-                  schema,
-                  true,
-                )}
-            />
-            <span class="lipstick-switch-track" aria-hidden="true">
-              <span class="lipstick-switch-thumb"></span>
-            </span>
-        </label>
+        ${control.control}
       </section>
     `;
-  }
-
-  if (acceptsType(schema, "integer") || acceptsType(schema, "number")) {
-    const numericValue =
-      typeof value === "number" ? value : typeof schema.minimum === "number" ? schema.minimum : 0;
-    const step = getNumericInputStep(schema);
-    const formattedValue = formatNumericValue(numericValue, step);
-
-    if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
-      const control = html`
-        <div class="lipstick-range">
-          <div class="lipstick-range-controls">
-            <div class="lipstick-range-main">
-              <input
-                id=${inputId}
-                type="range"
-                .disabled=${disabled}
-                .min=${String(schema.minimum)}
-                .max=${String(schema.maximum)}
-                .step=${String(step)}
-                .value=${String(numericValue)}
-                @input=${(event: Event) =>
-                  updatePathValue(
-                    ctx,
-                    path,
-                    parseNumericInputValue(event.target as HTMLInputElement),
-                    schema,
-                    false,
-                  )}
-                @change=${(event: Event) =>
-                  updatePathValue(
-                    ctx,
-                    path,
-                    parseNumericInputValue(event.target as HTMLInputElement),
-                    schema,
-                    true,
-                  )}
-              />
-              <div class="lipstick-range-meta">
-                <span>${schema.minimum}</span>
-                <span>${schema.maximum}</span>
-              </div>
-            </div>
-            <input
-              id=${`${inputId}-manual`}
-              class="lipstick-range-number"
-              type="number"
-              .disabled=${disabled}
-              .min=${String(schema.minimum)}
-              .max=${String(schema.maximum)}
-              .step=${String(step)}
-              .value=${formattedValue}
-              @input=${(event: Event) =>
-                updatePathValue(
-                  ctx,
-                  path,
-                  parseNumericInputValue(event.target as HTMLInputElement),
-                  schema,
-                  false,
-                )}
-              @change=${(event: Event) =>
-                updatePathValue(
-                  ctx,
-                  path,
-                  parseNumericInputValue(event.target as HTMLInputElement),
-                  schema,
-                  true,
-                )}
-            />
-          </div>
-        </div>
-      `;
-
-      if (inlineSimpleValue) {
-        return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
-      }
-
-      return html`
-        <section class="lipstick-leaf">
-          ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-        </section>
-      `;
-    }
-
-    const control = html`
-      <input
-        id=${inputId}
-        type="number"
-        .disabled=${disabled}
-        .step=${String(step)}
-        .value=${typeof value === "number" ? formattedValue : ""}
-        @input=${(event: Event) =>
-          updatePathValue(
-            ctx,
-            path,
-            parseNumericInputValue(event.target as HTMLInputElement),
-            schema,
-            false,
-          )}
-        @change=${(event: Event) =>
-          updatePathValue(
-            ctx,
-            path,
-            parseNumericInputValue(event.target as HTMLInputElement),
-            schema,
-            true,
-          )}
-      />
-    `;
-
-    if (inlineSimpleValue) {
-      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
-    }
-
-    return html`
-      <section class="lipstick-leaf">
-        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-      </section>
-    `;
-  }
-
-  if (acceptsType(schema, "null")) {
-    const control = html`<code id=${inputId} class="lipstick-null-value">null</code>`;
-
-    if (inlineSimpleValue) {
-      return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control, true);
-    }
-
-    return html`
-      <section class="lipstick-leaf">
-        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
-      </section>
-    `;
-  }
-
-  const multiline =
-    schema.format === "textarea" ||
-    (typeof schema.maxLength === "number" && schema.maxLength > 200);
-  const inputType = getStringInputType(schema);
-  const currentValue = typeof value === "string" ? value : "";
-  const control = multiline
-    ? html`
-        <textarea
-          id=${inputId}
-          placeholder="Enter a value"
-          .disabled=${disabled}
-          .value=${currentValue}
-          @input=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, false)}
-          @change=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, true)}
-        ></textarea>
-      `
-    : html`
-        <input
-          id=${inputId}
-          type=${inputType}
-          placeholder="Enter a value"
-          .disabled=${disabled}
-          .value=${currentValue}
-          @input=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, false)}
-          @change=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLInputElement).value, schema, true)}
-        />
-      `;
-
-  if (inlineSimpleValue && !multiline) {
-    return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, control);
   }
 
   return html`
     <section class="lipstick-leaf">
-      ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(schema)} ${control}
+      ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(ctx, schema, path)}
+      ${control.control}
     </section>
   `;
 }
@@ -1056,9 +951,7 @@ function renderFieldsetHeader(
   }
 
   if (!options.present && options.onAdd) {
-    return html`
-      <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend>
-    `;
+    return html` <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend> `;
   }
 
   return html`
@@ -1074,9 +967,7 @@ function renderFieldsetHeader(
               aria-label=${collapsed ? `Expand ${text}` : `Collapse ${text}`}
             >
               <span>${text}</span>
-              <span aria-hidden="true">
-                ${collapsed ? "+" : "−"}
-              </span>
+              <span aria-hidden="true"> ${collapsed ? "+" : "−"} </span>
             </button>
           `}
       ${options.onRemove ? renderRemoveButton(ctx, options.onRemove, options.removeLabel) : nothing}
@@ -1118,9 +1009,7 @@ function renderLeafHeader(
         aria-label=${collapsed ? `Expand ${label}` : `Collapse ${label}`}
       >
         <span>${label}</span>
-        <span aria-hidden="true">
-          ${collapsed ? "+" : "−"}
-        </span>
+        <span aria-hidden="true"> ${collapsed ? "+" : "−"} </span>
       </button>
       ${options.present && options.onRemove
         ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
@@ -1129,9 +1018,14 @@ function renderLeafHeader(
   `;
 }
 
-function renderDescription(schema: JsonSchema202012): TemplateResult | typeof nothing {
+function renderDescription(
+  schema: JsonSchema202012,
+  path: JsonPointerPath,
+): TemplateResult | typeof nothing {
   return schema.description
-    ? html`<p class="lipstick-description">${schema.description}</p>`
+    ? html`<p id=${getFieldDescriptionId(path)} class="lipstick-description">
+        ${schema.description}
+      </p>`
     : nothing;
 }
 
@@ -1140,8 +1034,81 @@ function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof not
   return refError ? html`<p class="lipstick-note">${refError}</p>` : nothing;
 }
 
-function renderLeafBody(schema: JsonSchema202012): TemplateResult | typeof nothing {
-  return html`${renderDescription(schema)}${renderRefWarning(schema)}`;
+function renderValidationMessages(
+  ctx: JsonSchemaFormContext,
+  path: JsonPointerPath,
+  schema?: JsonSchema202012,
+  value?: JsonValue | undefined,
+): TemplateResult | typeof nothing {
+  const messages = getFieldMessages(ctx, path, schema, value);
+  if (messages.length === 0) {
+    return nothing;
+  }
+
+  return html`
+    <p id=${getFieldErrorId(path)} class="lipstick-note lipstick-note--validation" role="alert">
+      ${messages.join(" ")}
+    </p>
+  `;
+}
+
+function getFieldMessages(
+  ctx: JsonSchemaFormContext,
+  path: JsonPointerPath,
+  schema?: JsonSchema202012,
+  value?: JsonValue | undefined,
+): string[] {
+  if (schema) {
+    const resolved = resolveSchema(schema, ctx.rootSchema, value);
+    const branches = resolved.oneOf ?? resolved.anyOf;
+
+    if (branches?.length) {
+      const key = pathToKey(path);
+      const selectedIndex =
+        ctx.branchSelections.get(key) ??
+        describeUnion(resolved, value, ctx.rootSchema)?.selectedIndex ??
+        0;
+      const boundedIndex = Math.max(0, Math.min(selectedIndex, branches.length - 1));
+      const selectedBranch = resolveSchema(branches[boundedIndex], ctx.rootSchema, value);
+      return getFieldMessagesForSchema(selectedBranch, value).get("#") ?? [];
+    }
+  }
+
+  return ctx.validation.fieldMessages.get(pathToKey(path)) ?? [];
+}
+
+function getControlDescribedBy(
+  schema: JsonSchema202012,
+  path: JsonPointerPath,
+  hasErrors: boolean,
+): string | undefined {
+  const ids: string[] = [];
+  if (schema.description) {
+    ids.push(getFieldDescriptionId(path));
+  }
+  if (hasErrors) {
+    ids.push(getFieldErrorId(path));
+  }
+  return ids.length > 0 ? ids.join(" ") : undefined;
+}
+
+function getFieldDescriptionId(path: JsonPointerPath): string {
+  return `${createInputId(path)}-description`;
+}
+
+function getFieldErrorId(path: JsonPointerPath): string {
+  return `${createInputId(path)}-error`;
+}
+
+function renderLeafBody(
+  ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
+  path: JsonPointerPath,
+): TemplateResult | typeof nothing {
+  return html`
+    ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+    ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
+  `;
 }
 
 function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
@@ -1255,6 +1222,7 @@ function renderInlineSimpleField(
   control: TemplateResult,
   useSpanLabel = false,
   afterControl: TemplateResult | typeof nothing = nothing,
+  path: JsonPointerPath = [],
 ): TemplateResult {
   const hasLabel = Boolean(label.trim());
 
@@ -1270,13 +1238,12 @@ function renderInlineSimpleField(
             ? html`<span>${label}</span>`
             : html`<label for=${inputId}> ${label} </label>`
           : nothing}
-        ${control}
-        ${afterControl}
+        ${control} ${afterControl}
         ${options.present && options.onRemove
           ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
           : nothing}
       </div>
-      ${renderLeafBody(schema)}
+      ${renderLeafBody(ctx, schema, path)}
     </section>
   `;
 }

@@ -179,6 +179,11 @@ function createContext(
     branchSelections: new Map<string, number>(),
     additionalPropertyDrafts: new Map<string, string>(),
     collapsedSections: new Set<string>(),
+    validation: {
+      valid: true,
+      issues: [],
+      fieldMessages: new Map<string, string[]>(),
+    },
     rootSchema,
     formDisabled: false,
     dispatchEvent(event: Event) {

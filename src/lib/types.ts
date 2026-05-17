@@ -8,6 +8,7 @@ export type JsonValue =
 export type JsonPointerPath = Array<string | number>
 
 export interface JsonSchema202012 {
+  $schema?: string
   $id?: string
   $ref?: string
   $defs?: Record<string, JsonSchema202012>

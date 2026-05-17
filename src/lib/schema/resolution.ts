@@ -1,8 +1,7 @@
 import type { JsonPointerPath, JsonSchema202012, JsonValue } from '../types.js'
+import { Check } from 'typebox/value'
 import { isJsonObject } from '../value.js'
 import {
-  getJsonValueType,
-  matchesType,
   mergeSchemas,
   resolveLocalRefs,
   isSchemaObject,
@@ -85,53 +84,7 @@ export function matchesSchema(
   root: JsonSchema202012,
 ): boolean {
   const resolved = resolveLocalRefs(schema, root, new Set(), resolveSchema)
-
-  if (resolved.const !== undefined) {
-    return value === resolved.const
-  }
-
-  if (resolved.enum?.length) {
-    return resolved.enum.includes(value as never)
-  }
-
-  if (resolved.allOf?.length) {
-    return resolved.allOf.every((branch) => matchesSchema(value, branch, root))
-  }
-
-  if (resolved.oneOf?.length) {
-    return (
-      resolved.oneOf.filter((branch) => matchesSchema(value, branch, root))
-        .length === 1
-    )
-  }
-
-  if (resolved.anyOf?.length) {
-    return resolved.anyOf.some((branch) => matchesSchema(value, branch, root))
-  }
-
-  if (resolved.type && !matchesType(value, resolved.type, getJsonValueType)) {
-    return false
-  }
-
-  if (resolved.properties || resolved.required) {
-    if (!isJsonObject(value)) {
-      return false
-    }
-
-    for (const key of resolved.required ?? []) {
-      if (!(key in value)) {
-        return false
-      }
-    }
-
-    for (const [key, child] of Object.entries(resolved.properties ?? {})) {
-      if (key in value && !matchesSchema(value[key], child, root)) {
-        return false
-      }
-    }
-  }
-
-  return true
+  return Check(resolved, value)
 }
 
 export function getArrayItemSchema(

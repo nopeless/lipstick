@@ -5,6 +5,11 @@ if (!customElements.get("lip-stick")) {
 }
 
 export { JsonSchemaFormElement } from "./json-schema-form.js";
+export {
+  DRAFT_2020_12_SCHEMA_URI,
+  getSchemaDialectError,
+  validateValueAgainstSchema,
+} from "./lib/validation.js";
 export type {
   JsonPointerPath,
   JsonPrimitive,
@@ -12,3 +17,4 @@ export type {
   JsonSchemaFormEventDetail,
   JsonValue,
 } from "./lib/types.js";
+export type { ValidationIssue, ValidationSnapshot } from "./lib/validation.js";

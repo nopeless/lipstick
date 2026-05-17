@@ -13,7 +13,16 @@ import {
   resolveSchema,
   sanitizeValueForSchema,
 } from '../src/lib/schema.js'
-import { getStringInputType } from '../src/lib/input.js'
+import {
+  DRAFT_2020_12_SCHEMA_URI,
+  getSchemaDialectError,
+  validateValueAgainstSchema,
+} from '../src/lib/validation.js'
+import {
+  formatDateTimeForInput,
+  getStringInputType,
+  normalizeDateTimeFromInput,
+} from '../src/lib/input.js'
 import type { JsonSchema202012 } from '../src/lib/types.js'
 
 test('resolves refs and required properties', () => {
@@ -73,6 +82,17 @@ test('maps string formats to input types', () => {
   assert.equal(getStringInputType({ type: 'string', format: 'color' }), 'color')
 })
 
+test('normalizes datetime-local values into RFC3339 date-time strings', () => {
+  const localInput = '2026-05-17T09:30'
+  const normalized = normalizeDateTimeFromInput(localInput)
+  const dateTimeSchema: JsonSchema202012 = { type: 'string', format: 'date-time' }
+
+  assert.match(normalized, /^2026-05-17T09:30:00[+-]\d{2}:\d{2}$/)
+  assert.equal(validateValueAgainstSchema(dateTimeSchema, normalized).valid, true)
+  assert.equal(formatDateTimeForInput(localInput), localInput)
+  assert.match(formatDateTimeForInput('2026-05-17T14:30:00Z'), /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)
+})
+
 test('detects union presentation and discriminators', () => {
   const schema: JsonSchema202012 = {
     oneOf: [
@@ -118,4 +138,42 @@ test('handles array item schemas and path encoding', () => {
   assert.equal(getArrayItemSchema(schema, 0)?.type, 'string')
   assert.deepEqual(getArrayItemSchema(schema, 1), {})
   assert.equal(pathToKey(['items', 1, 'name']), '#/items/1/name')
+})
+
+test('validates values with TypeBox and maps field errors', () => {
+  const schema: JsonSchema202012 = {
+    $schema: DRAFT_2020_12_SCHEMA_URI,
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: { type: 'string', minLength: 1 },
+      age: { type: 'integer', minimum: 0 },
+    },
+  }
+
+  const missingName = validateValueAgainstSchema(schema, { age: 3 })
+  assert.equal(missingName.valid, false)
+  assert.ok((missingName.fieldMessages.get('#/name') ?? []).length > 0)
+
+  const invalidName = validateValueAgainstSchema(schema, { name: '', age: 3 })
+  assert.equal(invalidName.valid, false)
+  assert.ok(
+    (invalidName.fieldMessages.get('#/name') ?? []).some((message) =>
+      message.includes('fewer than 1'),
+    ),
+  )
+})
+
+test('accepts only draft 2020-12 dialect declarations', () => {
+  const supportedSchema: JsonSchema202012 = {
+    $schema: DRAFT_2020_12_SCHEMA_URI,
+    type: 'string',
+  }
+  const unsupportedSchema: JsonSchema202012 = {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    type: 'string',
+  }
+
+  assert.equal(getSchemaDialectError(supportedSchema), undefined)
+  assert.ok(getSchemaDialectError(unsupportedSchema)?.includes('2020-12'))
 })

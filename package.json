@@ -24,7 +24,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "lit": "^3.3.2"
+    "lit": "^3.3.2",
+    "typebox": "^1.1.38"
   },
   "devDependencies": {
     "typescript": "~6.0.2",
