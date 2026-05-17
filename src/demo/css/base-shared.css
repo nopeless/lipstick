@@ -1,6 +1,7 @@
 lip-stick {
   display: block;
 
+  /* Base reset for form-ish content inside the component. */
   & :where(fieldset, section, article, p) {
     margin: 0;
   }
@@ -19,106 +20,72 @@ lip-stick {
     resize: vertical;
   }
 
-  & :where(fieldset > legend, section > header) {
+  /* Section and fieldset headers share the same layout. */
+  & :where(section > header, fieldset > legend) {
     display: flex;
     align-items: center;
   }
 
-  & :where(fieldset, section)[data-collapsed="true"] > [data-lipstick-body] {
+  & :where(section, fieldset)[data-collapsed="true"] > [data-lipstick-body] {
     display: none;
   }
 
-  & :where(fieldset > legend, section > header)>.lipstick-remove {
+  & :where(section > header, fieldset > legend) > .lipstick-remove {
     margin-inline-start: auto;
   }
 
+  /* Shared inline row layout for simple items and composer rows. */
   & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer]
-    ) {
+    [data-lipstick-inline-row] > [data-lipstick-inline-content],
+    [data-lipstick-array-item="simple"],
+    [data-lipstick-composer]
+  ) {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr) auto;
     align-items: center;
-  }
 
-  & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer]
-    )
     > :where([data-lipstick-properties], [data-lipstick-controls]) {
-    min-width: 0;
-    align-self: center;
-  }
+      min-width: 0;
+      align-self: center;
+    }
 
-  & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer]
-    )
     > :not([data-lipstick-properties], [data-lipstick-controls], p) {
-    min-width: 0;
-    align-self: center;
-    grid-column: 2;
-  }
+      min-width: 0;
+      align-self: center;
+      grid-column: 2;
+    }
 
-  & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer]
-    )
     > :where(input, select, textarea, output, code, .lipstick-range-controls, .lipstick-switch) {
-    align-self: center;
+      align-self: center;
+    }
+
+    > [data-lipstick-controls] {
+      grid-column: 3;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+
+      > * {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down) {
+        align-self: stretch;
+      }
+    }
+
+    > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down) {
+      align-self: stretch;
+    }
   }
 
-  & [data-lipstick-inline-row]>[data-lipstick-properties] {
+  & [data-lipstick-inline-row] > [data-lipstick-properties] {
     grid-column: 1;
   }
 
-  & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer]
-    )
-    > [data-lipstick-controls] {
-    grid-column: 3;
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer]
-    )
-    > [data-lipstick-controls]
-    > * {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer],
-      fieldset > legend,
-      section > header
-    )
-    > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down),
-  & :where(
-      [data-lipstick-inline-row] > [data-lipstick-inline-content],
-      [data-lipstick-array-item="simple"],
-      [data-lipstick-composer]
-    )
-    [data-lipstick-controls]
-    > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down) {
-    align-self: stretch;
-  }
-
-  & section[data-lipstick-inline-row]>p {
+  & section[data-lipstick-inline-row] > p {
     grid-column: 1 / -1;
   }
 
@@ -128,8 +95,8 @@ lip-stick {
     align-items: center;
   }
 
-  & label.lipstick-switch>.lipstick-switch-track,
-  & label.lipstick-switch>.lipstick-switch-track>.lipstick-switch-thumb {
+  & label.lipstick-switch > .lipstick-switch-track,
+  & label.lipstick-switch > .lipstick-switch-track > .lipstick-switch-thumb {
     display: none;
   }
 
@@ -144,7 +111,7 @@ lip-stick {
     min-width: 0;
   }
 
-  & .lipstick-range-main>input[type="range"] {
+  & .lipstick-range-main > input[type="range"] {
     display: block;
     inline-size: 100%;
     margin: 0;
@@ -155,20 +122,20 @@ lip-stick {
     inset-inline: 0;
     inset-block-start: 50%;
     pointer-events: none;
-  }
 
-  & .lipstick-range-meta>:first-child,
-  & .lipstick-range-meta>:last-child {
-    position: absolute;
-    inset-block-start: 0;
-  }
+    > :first-child,
+    > :last-child {
+      position: absolute;
+      inset-block-start: 0;
+    }
 
-  & .lipstick-range-meta>:first-child {
-    inset-inline-start: 0;
-  }
+    > :first-child {
+      inset-inline-start: 0;
+    }
 
-  & .lipstick-range-meta>:last-child {
-    inset-inline-end: 0;
+    > :last-child {
+      inset-inline-end: 0;
+    }
   }
 
   & button.lipstick-add {
