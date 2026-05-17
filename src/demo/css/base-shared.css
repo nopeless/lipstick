@@ -10,6 +10,11 @@ lip-stick {
     width: 100%;
   }
 
+  /* Keep native sizing for boolean controls. */
+  & :where(input[type="checkbox"], input[type="radio"]) {
+    width: auto;
+  }
+
   & textarea {
     resize: vertical;
   }
@@ -29,17 +34,23 @@ lip-stick {
     align-items: center;
   }
 
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])> :where([data-lipstick-properties], [data-lipstick-input], [data-lipstick-controls]) {
+  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])> :where([data-lipstick-properties], [data-lipstick-controls]) {
     min-width: 0;
+    align-self: center;
+  }
+
+  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])>:not([data-lipstick-properties], [data-lipstick-controls], p) {
+    min-width: 0;
+    align-self: center;
+    grid-column: 2;
+  }
+
+  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])> :where(input, select, textarea, output, code, .lipstick-range-controls, .lipstick-switch) {
     align-self: center;
   }
 
   & [data-lipstick-inline-row]>[data-lipstick-properties] {
     grid-column: 1;
-  }
-
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])>[data-lipstick-input] {
-    grid-column: 2;
   }
 
   & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])>[data-lipstick-controls] {
@@ -53,6 +64,10 @@ lip-stick {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  & section[data-lipstick-inline-row]>p {
+    grid-column: 1 / -1;
   }
 
   & [role="radiogroup"] {

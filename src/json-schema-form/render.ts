@@ -152,7 +152,7 @@ function renderUnionField(
             ${renderDescription(schema, path)} ${renderRefWarning(schema)}
             ${renderValidationMessages(ctx, path, schema, value)}
             ${renderUnionSelector(ctx, schema, union, changeBranch)}
-            <div>${renderUnionBranch(ctx, branchSchema, value, path, union)}</div>
+            ${renderUnionBranch(ctx, branchSchema, value, path, union)}
           `}
     </fieldset>
   `;
@@ -326,52 +326,16 @@ function renderScalarControl(
     if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
       return {
         control: html`
-          <div class="lipstick-range">
-            <div class="lipstick-range-controls">
-              <div class="lipstick-range-main">
-                <input
-                  id=${options.inputId}
-                  type="range"
-                  .disabled=${options.disabled}
-                  .min=${String(schema.minimum)}
-                  .max=${String(schema.maximum)}
-                  .step=${String(step)}
-                  .value=${String(numericValue)}
-                  aria-invalid=${options.invalid ? "true" : "false"}
-                  aria-describedby=${ifDefined(options.describedBy)}
-                  aria-errormessage=${ifDefined(ariaErrorMessage)}
-                  @input=${(event: Event) =>
-                    updatePathValue(
-                      ctx,
-                      path,
-                      parseNumericInputValue(event.target as HTMLInputElement),
-                      schema,
-                      false,
-                    )}
-                  @change=${(event: Event) =>
-                    updatePathValue(
-                      ctx,
-                      path,
-                      parseNumericInputValue(event.target as HTMLInputElement),
-                      schema,
-                      true,
-                    )}
-                />
-                <div class="lipstick-range-meta">
-                  <span>${schema.minimum}</span>
-                  <span>${schema.maximum}</span>
-                </div>
-              </div>
+          <div class="lipstick-range-controls">
+            <div class="lipstick-range-main">
               <input
-                id=${`${options.inputId}-manual`}
-                class="lipstick-range-number"
-                type="number"
+                id=${options.inputId}
+                type="range"
                 .disabled=${options.disabled}
                 .min=${String(schema.minimum)}
                 .max=${String(schema.maximum)}
                 .step=${String(step)}
-                .value=${formattedValue}
-                ?required=${options.required}
+                .value=${String(numericValue)}
                 aria-invalid=${options.invalid ? "true" : "false"}
                 aria-describedby=${ifDefined(options.describedBy)}
                 aria-errormessage=${ifDefined(ariaErrorMessage)}
@@ -392,7 +356,41 @@ function renderScalarControl(
                     true,
                   )}
               />
+              <div class="lipstick-range-meta">
+                <span>${schema.minimum}</span>
+                <span>${schema.maximum}</span>
+              </div>
             </div>
+            <input
+              id=${`${options.inputId}-manual`}
+              class="lipstick-range-number"
+              type="number"
+              .disabled=${options.disabled}
+              .min=${String(schema.minimum)}
+              .max=${String(schema.maximum)}
+              .step=${String(step)}
+              .value=${formattedValue}
+              ?required=${options.required}
+              aria-invalid=${options.invalid ? "true" : "false"}
+              aria-describedby=${ifDefined(options.describedBy)}
+              aria-errormessage=${ifDefined(ariaErrorMessage)}
+              @input=${(event: Event) =>
+                updatePathValue(
+                  ctx,
+                  path,
+                  parseNumericInputValue(event.target as HTMLInputElement),
+                  schema,
+                  false,
+                )}
+              @change=${(event: Event) =>
+                updatePathValue(
+                  ctx,
+                  path,
+                  parseNumericInputValue(event.target as HTMLInputElement),
+                  schema,
+                  true,
+                )}
+            />
           </div>
         `,
         useSpanLabel: false,
@@ -628,7 +626,7 @@ function renderObjectField(
   const framed = options.framed ?? true;
 
   if (!framed) {
-    return html`<section>${body}</section>`;
+    return body;
   }
 
   const collapsed = isCollapsed(ctx, path);
@@ -656,38 +654,30 @@ function renderObjectBody(
   additionalKeys: string[],
 ): TemplateResult {
   return html`
-    <div>
-      ${propertyEntries.map(([key, childSchema]) => {
-        const required = requiredSet.has(key);
-        const present = required || key in objectValue;
+    ${propertyEntries.map(([key, childSchema]) => {
+      const required = requiredSet.has(key);
+      const present = required || key in objectValue;
 
-        return renderObjectProperty(ctx, childSchema, objectValue[key], [...path, key], {
-          label: childSchema.title ?? humanizeLabel(key),
-          required,
-          present,
-          framed: true,
-          collapsible: canCollapseSchema(ctx, childSchema),
-          onAdd: required ? undefined : () => addKnownProperty(ctx, path, key, childSchema),
-          onRemove: required ? undefined : () => removeProperty(ctx, [...path, key]),
-        });
-      })}
-      ${additionalKeys.map((key) =>
-        renderObjectProperty(
-          ctx,
-          getAdditionalPropertySchema(schema),
-          objectValue[key],
-          [...path, key],
-          {
-            label: humanizeLabel(key),
-            required: false,
-            present: true,
-            framed: true,
-            collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
-            onRemove: () => removeProperty(ctx, [...path, key]),
-          },
-        ),
-      )}
-    </div>
+      return renderObjectProperty(ctx, childSchema, objectValue[key], [...path, key], {
+        label: childSchema.title ?? humanizeLabel(key),
+        required,
+        present,
+        framed: true,
+        collapsible: canCollapseSchema(ctx, childSchema),
+        onAdd: required ? undefined : () => addKnownProperty(ctx, path, key, childSchema),
+        onRemove: required ? undefined : () => removeProperty(ctx, [...path, key]),
+      });
+    })}
+    ${additionalKeys.map((key) =>
+      renderObjectProperty(ctx, getAdditionalPropertySchema(schema), objectValue[key], [...path, key], {
+        label: humanizeLabel(key),
+        required: false,
+        present: true,
+        framed: true,
+        collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
+        onRemove: () => removeProperty(ctx, [...path, key]),
+      }),
+    )}
     ${schema.additionalProperties !== false
       ? renderAdditionalPropertyComposer(ctx, schema, path)
       : nothing}
@@ -719,30 +709,7 @@ function renderAdditionalPropertyComposer(
 
   return html`
     <div data-lipstick-composer>
-      <div data-lipstick-input>
-        <input
-          type="text"
-          placeholder="add new property"
-          .disabled=${ctx.formDisabled || !canAdd}
-          .value=${draft}
-          @input=${(event: Event) => {
-            const nextValue = (event.target as HTMLInputElement).value;
-            ctx.additionalPropertyDrafts = new Map(ctx.additionalPropertyDrafts).set(
-              pathKey,
-              nextValue,
-            );
-          }}
-          @keydown=${(event: KeyboardEvent) => {
-            if (event.key !== "Enter") {
-              return;
-            }
-
-            event.preventDefault();
-            addAdditionalProperty(ctx, path, draft.trim(), schema);
-          }}
-        />
-      </div>
-      <nav aria-label="Property controls" data-lipstick-controls>
+      <div data-lipstick-properties>
         <button
           type="button"
           class="lipstick-add"
@@ -752,7 +719,28 @@ function renderAdditionalPropertyComposer(
         >
           <span aria-hidden="true">+</span>
         </button>
-      </nav>
+      </div>
+      <input
+        type="text"
+        placeholder="add new property"
+        .disabled=${ctx.formDisabled || !canAdd}
+        .value=${draft}
+        @input=${(event: Event) => {
+          const nextValue = (event.target as HTMLInputElement).value;
+          ctx.additionalPropertyDrafts = new Map(ctx.additionalPropertyDrafts).set(
+            pathKey,
+            nextValue,
+          );
+        }}
+        @keydown=${(event: KeyboardEvent) => {
+          if (event.key !== "Enter") {
+            return;
+          }
+
+          event.preventDefault();
+          addAdditionalProperty(ctx, path, draft.trim(), schema);
+        }}
+      />
     </div>
   `;
 }
@@ -774,7 +762,7 @@ function renderArrayField(
   const framed = options.framed ?? true;
 
   if (!framed) {
-    return html`<section>${body}</section>`;
+    return body;
   }
 
   const collapsed = isCollapsed(ctx, path);
@@ -841,16 +829,14 @@ function renderArrayItem(
   if (isSimpleItem) {
     return html`
       <article data-lipstick-array-item="simple">
-        <div data-lipstick-input>
-          ${renderNode(ctx, itemSchema, item, itemPath, {
-            label: simpleItemLabel ?? "",
-            required: index < (schema.minItems ?? 0),
-            present: true,
-            framed: false,
-            collapsible: false,
-            onRemove: undefined,
-          })}
-        </div>
+        ${renderNode(ctx, itemSchema, item, itemPath, {
+          label: simpleItemLabel ?? "",
+          required: index < (schema.minItems ?? 0),
+          present: true,
+          framed: false,
+          collapsible: false,
+          onRemove: undefined,
+        })}
         <nav aria-label="Array item actions" data-lipstick-controls>
           ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
           ${renderArrayItemRemoveAction(ctx, itemPath, canRemove)}
@@ -926,12 +912,17 @@ function renderScalarField(
   }
 
   if (control.isBoolean) {
-    return html`
-      <section data-lipstick-field data-lipstick-toggle>
-        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(ctx, schema, path)}
-        ${control.control}
-      </section>
-    `;
+    return renderInlineSimpleField(
+      ctx,
+      fieldLabel,
+      options,
+      inputId,
+      schema,
+      control.control,
+      control.useSpanLabel,
+      nothing,
+      path,
+    );
   }
 
   return html`
@@ -1234,18 +1225,16 @@ function renderInlineSimpleField(
   `;
 
   return html`
-    <section data-lipstick-field data-lipstick-inline>
-      <div data-lipstick-inline-row>
-        ${hasLabel
-          ? useSpanLabel
-            ? html`<div data-lipstick-properties><span>${label}</span></div>`
-            : html`<div data-lipstick-properties><label for=${inputId}>${label}</label></div>`
-          : nothing}
-        <div data-lipstick-input>${control}</div>
-        ${afterControl !== nothing || (options.present && options.onRemove)
-          ? html`<nav aria-label="Field controls" data-lipstick-controls>${controls}</nav>`
-          : nothing}
-      </div>
+    <section data-lipstick-field data-lipstick-inline data-lipstick-inline-row>
+      ${hasLabel
+        ? useSpanLabel
+          ? html`<div data-lipstick-properties><span>${label}</span></div>`
+          : html`<div data-lipstick-properties><label for=${inputId}>${label}</label></div>`
+        : nothing}
+      ${control}
+      ${afterControl !== nothing || (options.present && options.onRemove)
+        ? html`<nav aria-label="Field controls" data-lipstick-controls>${controls}</nav>`
+        : nothing}
       ${renderLeafBody(ctx, schema, path)}
     </section>
   `;
