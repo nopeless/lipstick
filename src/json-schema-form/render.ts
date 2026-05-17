@@ -120,7 +120,7 @@ function renderCollapsedOptionalField(
   const collapsedOptions = { ...options, collapsible: false };
 
   return html`
-    <section class="lipstick-leaf lipstick-leaf--collapsed">
+    <section data-lipstick-field="collapsed">
       ${renderLeafHeader(ctx, label, collapsedOptions, path)}
     </section>
   `;
@@ -718,7 +718,7 @@ function renderAdditionalPropertyComposer(
   }
 
   return html`
-    <div class="lipstick-additional-composer">
+    <div data-lipstick-composer>
       <button
         type="button"
         class="lipstick-add"
@@ -798,7 +798,9 @@ function renderArrayBody(
   canAdd: boolean,
 ): TemplateResult {
   return html`
-    <div>${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}</div>
+    <div data-lipstick-array-items>
+      ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
+    </div>
     ${canAdd
       ? html`
           <button
@@ -834,7 +836,7 @@ function renderArrayItem(
 
   if (isSimpleItem) {
     return html`
-      <div class="lipstick-array-row lipstick-array-row--simple">
+      <article data-lipstick-array-item="simple">
         <div>
           ${renderNode(ctx, itemSchema, item, itemPath, {
             label: simpleItemLabel ?? "",
@@ -845,16 +847,16 @@ function renderArrayItem(
             onRemove: undefined,
           })}
         </div>
-        <div class="lipstick-array-actions lipstick-array-actions--side">
+        <nav aria-label="Array item actions">
           ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
           ${renderArrayItemRemoveAction(ctx, itemPath, canRemove)}
-        </div>
-      </div>
+        </nav>
+      </article>
     `;
   }
 
   return html`
-    <div class="lipstick-array-row lipstick-array-row--object">
+    <article data-lipstick-array-item="object">
       ${renderNode(ctx, itemSchema, item, itemPath, {
         label: objectItemLabel,
         required: index < (schema.minItems ?? 0),
@@ -871,7 +873,7 @@ function renderArrayItem(
         removeLabel: "Delete array item",
         onRemove: canRemove ? () => removeArrayItem(ctx, itemPath) : undefined,
       })}
-    </div>
+    </article>
   `;
 }
 
@@ -921,17 +923,15 @@ function renderScalarField(
 
   if (control.isBoolean) {
     return html`
-      <section class="lipstick-leaf lipstick-toggle">
-        <header>
-          ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(ctx, schema, path)}
-        </header>
+      <section data-lipstick-field data-lipstick-toggle>
+        ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(ctx, schema, path)}
         ${control.control}
       </section>
     `;
   }
 
   return html`
-    <section class="lipstick-leaf">
+    <section data-lipstick-field>
       ${renderLeafHeader(ctx, fieldLabel, options, path)} ${renderLeafBody(ctx, schema, path)}
       ${control.control}
     </section>
@@ -1022,11 +1022,7 @@ function renderDescription(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  return schema.description
-    ? html`<p id=${getFieldDescriptionId(path)} class="lipstick-description">
-        ${schema.description}
-      </p>`
-    : nothing;
+  return schema.description ? html`<p id=${getFieldDescriptionId(path)}>${schema.description}</p>` : nothing;
 }
 
 function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof nothing {
@@ -1177,6 +1173,7 @@ function renderOptionalAddTrigger(
     <button
       type="button"
       class="lipstick-add"
+      data-lipstick-add-trigger
       ?disabled=${ctx.formDisabled}
       @click=${(event: Event) => {
         event.preventDefault();
@@ -1227,12 +1224,8 @@ function renderInlineSimpleField(
   const hasLabel = Boolean(label.trim());
 
   return html`
-    <section class="lipstick-leaf lipstick-leaf--inline">
-      <div
-        class=${hasLabel
-          ? "lipstick-inline-value-row"
-          : "lipstick-inline-value-row lipstick-inline-value-row--no-label"}
-      >
+    <section data-lipstick-field data-lipstick-inline>
+      <div data-lipstick-inline-row ?data-lipstick-no-label=${!hasLabel}>
         ${hasLabel
           ? useSpanLabel
             ? html`<span>${label}</span>`
