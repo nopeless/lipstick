@@ -1,9 +1,14 @@
 lip-stick {
   display: block;
+  color: inherit;
 
   /* Base reset for form-ish content inside the component. */
   & :where(fieldset, section, article, p) {
     margin: 0;
+  }
+
+  & fieldset {
+    padding: 0.6rem 0.75rem 0.75rem;
   }
 
   & :where(input, select, textarea) {
@@ -26,66 +31,45 @@ lip-stick {
     align-items: center;
   }
 
-  & :where(section, fieldset)[data-collapsed] > [data-lipstick-body] {
+  & fieldset>legend {
+    padding: 0;
+  }
+
+  & :where(section > header, fieldset > legend)>button {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  & :where(section, fieldset)[data-collapsed]>div {
     display: none;
   }
 
-  & :where(section > header, fieldset > legend) > .lipstick-remove {
-    margin-inline-start: auto;
-  }
-
   /* Shared inline row layout for simple items and composer rows. */
-  & :where(
-    [data-lipstick-inline-row] > [data-lipstick-inline-content],
-    [data-lipstick-array-item="simple"],
-    [data-lipstick-composer]
-  ) {
+  & :where(section[data-lipstick-inline] > div, [data-lipstick-simple-array-item], [data-lipstick-composer]) {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr) auto;
-    align-items: center;
+    align-items: stretch;
 
-    > :where([data-lipstick-properties], [data-lipstick-controls]) {
+    >* {
       min-width: 0;
       align-self: center;
-    }
-
-    > :not([data-lipstick-properties], [data-lipstick-controls], p) {
-      min-width: 0;
-      align-self: center;
-      grid-column: 2;
     }
 
     > :where(input, select, textarea, output, code, .lipstick-range-controls, .lipstick-switch) {
-      align-self: center;
+      grid-column: 2;
     }
 
-    > [data-lipstick-controls] {
+    >.lipstick-actions {
       grid-column: 3;
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-
-      > * {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down) {
-        align-self: stretch;
-      }
-    }
-
-    > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down) {
-      align-self: stretch;
     }
   }
 
-  & [data-lipstick-inline-row] > [data-lipstick-properties] {
+  & section[data-lipstick-inline]>div> :where(label, span):first-child {
     grid-column: 1;
+    align-self: center;
   }
 
-  & section[data-lipstick-inline-row] > p {
+  & :where(section[data-lipstick-inline], [data-lipstick-simple-array-item])>p {
     grid-column: 1 / -1;
   }
 
@@ -95,8 +79,7 @@ lip-stick {
     align-items: center;
   }
 
-  & label.lipstick-switch > .lipstick-switch-track,
-  & label.lipstick-switch > .lipstick-switch-track > .lipstick-switch-thumb {
+  & :where(.lipstick-switch-track, .lipstick-switch-thumb) {
     display: none;
   }
 
@@ -111,7 +94,7 @@ lip-stick {
     min-width: 0;
   }
 
-  & .lipstick-range-main > input[type="range"] {
+  & .lipstick-range-main>input[type="range"] {
     display: block;
     inline-size: 100%;
     margin: 0;
@@ -138,13 +121,14 @@ lip-stick {
     }
   }
 
-  & button.lipstick-add {
-    display: inline-flex;
-    align-items: center;
+  & .lipstick-remove {
+    margin-inline-start: auto;
   }
 
-  & button.lipstick-add[data-lipstick-add-trigger] {
-    justify-content: flex-start;
-    text-align: left;
+  & .lipstick-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    white-space: nowrap;
   }
 }
