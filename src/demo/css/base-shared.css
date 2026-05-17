@@ -24,28 +24,51 @@ lip-stick {
     align-items: center;
   }
 
+  & :where(fieldset, section)[data-collapsed="true"] > [data-lipstick-body] {
+    display: none;
+  }
+
   & :where(fieldset > legend, section > header)>.lipstick-remove {
     margin-inline-start: auto;
   }
 
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer]) {
+  & :where(
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer]
+    ) {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr) auto;
     align-items: center;
   }
 
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])> :where([data-lipstick-properties], [data-lipstick-controls]) {
+  & :where(
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer]
+    )
+    > :where([data-lipstick-properties], [data-lipstick-controls]) {
     min-width: 0;
     align-self: center;
   }
 
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])>:not([data-lipstick-properties], [data-lipstick-controls], p) {
+  & :where(
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer]
+    )
+    > :not([data-lipstick-properties], [data-lipstick-controls], p) {
     min-width: 0;
     align-self: center;
     grid-column: 2;
   }
 
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])> :where(input, select, textarea, output, code, .lipstick-range-controls, .lipstick-switch) {
+  & :where(
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer]
+    )
+    > :where(input, select, textarea, output, code, .lipstick-range-controls, .lipstick-switch) {
     align-self: center;
   }
 
@@ -53,28 +76,43 @@ lip-stick {
     grid-column: 1;
   }
 
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])>[data-lipstick-controls] {
+  & :where(
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer]
+    )
+    > [data-lipstick-controls] {
     grid-column: 3;
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
   }
 
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])>[data-lipstick-controls]>* {
+  & :where(
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer]
+    )
+    > [data-lipstick-controls]
+    > * {
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
 
   & :where(
-      [data-lipstick-inline-row],
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
       [data-lipstick-array-item="simple"],
       [data-lipstick-composer],
       fieldset > legend,
       section > header
     )
     > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down),
-  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])
+  & :where(
+      [data-lipstick-inline-row] > [data-lipstick-inline-content],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer]
+    )
     [data-lipstick-controls]
     > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down) {
     align-self: stretch;
