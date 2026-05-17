@@ -1008,7 +1008,9 @@ function renderDescription(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  return schema.description ? html`<p id=${getFieldDescriptionId(ctx, path)}>${schema.description}</p>` : nothing;
+  void ctx;
+  void path;
+  return schema.description ? html`<p>${schema.description}</p>` : nothing;
 }
 
 function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof nothing {
@@ -1062,18 +1064,10 @@ function getControlDescribedBy(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): string | undefined {
-  const ids: string[] = [];
-  if (schema.description) {
-    ids.push(getFieldDescriptionId(ctx, path));
-  }
-  return ids.length > 0 ? ids.join(" ") : undefined;
-}
-
-function getFieldDescriptionId(
-  ctx: JsonSchemaFormContext,
-  path: JsonPointerPath,
-): string {
-  return `${createInputId(ctx, path)}-description`;
+  void ctx;
+  void schema;
+  void path;
+  return undefined;
 }
 
 function renderLeafBody(
