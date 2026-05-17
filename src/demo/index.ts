@@ -51,6 +51,7 @@ refs.schemaJson.addEventListener('paste', (event: ClipboardEvent) => {
 refs.schemaJson.addEventListener('change', () => {
   applyPastedSchema()
 })
+refs.schemaJson.addEventListener('input', autoSizeSchemaJson)
 
 refs.schemaSourcePicker.addEventListener('change', (event: Event) => {
   void loadSelectedDemo((event.target as HTMLSelectElement).value as DemoFixtureName)
@@ -85,6 +86,7 @@ function applySchema(nextSchema: JsonSchema202012, nextValue?: JsonValue) {
   refs.form.schema = nextSchema
   refs.form.value = value
   refs.schemaJson.value = JSON.stringify(nextSchema, null, 2)
+  autoSizeSchemaJson()
   updateOutput()
 }
 
@@ -129,4 +131,9 @@ function applyPastedSchema(schemaText = refs.schemaJson.value) {
   } catch (error) {
     setStatus(getErrorMessage(error), true)
   }
+}
+
+function autoSizeSchemaJson() {
+  refs.schemaJson.style.height = 'auto'
+  refs.schemaJson.style.height = `${refs.schemaJson.scrollHeight}px`
 }

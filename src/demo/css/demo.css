@@ -26,8 +26,6 @@ body {
 .demo-shell {
   display: grid;
   gap: 1.8rem;
-  max-width: 1240px;
-  margin-inline: auto;
   padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 3vw, 1.5rem) 4rem;
 }
 
@@ -57,13 +55,13 @@ body {
 }
 
 .demo-intro {
-  max-width: 70ch;
+  max-inline-size: none;
 }
 
 .demo-layout {
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.2fr) minmax(320px, 1fr);
   align-items: start;
 }
 
@@ -103,7 +101,8 @@ body {
 
 .demo-textarea {
   min-height: 180px;
-  resize: vertical;
+  overflow: hidden;
+  resize: none;
   font: 0.9rem/1.5 "IBM Plex Mono", monospace;
 }
 
@@ -123,14 +122,7 @@ body {
   border: 1px solid var(--demo-panel-border);
   border-radius: var(--demo-radius);
   background: var(--demo-panel-bg);
-  box-shadow: var(--demo-panel-shadow);
   white-space: pre-wrap;
   word-break: break-word;
   font: 0.92rem/1.55 "IBM Plex Mono", monospace;
-}
-
-@media (max-width: 900px) {
-  .demo-layout {
-    grid-template-columns: 1fr;
-  }
 }
