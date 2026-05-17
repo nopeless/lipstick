@@ -137,23 +137,15 @@ function renderUnionField(
   const rootSchema = ctx.rootSchema;
   const branches = schema.oneOf ?? schema.anyOf ?? [];
   const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
-  const collapsed = isCollapsed(ctx, path);
 
   const changeBranch = (index: number) => {
     switchUnionBranch(ctx, path, value, branches, rootSchema, index);
   };
 
-  return html`
-    <fieldset ?data-collapsed=${collapsed}>
-      ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
-      <div data-lipstick-body>
-        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
-        ${renderValidationMessages(ctx, path, schema, value)}
-        ${renderUnionSelector(ctx, schema, union, changeBranch)}
-        ${renderUnionBranch(ctx, branchSchema, value, path, union)}
-      </div>
-    </fieldset>
-  `;
+  return renderFramedFieldset(ctx, schema, options, path, value, html`
+    ${renderUnionSelector(ctx, schema, union, changeBranch)}
+    ${renderUnionBranch(ctx, branchSchema, value, path, union)}
+  `);
 }
 
 function isCycledPrimitiveUnion(schema: JsonSchema202012, rootSchema: JsonSchema202012): boolean {
@@ -618,17 +610,7 @@ function renderObjectField(
     return body;
   }
 
-  const collapsed = isCollapsed(ctx, path);
-
-  return html`
-    <fieldset ?data-collapsed=${collapsed}>
-      ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
-      <div data-lipstick-body>
-        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
-        ${renderValidationMessages(ctx, path, schema, value)} ${body}
-      </div>
-    </fieldset>
-  `;
+  return renderFramedFieldset(ctx, schema, options, path, value, body);
 }
 
 function renderObjectBody(
@@ -752,17 +734,7 @@ function renderArrayField(
     return body;
   }
 
-  const collapsed = isCollapsed(ctx, path);
-
-  return html`
-    <fieldset ?data-collapsed=${collapsed}>
-      ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
-      <div data-lipstick-body>
-        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
-        ${renderValidationMessages(ctx, path, schema, value)} ${body}
-      </div>
-    </fieldset>
-  `;
+  return renderFramedFieldset(ctx, schema, options, path, value, body);
 }
 
 function renderArrayBody(
@@ -871,7 +843,7 @@ function renderScalarField(
   options: FieldRenderOptions,
 ): TemplateResult {
   const fieldLabel = options.label ?? schema.title ?? "Value";
-  const collapsed = isCollapsed(ctx, path);
+  const collapsed = options.collapsible !== false && isCollapsed(ctx, path);
   const inputId = createInputId(ctx, path);
   const disabled = ctx.formDisabled || schema.readOnly === true;
   const messages = getFieldMessages(ctx, path, schema, value);
@@ -1031,6 +1003,28 @@ function renderValidationMessages(
 
   return html`
     <p class="lipstick-note lipstick-note--validation" role="alert">${messages.join(" ")}</p>
+  `;
+}
+
+function renderFramedFieldset(
+  ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
+  options: FieldRenderOptions,
+  path: JsonPointerPath,
+  value: JsonValue | undefined,
+  content: TemplateResult,
+): TemplateResult {
+  const collapsed = isCollapsed(ctx, path);
+  const shouldCollapse = options.collapsible !== false && collapsed;
+
+  return html`
+    <fieldset ?data-collapsed=${shouldCollapse}>
+      ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
+      <div data-lipstick-body>
+        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
+        ${renderValidationMessages(ctx, path, schema, value)} ${content}
+      </div>
+    </fieldset>
   `;
 }
 
@@ -1216,7 +1210,6 @@ function renderInlineSimpleField(
       data-lipstick-field
       data-lipstick-inline
       data-lipstick-inline-row
-      ?data-collapsed=${isCollapsed(ctx, path)}
     >
       <div data-lipstick-body data-lipstick-inline-content>
       ${hasLabel
