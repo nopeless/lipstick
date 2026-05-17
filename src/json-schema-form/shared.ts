@@ -16,9 +16,11 @@ export interface FieldRenderOptions {
   onAdd?: () => void
   onRemove?: () => void
   removeLabel?: string
+  deferValidationMessage?: boolean
 }
 
 export interface JsonSchemaFormContext extends EventTarget {
+  id?: string
   schema?: JsonSchema202012
   value?: JsonValue
   name?: string

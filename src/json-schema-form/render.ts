@@ -149,7 +149,7 @@ function renderUnionField(
       ${collapsed
         ? nothing
         : html`
-            ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+            ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
             ${renderValidationMessages(ctx, path, schema, value)}
             ${renderUnionSelector(ctx, schema, union, changeBranch)}
             ${renderUnionBranch(ctx, branchSchema, value, path, union)}
@@ -181,7 +181,7 @@ function renderPrimitiveUnionField(
   const rootSchema = ctx.rootSchema;
   const branches = schema.anyOf ?? [];
   const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
-  const inputId = createInputId(path);
+  const inputId = createInputId(ctx, path);
   const messages = getFieldMessages(ctx, path, schema, value);
   const changeBranch = (index: number) => {
     switchUnionBranch(ctx, path, value, branches, rootSchema, index);
@@ -191,7 +191,7 @@ function renderPrimitiveUnionField(
     disabled: ctx.formDisabled || branchSchema.readOnly === true,
     required: options.required,
     invalid: messages.length > 0,
-    describedBy: getControlDescribedBy(schema, path, messages.length > 0),
+    describedBy: getControlDescribedBy(ctx, schema, path),
   });
 
   const cycleButton =
@@ -244,8 +244,6 @@ function renderScalarControl(
   path: JsonPointerPath,
   options: ScalarControlOptions,
 ): ScalarControlResult {
-  const ariaErrorMessage = options.invalid ? getFieldErrorId(path) : undefined;
-
   if (schema.const !== undefined) {
     return {
       control: html`<output id=${options.inputId}>${String(schema.const)}</output>`,
@@ -271,7 +269,6 @@ function renderScalarControl(
           ?required=${options.required}
           aria-invalid=${options.invalid ? "true" : "false"}
           aria-describedby=${ifDefined(options.describedBy)}
-          aria-errormessage=${ifDefined(ariaErrorMessage)}
           @change=${(event: Event) => {
             const nextValue = parseLiteralOption(
               (event.target as HTMLSelectElement).value,
@@ -302,7 +299,6 @@ function renderScalarControl(
             .checked=${value === true}
             aria-invalid=${options.invalid ? "true" : "false"}
             aria-describedby=${ifDefined(options.describedBy)}
-            aria-errormessage=${ifDefined(ariaErrorMessage)}
             @change=${(event: Event) =>
               updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
           />
@@ -338,7 +334,6 @@ function renderScalarControl(
                 .value=${String(numericValue)}
                 aria-invalid=${options.invalid ? "true" : "false"}
                 aria-describedby=${ifDefined(options.describedBy)}
-                aria-errormessage=${ifDefined(ariaErrorMessage)}
                 @input=${(event: Event) =>
                   updatePathValue(
                     ctx,
@@ -373,7 +368,6 @@ function renderScalarControl(
               ?required=${options.required}
               aria-invalid=${options.invalid ? "true" : "false"}
               aria-describedby=${ifDefined(options.describedBy)}
-              aria-errormessage=${ifDefined(ariaErrorMessage)}
               @input=${(event: Event) =>
                 updatePathValue(
                   ctx,
@@ -410,7 +404,6 @@ function renderScalarControl(
           ?required=${options.required}
           aria-invalid=${options.invalid ? "true" : "false"}
           aria-describedby=${ifDefined(options.describedBy)}
-          aria-errormessage=${ifDefined(ariaErrorMessage)}
           @input=${(event: Event) =>
             updatePathValue(
               ctx,
@@ -461,7 +454,6 @@ function renderScalarControl(
           ?required=${options.required}
           aria-invalid=${options.invalid ? "true" : "false"}
           aria-describedby=${ifDefined(options.describedBy)}
-          aria-errormessage=${ifDefined(ariaErrorMessage)}
           @input=${(event: Event) =>
             updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, false)}
           @change=${(event: Event) =>
@@ -479,7 +471,6 @@ function renderScalarControl(
           ?required=${options.required}
           aria-invalid=${options.invalid ? "true" : "false"}
           aria-describedby=${ifDefined(options.describedBy)}
-          aria-errormessage=${ifDefined(ariaErrorMessage)}
           @input=${(event: Event) => {
             const rawValue = (event.target as HTMLInputElement).value;
             const nextValue = isDateTimeInput ? normalizeDateTimeFromInput(rawValue) : rawValue;
@@ -637,7 +628,7 @@ function renderObjectField(
       ${collapsed
         ? nothing
         : html`
-            ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+            ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
             ${renderValidationMessages(ctx, path, schema, value)} ${body}
           `}
     </fieldset>
@@ -773,7 +764,7 @@ function renderArrayField(
       ${collapsed
         ? nothing
         : html`
-            ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+            ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
             ${renderValidationMessages(ctx, path, schema, value)} ${body}
           `}
     </fieldset>
@@ -835,12 +826,14 @@ function renderArrayItem(
           present: true,
           framed: false,
           collapsible: false,
+          deferValidationMessage: true,
           onRemove: undefined,
         })}
         <nav aria-label="Array item actions" data-lipstick-controls>
           ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
           ${renderArrayItemRemoveAction(ctx, itemPath, canRemove)}
         </nav>
+        ${renderValidationMessages(ctx, itemPath, itemSchema, item)}
       </article>
     `;
   }
@@ -884,7 +877,7 @@ function renderScalarField(
   options: FieldRenderOptions,
 ): TemplateResult {
   const fieldLabel = options.label ?? schema.title ?? "Value";
-  const inputId = createInputId(path);
+  const inputId = createInputId(ctx, path);
   const disabled = ctx.formDisabled || schema.readOnly === true;
   const messages = getFieldMessages(ctx, path, schema, value);
   const invalid = messages.length > 0;
@@ -893,7 +886,7 @@ function renderScalarField(
     disabled,
     required: options.required,
     invalid,
-    describedBy: getControlDescribedBy(schema, path, invalid),
+    describedBy: getControlDescribedBy(ctx, schema, path),
   });
   const inlineSimpleValue = !schema.description && !control.isBoolean && !control.multiline;
 
@@ -1014,10 +1007,11 @@ function renderLeafHeader(
 }
 
 function renderDescription(
+  ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  return schema.description ? html`<p id=${getFieldDescriptionId(path)}>${schema.description}</p>` : nothing;
+  return schema.description ? html`<p id=${getFieldDescriptionId(ctx, path)}>${schema.description}</p>` : nothing;
 }
 
 function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof nothing {
@@ -1037,9 +1031,7 @@ function renderValidationMessages(
   }
 
   return html`
-    <p id=${getFieldErrorId(path)} class="lipstick-note lipstick-note--validation" role="alert">
-      ${messages.join(" ")}
-    </p>
+    <p class="lipstick-note lipstick-note--validation" role="alert">${messages.join(" ")}</p>
   `;
 }
 
@@ -1069,26 +1061,22 @@ function getFieldMessages(
 }
 
 function getControlDescribedBy(
+  ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
   path: JsonPointerPath,
-  hasErrors: boolean,
 ): string | undefined {
   const ids: string[] = [];
   if (schema.description) {
-    ids.push(getFieldDescriptionId(path));
-  }
-  if (hasErrors) {
-    ids.push(getFieldErrorId(path));
+    ids.push(getFieldDescriptionId(ctx, path));
   }
   return ids.length > 0 ? ids.join(" ") : undefined;
 }
 
-function getFieldDescriptionId(path: JsonPointerPath): string {
-  return `${createInputId(path)}-description`;
-}
-
-function getFieldErrorId(path: JsonPointerPath): string {
-  return `${createInputId(path)}-error`;
+function getFieldDescriptionId(
+  ctx: JsonSchemaFormContext,
+  path: JsonPointerPath,
+): string {
+  return `${createInputId(ctx, path)}-description`;
 }
 
 function renderLeafBody(
@@ -1097,9 +1085,17 @@ function renderLeafBody(
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
   return html`
-    ${renderDescription(schema, path)} ${renderRefWarning(schema)}
+    ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
     ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
   `;
+}
+
+function renderLeafMeta(
+  ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
+  path: JsonPointerPath,
+): TemplateResult | typeof nothing {
+  return html`${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}`;
 }
 
 function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
@@ -1235,7 +1231,10 @@ function renderInlineSimpleField(
       ${afterControl !== nothing || (options.present && options.onRemove)
         ? html`<nav aria-label="Field controls" data-lipstick-controls>${controls}</nav>`
         : nothing}
-      ${renderLeafBody(ctx, schema, path)}
+      ${renderLeafMeta(ctx, schema, path)}
     </section>
+    ${options.deferValidationMessage
+      ? nothing
+      : renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
   `;
 }

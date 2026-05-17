@@ -11,7 +11,7 @@ export interface DemoRefs {
 }
 
 export function getDemoRefs(): DemoRefs {
-  const form = document.querySelector<JsonSchemaFormElement>("lip-stick");
+  const form = document.querySelector<JsonSchemaFormElement>("#demo");
   const output = document.querySelector<HTMLElement>('[data-role="output"]');
   const schemaSourcePicker = document.querySelector<HTMLSelectElement>(
     '[data-role="schema-source-picker"]',

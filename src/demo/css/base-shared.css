@@ -66,6 +66,20 @@ lip-stick {
     justify-content: center;
   }
 
+  & :where(
+      [data-lipstick-inline-row],
+      [data-lipstick-array-item="simple"],
+      [data-lipstick-composer],
+      fieldset > legend,
+      section > header
+    )
+    > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down),
+  & :where([data-lipstick-inline-row], [data-lipstick-array-item="simple"], [data-lipstick-composer])
+    [data-lipstick-controls]
+    > button:where(.lipstick-add, .lipstick-remove, .lipstick-move-up, .lipstick-move-down) {
+    align-self: stretch;
+  }
+
   & section[data-lipstick-inline-row]>p {
     grid-column: 1 / -1;
   }

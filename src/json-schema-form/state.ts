@@ -130,7 +130,7 @@ export function addArrayItem(
     : [buildInitialValue(itemSchema, ctx.rootSchema)]
   const nextValue = setValueAtPath(ctx.value, path, nextArray)
   ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
-    ? createInputId([...path, index])
+    ? createInputId(ctx, [...path, index])
     : undefined
   emitWholeValue(ctx, [...path, index], nextValue, itemSchema)
 }
@@ -213,8 +213,23 @@ export function parseLiteralOption(
   return options.find((option) => String(option) === rawValue) ?? rawValue
 }
 
-export function createInputId(path: JsonPointerPath): string {
-  return `lipstick-${pathToKey(path).replaceAll(/[^a-z0-9_-]/gi, '-')}`
+export function createInputId(
+  ctx: Pick<JsonSchemaFormContext, 'id'>,
+  path: JsonPointerPath,
+): string {
+  const formIdPrefix = ctx.id?.trim() || 'lipstick'
+  const pathKey = pathToKey(path)
+  if (pathKey === '#') {
+    return `${formIdPrefix}-lipstick-root`
+  }
+
+  const normalizedPathKey = pathKey
+    .replace(/^#\//, '')
+    .replaceAll(/[^a-z0-9_-]/gi, '-')
+    .replaceAll(/-+/g, '-')
+    .replaceAll(/^-|-$/g, '')
+
+  return `${formIdPrefix}-lipstick-${normalizedPathKey || 'root'}`
 }
 
 export function isCollapsed(
