@@ -324,8 +324,8 @@ function renderScalarControl(
     if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
       return {
         control: html`
-          <div class="lipstick-range-controls">
-            <div class="lipstick-range-main">
+          <div class="lipstick-range-component">
+            <div class="lipstick-range-slider">
               <input
                 id=${options.inputId}
                 type="range"
@@ -532,9 +532,8 @@ function renderUnionSelector(
         @click=${() => changeBranch((selectedIndex + 1) % options.length)}
         aria-label="Cycle variant"
       >
-        ⇄
-      </button>
-      <select
+        ⇄</button
+      ><select
         .disabled=${ctx.formDisabled}
         .value=${String(selectedIndex)}
         @change=${(event: Event) => changeBranch(Number((event.target as HTMLSelectElement).value))}
@@ -687,9 +686,8 @@ function renderAdditionalPropertyComposer(
           aria-label="Add new property"
         >
           <span aria-hidden="true">+</span>
-        </button>
-      </span>
-      <input
+        </button></span
+      ><input
         type="text"
         placeholder="add new property"
         .disabled=${ctx.formDisabled || !canAdd}
@@ -751,24 +749,20 @@ function renderArrayBody(
   addLabel: string | undefined,
   canAdd: boolean,
 ): TemplateResult {
-  return html`
-    <section>
+  return html` <section>
       ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
     </section>
     ${canAdd
-      ? html`
-          <button
-            type="button"
-            class="lipstick-add"
-            ?disabled=${ctx.formDisabled}
-            aria-label=${addLabel ? `Add ${addLabel}` : "Add item"}
-            @click=${() => addArrayItem(ctx, path, schema, nextIndex)}
-          >
-            +
-          </button>
-        `
-      : nothing}
-  `;
+      ? html`<button
+          type="button"
+          class="lipstick-add"
+          ?disabled=${ctx.formDisabled}
+          aria-label=${addLabel ? `Add ${addLabel}` : "Add item"}
+          @click=${() => addArrayItem(ctx, path, schema, nextIndex)}
+        >
+          +
+        </button>`
+      : nothing}`;
 }
 
 function renderArrayItem(
@@ -795,6 +789,17 @@ function renderArrayItem(
   const objectItemLabel = formatObjectArrayItemLabel(resolvedItemSchema, index);
 
   if (isSimpleItem) {
+    const inlineActions = html`
+      ${renderArrayItemReorderActions(
+        ctx,
+        path,
+        index,
+        canMoveUp,
+        canMoveDown,
+        prefixItemsLength,
+      )}${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
+    `;
+
     return html`
       <article data-lipstick-simple-array-item>
         ${renderNode(ctx, itemSchema, item, itemPath, {
@@ -803,20 +808,10 @@ function renderArrayItem(
           present: true,
           framed: false,
           collapsible: false,
+          inlineActions,
           deferValidationMessage: true,
           onRemove: undefined,
         })}
-        <nav class="lipstick-actions" aria-label="Array item actions">
-          ${renderArrayItemReorderActions(
-            ctx,
-            path,
-            index,
-            canMoveUp,
-            canMoveDown,
-            prefixItemsLength,
-          )}
-          ${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
-        </nav>
         ${renderValidationMessages(ctx, itemPath, itemSchema, item)}
       </article>
     `;
@@ -876,7 +871,7 @@ function renderScalarField(
       schema,
       control.control,
       control.useSpanLabel,
-      nothing,
+      options.inlineActions ?? nothing,
       path,
     );
   }
@@ -890,7 +885,7 @@ function renderScalarField(
       schema,
       control.control,
       control.useSpanLabel,
-      nothing,
+      options.inlineActions ?? nothing,
       path,
     );
   }
@@ -989,16 +984,15 @@ function renderDescription(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
   path: JsonPointerPath,
-  id?: string,
 ): TemplateResult | typeof nothing {
   void ctx;
   void path;
-  return schema.description ? html`<p id=${ifDefined(id)}>${schema.description}</p>` : nothing;
+  return schema.description ? html`<p>${schema.description}</p>` : nothing;
 }
 
-function renderRefWarning(schema: JsonSchema202012, id?: string): TemplateResult | typeof nothing {
+function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof nothing {
   const refError = getRefError(schema);
-  return refError ? html`<p id=${ifDefined(id)}>${refError}</p>` : nothing;
+  return refError ? html`<p>${refError}</p>` : nothing;
 }
 
 function renderValidationMessages(
@@ -1006,14 +1000,13 @@ function renderValidationMessages(
   path: JsonPointerPath,
   schema?: JsonSchema202012,
   value?: JsonValue | undefined,
-  id?: string,
 ): TemplateResult | typeof nothing {
   const messages = getFieldMessages(ctx, path, schema, value);
   if (messages.length === 0) {
     return nothing;
   }
 
-  return html` <p id=${ifDefined(id)} role="alert">${messages.join(" ")}</p> `;
+  return html` <p role="alert">${messages.join(" ")}</p> `;
 }
 
 function renderFramedFieldset(
@@ -1087,18 +1080,10 @@ function renderLeafBody(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
   path: JsonPointerPath,
-): TemplateResult | typeof nothing {
-  const inputId = createInputId(ctx, path);
+): TemplateResult {
   return html`
-    ${renderDescription(ctx, schema, path, `${inputId}-description`)}
-    ${renderRefWarning(schema, `${inputId}-ref-error`)}
-    ${renderValidationMessages(
-      ctx,
-      path,
-      schema,
-      getValueAtPath(ctx.value, path),
-      `${inputId}-validation`,
-    )}
+    ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
+    ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
   `;
 }
 
@@ -1107,11 +1092,7 @@ function renderLeafMeta(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  const inputId = createInputId(ctx, path);
-  return html`
-    ${renderDescription(ctx, schema, path, `${inputId}-description`)}
-    ${renderRefWarning(schema, `${inputId}-ref-error`)}
-  `;
+  return html` ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)} `;
 }
 
 function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
@@ -1150,17 +1131,15 @@ function renderArrayItemReorderActions(
     return nothing;
   }
 
-  return html`
-    <button
+  return html`<button
       type="button"
       class="lipstick-move-up"
       ?disabled=${ctx.formDisabled || !canMoveUp}
       @click=${() => reorderArrayItem(ctx, path, index, index - 1, prefixItemsLength)}
       aria-label="Move item up"
     >
-      ↑
-    </button>
-    <button
+      ↑</button
+    ><button
       type="button"
       class="lipstick-move-down"
       ?disabled=${ctx.formDisabled || !canMoveDown}
@@ -1168,8 +1147,7 @@ function renderArrayItemReorderActions(
       aria-label="Move item down"
     >
       ↓
-    </button>
-  `;
+    </button>`;
 }
 
 function renderArrayItemRemoveAction(
@@ -1177,17 +1155,15 @@ function renderArrayItemRemoveAction(
   itemPath: JsonPointerPath,
   canRemove: boolean,
 ): TemplateResult {
-  return html`
-    <button
-      type="button"
-      class="lipstick-remove"
-      ?disabled=${ctx.formDisabled || !canRemove}
-      @click=${() => removeArrayItem(ctx, itemPath)}
-      aria-label="Delete array item"
-    >
-      ×
-    </button>
-  `;
+  return html`<button
+    type="button"
+    class="lipstick-remove"
+    ?disabled=${ctx.formDisabled || !canRemove}
+    @click=${() => removeArrayItem(ctx, itemPath)}
+    aria-label="Delete array item"
+  >
+    ×
+  </button> `;
 }
 
 function renderOptionalAddTrigger(
@@ -1270,12 +1246,6 @@ function renderInlineSimpleField(
     </div>
     ${options.deferValidationMessage
       ? nothing
-      : renderValidationMessages(
-          ctx,
-          path,
-          schema,
-          getValueAtPath(ctx.value, path),
-          `${inputId}-validation`,
-        )}
+      : renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
   `;
 }
