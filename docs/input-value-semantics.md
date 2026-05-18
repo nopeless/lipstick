@@ -1,6 +1,6 @@
 # Lipstick Input Value Semantics (Draft 2020-12)
 
-This document describes how `lip-stick` interprets schema definitions and updates form values.
+This document describes how `lipstick-form` interprets schema definitions and updates form values.
 
 ## Scope
 

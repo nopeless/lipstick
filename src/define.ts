@@ -1,7 +1,7 @@
 import { JsonSchemaFormElement } from "./json-schema-form.js";
 
-if (!customElements.get("lip-stick")) {
-  customElements.define("lip-stick", JsonSchemaFormElement);
+if (!customElements.get("lipstick-form")) {
+  customElements.define("lipstick-form", JsonSchemaFormElement);
 }
 
 export * from "./json-schema-form.js";

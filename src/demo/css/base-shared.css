@@ -1,15 +1,6 @@
-lip-stick {
+lipstick-form {
   display: block;
   color: inherit;
-
-  & :where(input, select, textarea) {
-    box-sizing: border-box;
-    width: 100%;
-  }
-
-  & :where(input[type="checkbox"], input[type="radio"]) {
-    width: auto;
-  }
 
   & textarea {
     resize: vertical;
@@ -30,87 +21,34 @@ lip-stick {
     display: none;
   }
 
-  & :where([data-lipstick-inline], [data-lipstick-composer]) {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr) auto;
-    align-items: stretch;
-  }
-
-  & [data-lipstick-simple-array-item] {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: stretch;
-
-    >section {
-      min-width: 0;
-    }
-
-    >.lipstick-actions {
-      grid-column: 2;
-      align-self: center;
-    }
-  }
-
-  & [data-lipstick-inline]> :where(label, span):first-child {
-    grid-column: 1;
-    align-self: center;
-  }
-
-  & :where([data-lipstick-inline], [data-lipstick-simple-array-item])>p {
-    grid-column: 1 / -1;
-  }
-
-  & [role="radiogroup"] {
+  & :where(.lipstick-union-picker, .lipstick-range-controls, [data-lipstick-inline], [data-lipstick-composer], [data-lipstick-simple-array-item] .lipstick-actions) {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-  }
+    align-items: stretch;
 
-  & .lipstick-union-picker {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-  }
-
-  & :where(.lipstick-switch-track, .lipstick-switch-thumb) {
-    display: none;
-  }
-
-  & .lipstick-range-controls {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 7rem;
-    align-items: center;
+    input {
+      flex-grow: 1;
+    }
   }
 
   & .lipstick-range-main {
     position: relative;
     min-width: 0;
-  }
 
-  & .lipstick-range-main>input[type="range"] {
-    display: block;
-    inline-size: 100%;
-    margin: 0;
-  }
+    >input[type="range"] {
+      display: block;
+      inline-size: 100%;
+      margin: 0;
+    }
 
-  & .lipstick-range-meta {
-    position: absolute;
-    inset-inline: 0;
-    inset-block-start: 50%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    pointer-events: none;
-  }
+    >.lipstick-range-meta {
+      position: absolute;
+      inset-inline: 0;
+      inset-block-start: 50%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
 
-  & .lipstick-remove {
-    margin-inline-start: auto;
-  }
-
-  & .lipstick-actions {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    white-space: nowrap;
   }
 }

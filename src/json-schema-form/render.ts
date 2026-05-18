@@ -298,21 +298,16 @@ function renderScalarControl(
   if (acceptsType(schema, "boolean")) {
     return {
       control: html`
-        <label class="lipstick-switch" for=${options.inputId}>
-          <input
-            id=${options.inputId}
-            type="checkbox"
-            .disabled=${options.disabled}
-            .checked=${value === true}
-            aria-invalid=${options.invalid ? "true" : "false"}
-            aria-describedby=${ifDefined(options.describedBy)}
-            @change=${(event: Event) =>
-              updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
-          />
-          <span class="lipstick-switch-track" aria-hidden="true">
-            <span class="lipstick-switch-thumb"></span>
-          </span>
-        </label>
+        <input
+          id=${options.inputId}
+          type="checkbox"
+          .disabled=${options.disabled}
+          .checked=${value === true}
+          aria-invalid=${options.invalid ? "true" : "false"}
+          aria-describedby=${ifDefined(options.describedBy)}
+          @change=${(event: Event) =>
+            updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
+        />
       `,
       useSpanLabel: false,
       multiline: false,
