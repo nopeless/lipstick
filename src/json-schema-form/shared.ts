@@ -8,7 +8,7 @@ export interface FieldRenderOptions {
   present: boolean;
   framed?: boolean;
   collapsible?: boolean;
-  headerPrefix?: TemplateResult;
+  headerSuffix?: TemplateResult;
   inlineActions?: TemplateResult;
   onAdd?: () => void;
   onRemove?: () => void;

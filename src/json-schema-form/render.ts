@@ -732,17 +732,18 @@ function renderArrayItem(
   const isSimpleItem = isSimpleArrayItemSchema(ctx, resolvedItemSchema);
   const simpleItemLabel = formatSimpleArrayItemLabel(resolvedItemSchema, index);
   const objectItemLabel = `${resolvedItemSchema.title?.trim() || "Item"} ${index + 1}`;
+  const reorderActions = renderArrayItemReorderActions(
+    ctx,
+    path,
+    index,
+    canMoveUp,
+    canMoveDown,
+    prefixItemsLength,
+  );
 
   if (isSimpleItem) {
     const inlineActions = html`
-      ${renderArrayItemReorderActions(
-        ctx,
-        path,
-        index,
-        canMoveUp,
-        canMoveDown,
-        prefixItemsLength,
-      )}${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
+      ${reorderActions}${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
     `;
 
     return html`
@@ -770,17 +771,10 @@ function renderArrayItem(
         present: true,
         framed: true,
         collapsible: false,
-        headerPrefix: html`${renderArrayItemReorderActions(
-          ctx,
-          path,
-          index,
-          canMoveUp,
-          canMoveDown,
-          prefixItemsLength,
-        )}`,
-        removeLabel: "Delete array item",
-        removeDisabled: !canRemove,
-        onRemove: showRemoveAction ? () => removeArrayItem(ctx, itemPath) : undefined,
+        headerSuffix: html`<nav class="lipstick-actions" aria-label="Item controls">
+          ${reorderActions}
+          ${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
+        </nav>`,
       })}
     </article>
   `;
@@ -845,9 +839,8 @@ function renderFieldsetHeader(
 
   return html`
     <legend>
-      ${options.headerPrefix ?? nothing}
       ${options.collapsible === false
-        ? text
+        ? html`<span>${text}</span>`
         : html`
             <button
               type="button"
@@ -859,6 +852,7 @@ function renderFieldsetHeader(
               <span aria-hidden="true"> ${collapsed ? "+" : "−"} </span>
             </button>
           `}
+      ${options.headerSuffix ?? nothing}
       ${options.onRemove
         ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
         : nothing}
@@ -881,7 +875,6 @@ function renderLeafHeader(
   if (options.collapsible === false) {
     return html`
       <header>
-        ${options.headerPrefix ?? nothing}
         <span>${label}</span>
         ${options.present && options.onRemove
           ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
@@ -892,7 +885,6 @@ function renderLeafHeader(
 
   return html`
     <header>
-      ${options.headerPrefix ?? nothing}
       <button
         type="button"
         @click=${() => toggleCollapsed(ctx, path)}
