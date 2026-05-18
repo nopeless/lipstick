@@ -36,11 +36,11 @@ lipstick-form {
     }
   }
 
-  .lipstick-actions {
+  .lipstick-actions,
+  .lipstick-union-picker {
     display: flex;
-    align-items: center;
+    align-items: stretch;
   }
-
 
   & .lipstick-range-component {
     display: flex;
