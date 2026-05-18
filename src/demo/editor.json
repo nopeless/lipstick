@@ -436,7 +436,7 @@
         "type": "object",
         "title": "Composition",
         "description": "Tests allOf, anyOf, and oneOf in separate branches.",
-        "required": ["identity", "contactChoice", "pricingStrategy"],
+        "required": ["identity", "contactChoice", "pricingStrategy", "deliveryConfig"],
         "properties": {
           "identity": {
             "title": "Identity",
@@ -487,6 +487,65 @@
               },
               {
                 "$ref": "#/$defs/tieredPrice"
+              }
+            ]
+          },
+          "deliveryConfig": {
+            "title": "Delivery config",
+            "description": "Tests discriminated union inference using a shared required discriminator property.",
+            "oneOf": [
+              {
+                "type": "object",
+                "title": "Email",
+                "description": "Send an email notifiction.",
+                "required": ["kind", "email"],
+                "properties": {
+                  "kind": {
+                    "const": "email",
+                    "title": "Kind"
+                  },
+                  "email": {
+                    "type": "string",
+                    "title": "Email",
+                    "format": "email"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "title": "Webhook",
+                "description": "Send a webhook payload to the specified URL.",
+                "required": ["kind", "url"],
+                "properties": {
+                  "kind": {
+                    "const": "webhook",
+                    "title": "Kind"
+                  },
+                  "url": {
+                    "type": "string",
+                    "title": "URL",
+                    "format": "uri"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "title": "Queue",
+                "description": "Add a message to the specified queue.",
+                "required": ["kind", "queue"],
+                "properties": {
+                  "kind": {
+                    "const": "queue",
+                    "title": "Kind"
+                  },
+                  "queue": {
+                    "type": "string",
+                    "title": "Queue"
+                  }
+                }
+              },
+              {
+                "type": "null"
               }
             ]
           }
@@ -741,6 +800,10 @@
           "currency": "USD",
           "amount": 99
         }
+      },
+      "deliveryConfig": {
+        "kind": "webhook",
+        "url": "https://hooks.example.com/events"
       }
     },
     "conditionals": {
