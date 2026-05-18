@@ -1,8 +1,4 @@
 import type { JsonSchema202012, JsonValue } from '../index.js'
-import {
-  DRAFT_2020_12_SCHEMA_URI,
-  getSchemaDialectError,
-} from '../lib/validation.js'
 
 export interface DemoExample {
   schema: JsonSchema202012
@@ -33,13 +29,6 @@ export async function loadDemoFixture(
 export function assertSchema(value: unknown): asserts value is JsonSchema202012 {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error('Schema must be a JSON object.')
-  }
-
-  const dialectError = getSchemaDialectError(value as JsonSchema202012)
-  if (dialectError) {
-    throw new Error(
-      `${dialectError} Use "$schema": "${DRAFT_2020_12_SCHEMA_URI}".`,
-    )
   }
 }
 

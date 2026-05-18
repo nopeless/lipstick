@@ -5,13 +5,6 @@ import type { JsonSchema202012, JsonValue } from './types.js'
 export const DRAFT_2020_12_SCHEMA_URI =
   'https://json-schema.org/draft/2020-12/schema'
 
-const DRAFT_2020_12_DIALECTS = new Set([
-  DRAFT_2020_12_SCHEMA_URI,
-  `${DRAFT_2020_12_SCHEMA_URI}#`,
-  DRAFT_2020_12_SCHEMA_URI.replace('https://', 'http://'),
-  `${DRAFT_2020_12_SCHEMA_URI.replace('https://', 'http://')}#`,
-])
-
 const validatorCache = new WeakMap<
   JsonSchema202012,
   ReturnType<typeof Schema.Compile>
@@ -31,35 +24,10 @@ export interface ValidationSnapshot {
   schemaError?: string
 }
 
-export function getSchemaDialectError(
-  schema: JsonSchema202012,
-): string | undefined {
-  if (!schema.$schema) {
-    return undefined
-  }
-
-  if (DRAFT_2020_12_DIALECTS.has(schema.$schema)) {
-    return undefined
-  }
-
-  return `Only JSON Schema Draft 2020-12 is supported. Received "${schema.$schema}".`
-}
-
 export function validateValueAgainstSchema(
   schema: JsonSchema202012,
   value: JsonValue | undefined,
 ): ValidationSnapshot {
-  const dialectError = getSchemaDialectError(schema)
-
-  if (dialectError) {
-    return {
-      valid: false,
-      issues: [],
-      fieldMessages: new Map(),
-      schemaError: dialectError,
-    }
-  }
-
   const validator = getValidator(schema)
 
   if (!validator) {
