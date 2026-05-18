@@ -2,7 +2,6 @@ lip-stick {
   display: block;
   color: inherit;
 
-  /* Base reset for form-ish content inside the component. */
   & :where(fieldset, section, article, p) {
     margin: 0;
   }
@@ -12,7 +11,6 @@ lip-stick {
     width: 100%;
   }
 
-  /* Keep native sizing for boolean controls. */
   & :where(input[type="checkbox"], input[type="radio"]) {
     width: auto;
   }
@@ -21,46 +19,27 @@ lip-stick {
     resize: vertical;
   }
 
-  /* Section and fieldset headers share the same layout. */
   & :where(section > header, fieldset > legend) {
     display: flex;
     align-items: center;
-  }
-
-  & fieldset>legend {
     padding: 0;
-  }
 
-  & :where(section > header, fieldset > legend)>button {
-    display: inline-flex;
-    align-items: center;
+    >button {
+      display: inline-flex;
+      align-items: center;
+    }
   }
 
   & :where(section, fieldset)[data-collapsed]>div {
     display: none;
   }
 
-  /* Shared inline row layout for leaf rows and composer rows. */
-  & :where(section[data-lipstick-inline] > div, [data-lipstick-composer]) {
+  & :where([data-lipstick-inline], [data-lipstick-composer]) {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr) auto;
     align-items: stretch;
-
-    >* {
-      min-width: 0;
-      align-self: center;
-    }
-
-    > :where(input, select, textarea, output, code, .lipstick-range-controls, .lipstick-switch) {
-      grid-column: 2;
-    }
-
-    >.lipstick-actions {
-      grid-column: 3;
-    }
   }
 
-  /* Simple array items wrap an inline section; keep actions in a side column. */
   & [data-lipstick-simple-array-item] {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -74,18 +53,14 @@ lip-stick {
       grid-column: 2;
       align-self: center;
     }
-
-    >p {
-      grid-column: 1 / -1;
-    }
   }
 
-  & section[data-lipstick-inline]>div> :where(label, span):first-child {
+  & [data-lipstick-inline] > :where(label, span):first-child {
     grid-column: 1;
     align-self: center;
   }
 
-  & :where(section[data-lipstick-inline], [data-lipstick-simple-array-item])>p {
+  & :where([data-lipstick-inline], [data-lipstick-simple-array-item]) > p {
     grid-column: 1 / -1;
   }
 
@@ -120,21 +95,10 @@ lip-stick {
     position: absolute;
     inset-inline: 0;
     inset-block-start: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     pointer-events: none;
-
-    > :first-child,
-    > :last-child {
-      position: absolute;
-      inset-block-start: 0;
-    }
-
-    > :first-child {
-      inset-inline-start: 0;
-    }
-
-    > :last-child {
-      inset-inline-end: 0;
-    }
   }
 
   & .lipstick-remove {

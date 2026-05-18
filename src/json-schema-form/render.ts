@@ -1210,20 +1210,18 @@ function renderInlineSimpleField(
   `;
 
   return html`
-    <section data-lipstick-inline>
-      <div>
-        ${hasLabel
-          ? useSpanLabel
-            ? html`<span>${label}</span>`
-            : html`<label for=${inputId}>${label}</label>`
-          : nothing}
-        ${control}
-        ${afterControl !== nothing || (options.present && options.onRemove)
-          ? html`<nav class="lipstick-actions" aria-label="Field controls">${controls}</nav>`
-          : nothing}
-        ${renderLeafMeta(ctx, schema, path)}
-      </div>
-    </section>
+    <div data-lipstick-inline>
+      ${hasLabel
+        ? useSpanLabel
+          ? html`<span>${label}</span>`
+          : html`<label for=${inputId}>${label}</label>`
+        : nothing}
+      ${control}
+      ${afterControl !== nothing || (options.present && options.onRemove)
+        ? html`<nav class="lipstick-actions" aria-label="Field controls">${controls}</nav>`
+        : nothing}
+      ${renderLeafMeta(ctx, schema, path)}
+    </div>
     ${options.deferValidationMessage
       ? nothing
       : renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
