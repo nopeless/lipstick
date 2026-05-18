@@ -8,7 +8,7 @@ export function getRefError(schema: JsonSchema202012): string | undefined {
   return typeof candidate === "string" ? candidate : undefined;
 }
 
-export { isSchemaObject } from "./internal.js";
+export * from "./internal.js";
 
 export function resolveSchema(
   schema: JsonSchema202012,
