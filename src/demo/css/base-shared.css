@@ -25,8 +25,7 @@ lipstick-form {
     align-items: center;
     justify-content: space-between;
 
-    > :where(.lipstick-range-component,
-      input, select) {
+    > :where(.lipstick-range-component, input, select) {
       flex-grow: 1;
 
       &[type="checkbox"] {
