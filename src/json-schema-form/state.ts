@@ -148,7 +148,16 @@ export function reorderArrayItem(
   path: JsonPointerPath,
   fromIndex: number,
   toIndex: number,
+  prefixItemsLength = 0,
 ) {
+  if (
+    fromIndex < prefixItemsLength ||
+    toIndex < prefixItemsLength ||
+    fromIndex === toIndex
+  ) {
+    return
+  }
+
   const nextValue = moveArrayItem(ctx.value, path, fromIndex, toIndex)
   emitWholeValue(ctx, path, nextValue, ctx.rootSchema)
 }

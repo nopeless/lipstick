@@ -734,7 +734,9 @@ function renderArrayField(
   const nextIndex = arrayValue.length;
   const addSchema = getArrayItemSchema(schema, nextIndex) ?? {};
   const addLabel = addSchema.title;
-  const canAdd = schema.items !== false || nextIndex < (schema.prefixItems?.length ?? 0);
+  const withinMaxItems = schema.maxItems === undefined || nextIndex < schema.maxItems;
+  const canAdd =
+    withinMaxItems && (schema.items !== false || nextIndex < (schema.prefixItems?.length ?? 0));
   const body = renderArrayBody(ctx, schema, arrayValue, path, nextIndex, addLabel, canAdd);
 
   const framed = options.framed ?? true;
@@ -784,10 +786,14 @@ function renderArrayItem(
 ): TemplateResult {
   const itemPath = [...path, index];
   const itemSchema = getArrayItemSchema(schema, index) ?? {};
+  const prefixItemsLength = schema.prefixItems?.length ?? 0;
   const canRemove = index >= (schema.minItems ?? 0);
   const arrayValue = getValueAtPath(ctx.value, path);
-  const canMoveUp = index > 0;
-  const canMoveDown = Array.isArray(arrayValue) && index < arrayValue.length - 1;
+  const canMoveUp = index > prefixItemsLength;
+  const canMoveDown =
+    Array.isArray(arrayValue) &&
+    index >= prefixItemsLength &&
+    index < arrayValue.length - 1;
   const isSimpleItem = isSimpleArrayItemSchema(ctx, itemSchema);
   const simpleItemLabel = formatSimpleArrayItemLabel(itemSchema, index);
   const objectItemLabel = formatObjectArrayItemLabel(itemSchema, index);
@@ -805,7 +811,14 @@ function renderArrayItem(
           onRemove: undefined,
         })}
         <nav class="lipstick-actions" aria-label="Array item actions">
-          ${renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown)}
+          ${renderArrayItemReorderActions(
+            ctx,
+            path,
+            index,
+            canMoveUp,
+            canMoveDown,
+            prefixItemsLength,
+          )}
           ${renderArrayItemRemoveAction(ctx, itemPath, canRemove)}
         </nav>
         ${renderValidationMessages(ctx, itemPath, itemSchema, item)}
@@ -827,6 +840,7 @@ function renderArrayItem(
           index,
           canMoveUp,
           canMoveDown,
+          prefixItemsLength,
         )}`,
         removeLabel: "Delete array item",
         onRemove: canRemove ? () => removeArrayItem(ctx, itemPath) : undefined,
@@ -1103,26 +1117,39 @@ function renderArrayItemReorderActions(
   index: number,
   canMoveUp: boolean,
   canMoveDown: boolean,
-): TemplateResult {
+  prefixItemsLength: number,
+): TemplateResult | typeof nothing {
+  if (!canMoveUp && !canMoveDown) {
+    return nothing;
+  }
+
   return html`
-    <button
-      type="button"
-      class="lipstick-move-up"
-      ?disabled=${ctx.formDisabled || !canMoveUp}
-      @click=${() => reorderArrayItem(ctx, path, index, index - 1)}
-      aria-label="Move item up"
-    >
-      ↑
-    </button>
-    <button
-      type="button"
-      class="lipstick-move-down"
-      ?disabled=${ctx.formDisabled || !canMoveDown}
-      @click=${() => reorderArrayItem(ctx, path, index, index + 1)}
-      aria-label="Move item down"
-    >
-      ↓
-    </button>
+    ${canMoveUp
+      ? html`
+          <button
+            type="button"
+            class="lipstick-move-up"
+            ?disabled=${ctx.formDisabled}
+            @click=${() => reorderArrayItem(ctx, path, index, index - 1, prefixItemsLength)}
+            aria-label="Move item up"
+          >
+            ↑
+          </button>
+        `
+      : nothing}
+    ${canMoveDown
+      ? html`
+          <button
+            type="button"
+            class="lipstick-move-down"
+            ?disabled=${ctx.formDisabled}
+            @click=${() => reorderArrayItem(ctx, path, index, index + 1, prefixItemsLength)}
+            aria-label="Move item down"
+          >
+            ↓
+          </button>
+        `
+      : nothing}
   `;
 }
 
