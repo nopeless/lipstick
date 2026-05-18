@@ -83,9 +83,11 @@ When a value is created from schema (for required fields, added properties, adde
 - Item schema resolution order:
   - `prefixItems[index]`
   - `items` schema (or open `{}` if `items` is absent/object)
-- Add is disabled when `items === false` and `prefixItems` are exhausted.
-- Remove is disabled for indexes below `minItems`.
-- Reorder supports move up/down within current bounds.
+- Add is hidden when `maxItems` is reached.
+- Add is also hidden when `items === false` and `prefixItems` are exhausted.
+- Remove is allowed for any index when current array length is greater than `minItems`.
+- Remove actions are shown for all items whenever add/remove is possible for the array; hidden only when array length is fixed by schema constraints.
+- Reorder controls are hidden when neither move direction is valid, and `prefixItems` positions are protected from reordering.
 
 ## Validation Behavior
 

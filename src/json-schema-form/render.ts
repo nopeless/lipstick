@@ -731,13 +731,11 @@ function renderArrayField(
   options: FieldRenderOptions,
 ): TemplateResult {
   const arrayValue = Array.isArray(value) ? value : [];
-  const nextIndex = arrayValue.length;
+  const arrayRules = getArrayMutationRules(schema, arrayValue.length);
+  const nextIndex = arrayRules.nextIndex;
   const addSchema = getArrayItemSchema(schema, nextIndex) ?? {};
   const addLabel = addSchema.title;
-  const withinMaxItems = schema.maxItems === undefined || nextIndex < schema.maxItems;
-  const canAdd =
-    withinMaxItems && (schema.items !== false || nextIndex < (schema.prefixItems?.length ?? 0));
-  const body = renderArrayBody(ctx, schema, arrayValue, path, nextIndex, addLabel, canAdd);
+  const body = renderArrayBody(ctx, schema, arrayValue, path, nextIndex, addLabel, arrayRules.canAdd);
 
   const framed = options.framed ?? true;
 
@@ -789,13 +787,9 @@ function renderArrayItem(
   const prefixItemsLength = schema.prefixItems?.length ?? 0;
   const arrayValue = getValueAtPath(ctx.value, path);
   const arrayLength = Array.isArray(arrayValue) ? arrayValue.length : 0;
-  const canRemove = arrayLength > (schema.minItems ?? 0);
-  const nextIndex = arrayLength;
-  const withinMaxItems = schema.maxItems === undefined || nextIndex < schema.maxItems;
-  const canAdd =
-    withinMaxItems && (schema.items !== false || nextIndex < (schema.prefixItems?.length ?? 0));
-  const canRemoveAny = arrayLength > (schema.minItems ?? 0);
-  const showRemoveAction = canAdd || canRemoveAny;
+  const arrayRules = getArrayMutationRules(schema, arrayLength);
+  const canRemove = arrayRules.canRemoveAny;
+  const showRemoveAction = arrayRules.canMutate;
   const canMoveUp = index > prefixItemsLength;
   const canMoveDown =
     Array.isArray(arrayValue) &&
@@ -1124,6 +1118,27 @@ function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): st
 function formatObjectArrayItemLabel(schema: JsonSchema202012, index: number): string {
   const title = schema.title?.trim() || "Item";
   return `${title} ${index + 1}`;
+}
+
+interface ArrayMutationRules {
+  nextIndex: number;
+  canAdd: boolean;
+  canRemoveAny: boolean;
+  canMutate: boolean;
+}
+
+function getArrayMutationRules(schema: JsonSchema202012, arrayLength: number): ArrayMutationRules {
+  const nextIndex = arrayLength;
+  const prefixItemsLength = schema.prefixItems?.length ?? 0;
+  const withinMaxItems = schema.maxItems === undefined || nextIndex < schema.maxItems;
+  const canAdd = withinMaxItems && (schema.items !== false || nextIndex < prefixItemsLength);
+  const canRemoveAny = arrayLength > (schema.minItems ?? 0);
+  return {
+    nextIndex,
+    canAdd,
+    canRemoveAny,
+    canMutate: canAdd || canRemoveAny,
+  };
 }
 
 function renderArrayItemReorderActions(
