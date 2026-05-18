@@ -2,10 +2,6 @@ lip-stick {
   display: block;
   color: inherit;
 
-  & :where(fieldset, section, article, p) {
-    margin: 0;
-  }
-
   & :where(input, select, textarea) {
     box-sizing: border-box;
     width: 100%;
@@ -24,13 +20,13 @@ lip-stick {
     align-items: center;
     padding: 0;
 
-    > button {
+    >button {
       display: inline-flex;
       align-items: center;
     }
   }
 
-  & fieldset[data-collapsed] > div {
+  & fieldset[data-collapsed]>div {
     display: none;
   }
 
@@ -45,22 +41,22 @@ lip-stick {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: stretch;
 
-    > section {
+    >section {
       min-width: 0;
     }
 
-    > .lipstick-actions {
+    >.lipstick-actions {
       grid-column: 2;
       align-self: center;
     }
   }
 
-  & [data-lipstick-inline] > :where(label, span):first-child {
+  & [data-lipstick-inline]> :where(label, span):first-child {
     grid-column: 1;
     align-self: center;
   }
 
-  & :where([data-lipstick-inline], [data-lipstick-simple-array-item]) > p {
+  & :where([data-lipstick-inline], [data-lipstick-simple-array-item])>p {
     grid-column: 1 / -1;
   }
 
@@ -91,7 +87,7 @@ lip-stick {
     min-width: 0;
   }
 
-  & .lipstick-range-main > input[type="range"] {
+  & .lipstick-range-main>input[type="range"] {
     display: block;
     inline-size: 100%;
     margin: 0;
