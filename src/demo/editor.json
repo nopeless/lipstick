@@ -663,7 +663,7 @@
       "shortText": "alpha",
       "titledScalar": "has title",
       "describedScalar": "generates property name by normalizing",
-      "describedRange": "description here",
+      "describedRange": 0,
       "slug": "alpha-beta",
       "email": "alpha@example.com",
       "website": "https://example.com",
