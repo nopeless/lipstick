@@ -162,7 +162,9 @@ function renderUnionField(
     value,
     html`
       ${renderUnionSelector(ctx, schema, union, changeBranch)}
-      ${renderUnionBranch(ctx, branchSchema, value, path, union)}
+      ${branchSchema.type === "null"
+        ? nothing
+        : renderUnionBranch(ctx, branchSchema, value, path, union)}
     `,
   );
 }
@@ -761,7 +763,7 @@ function renderArrayItem(
     Array.isArray(arrayValue) && index >= prefixItemsLength && index < arrayValue.length - 1;
   const isSimpleItem = isSimpleArrayItemSchema(ctx, resolvedItemSchema);
   const simpleItemLabel = formatSimpleArrayItemLabel(resolvedItemSchema, index);
-  const objectItemLabel = formatObjectArrayItemLabel(resolvedItemSchema, index);
+  const objectItemLabel = `${resolvedItemSchema.title?.trim() || "Item"} ${index + 1}`;
 
   if (isSimpleItem) {
     const inlineActions = html`
@@ -823,7 +825,7 @@ function renderScalarField(
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
-  const fieldLabel = options.label ?? schema.title ?? "Value";
+  const fieldLabel = options.label ?? schema.title ?? "";
   const inputId = createInputId(ctx, path);
   const disabled = ctx.formDisabled || schema.readOnly === true;
   const messages = getFieldMessages(ctx, path, schema, value);
@@ -1042,11 +1044,6 @@ function renderLeafMeta(
 function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
   const title = schema.title?.trim();
   return title ? `${title} ${index + 1}` : undefined;
-}
-
-function formatObjectArrayItemLabel(schema: JsonSchema202012, index: number): string {
-  const title = schema.title?.trim() || "Item";
-  return `${title} ${index + 1}`;
 }
 
 function getArrayMutationRules(schema: JsonSchema202012, arrayLength: number): ArrayMutationRules {
