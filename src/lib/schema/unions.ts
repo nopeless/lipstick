@@ -7,20 +7,18 @@ export interface DiscriminatorInfo {
   property: string;
   options: Array<{
     index: number;
-    label: string;
     value: JsonPrimitive;
   }>;
 }
 
 export interface UnionPresentation {
-  kind: "boolean" | "enum" | "discriminator" | "generic";
+  kind: "boolean" | "enum" | "generic";
   selectedIndex: number;
   options: Array<{
     index: number;
     label: string;
     literal?: JsonPrimitive;
   }>;
-  discriminator?: DiscriminatorInfo;
 }
 
 export function describeUnion(
@@ -38,14 +36,16 @@ export function describeUnion(
   const selectedIndex = preferredIndex ?? pickBestBranchIndex(branches, value, root);
 
   let unnamedIndex = 0;
-
-  const literalOptions = branches.map((branch, index) => ({
-    index,
-    label: branch.type === "null" ? "null" : branch.title?.trim() || `Option ${++unnamedIndex}`,
-    literal: getLiteralBranchValue(branch, resolveSchema, root),
-  }));
-
   const discriminator = inferDiscriminator(branches, root);
+
+  const literalOptions = branches.map((branch, index) => {
+    const preferredLabel = resolveUnionOptionLabel(branch, index, discriminator);
+    return {
+      index,
+      label: preferredLabel ?? `Option ${++unnamedIndex}`,
+      literal: getLiteralBranchValue(branch, resolveSchema, root),
+    };
+  });
 
   if (
     literalOptions.length === 2 &&
@@ -60,15 +60,6 @@ export function describeUnion(
     literalOptions.every((option) => option.literal !== undefined)
   ) {
     return { kind: "enum", selectedIndex, options: literalOptions };
-  }
-
-  if (discriminator) {
-    return {
-      kind: "discriminator",
-      selectedIndex,
-      options: literalOptions,
-      discriminator,
-    };
   }
 
   return { kind: "generic", selectedIndex, options: literalOptions };
@@ -140,12 +131,41 @@ export function inferDiscriminator(
 
     return {
       property,
-      options: entries.map((entry, index) => ({
+      options: entries.map((entry) => ({
         index: entry.index,
         value: entry.value,
-        label: `Variant ${index + 1}`,
       })),
     };
+  }
+
+  return undefined;
+}
+
+function resolveUnionOptionLabel(
+  branch: JsonSchema202012,
+  index: number,
+  discriminator: DiscriminatorInfo | undefined,
+): string | undefined {
+  if (branch.type === "null") {
+    return "null";
+  }
+
+  const option = [branch.title?.trim(), branch.description?.trim()]
+    .filter(Boolean)
+    .join(": ")
+    .substring(0, 50);
+
+  if (option) {
+    return option;
+  }
+
+  if (discriminator) {
+    const discriminatorValue = discriminator.options.find(
+      (option) => option.index === index,
+    )?.value;
+    if (discriminatorValue !== undefined) {
+      return `${discriminator.property}: ${String(discriminatorValue)}`;
+    }
   }
 
   return undefined;

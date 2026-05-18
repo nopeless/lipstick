@@ -33,7 +33,6 @@ import {
   getAdditionalPropertySchema,
   isCollapsed,
   isSimpleArrayItemSchema,
-  omitObjectProperty,
   parseLiteralOption,
   reorderArrayItem,
   removeArrayItem,
@@ -161,10 +160,10 @@ function renderUnionField(
     path,
     value,
     html`
-      ${renderUnionSelector(ctx, schema, union, changeBranch)}
+      ${renderUnionSelector(ctx, union, changeBranch)}
       ${branchSchema.type === "null"
         ? nothing
-        : renderUnionBranch(ctx, branchSchema, value, path, union)}
+        : renderUnionBranch(ctx, branchSchema, value, path)}
     `,
   );
 }
@@ -478,14 +477,8 @@ function renderUnionBranch(
   branchSchema: JsonSchema202012,
   value: JsonValue | undefined,
   path: JsonPointerPath,
-  union: NonNullable<ReturnType<typeof describeUnion>>,
 ): TemplateResult {
-  const schema =
-    union.discriminator && isObjectSchema(branchSchema)
-      ? omitObjectProperty(branchSchema, union.discriminator.property)
-      : branchSchema;
-
-  return renderNode(ctx, schema, value, path, {
+  return renderNode(ctx, branchSchema, value, path, {
     required: true,
     present: true,
     framed: false,
@@ -495,7 +488,6 @@ function renderUnionBranch(
 
 function renderUnionSelector(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
   union: NonNullable<ReturnType<typeof describeUnion>>,
   changeBranch: (index: number) => void,
 ): TemplateResult {
@@ -523,30 +515,6 @@ function renderUnionSelector(
       </select>
     </div>
   `;
-
-  if (schema.anyOf?.length && union.kind !== "discriminator") {
-    return renderCycleAndSelect(union.selectedIndex, union.options);
-  }
-
-  if (union.kind === "discriminator" && union.discriminator) {
-    return html`
-      <label>
-        <span>${humanizeLabel(union.discriminator.property)}</span>
-        <select
-          .disabled=${ctx.formDisabled}
-          .value=${String(union.selectedIndex)}
-          @change=${(event: Event) =>
-            changeBranch(Number((event.target as HTMLSelectElement).value))}
-        >
-          ${union.discriminator.options.map(
-            (option) => html`
-              <option value=${String(option.index)}>${String(option.value)}</option>
-            `,
-          )}
-        </select>
-      </label>
-    `;
-  }
 
   if (union.kind === "generic") {
     return renderCycleAndSelect(union.selectedIndex, union.options);
