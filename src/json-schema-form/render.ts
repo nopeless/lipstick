@@ -1007,13 +1007,14 @@ function renderFramedFieldset(
 ): TemplateResult {
   const collapsed = isCollapsed(ctx, path);
   const shouldCollapse = options.collapsible !== false && collapsed;
+  const isUnionContainer = Boolean(schema.oneOf?.length || schema.anyOf?.length);
 
   return html`
     <fieldset ?data-collapsed=${shouldCollapse}>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       <div>
         ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
-        ${renderValidationMessages(ctx, path, schema, value)} ${content}
+        ${isUnionContainer ? nothing : renderValidationMessages(ctx, path, schema, value)} ${content}
       </div>
     </fieldset>
   `;
@@ -1039,6 +1040,8 @@ function getFieldMessages(
       const selectedBranch = resolveSchema(branches[boundedIndex], ctx.rootSchema, value);
       return getFieldMessagesForSchema(selectedBranch, value).get("#") ?? [];
     }
+
+    return getFieldMessagesForSchema(resolved, value).get("#") ?? [];
   }
 
   return ctx.validation.fieldMessages.get(pathToKey(path)) ?? [];
