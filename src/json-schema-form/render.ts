@@ -852,7 +852,6 @@ function renderScalarField(
   options: FieldRenderOptions,
 ): TemplateResult {
   const fieldLabel = options.label ?? schema.title ?? "Value";
-  const collapsed = options.collapsible !== false && isCollapsed(ctx, path);
   const inputId = createInputId(ctx, path);
   const disabled = ctx.formDisabled || schema.readOnly === true;
   const messages = getFieldMessages(ctx, path, schema, value);
@@ -895,7 +894,7 @@ function renderScalarField(
   }
 
   return html`
-    <section ?data-collapsed=${collapsed}>
+    <section>
       ${renderLeafHeader(ctx, fieldLabel, options, path)}
       <div>${renderLeafBody(ctx, schema, path)} ${control.control}</div>
     </section>

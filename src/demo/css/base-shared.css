@@ -30,7 +30,7 @@ lip-stick {
     }
   }
 
-  & :where(section, fieldset)[data-collapsed]>div {
+  & fieldset[data-collapsed]>div {
     display: none;
   }
 
@@ -55,12 +55,12 @@ lip-stick {
     }
   }
 
-  & [data-lipstick-inline] > :where(label, span):first-child {
+  & [data-lipstick-inline]> :where(label, span):first-child {
     grid-column: 1;
     align-self: center;
   }
 
-  & :where([data-lipstick-inline], [data-lipstick-simple-array-item]) > p {
+  & :where([data-lipstick-inline], [data-lipstick-simple-array-item])>p {
     grid-column: 1 / -1;
   }
 
