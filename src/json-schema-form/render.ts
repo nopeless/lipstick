@@ -221,7 +221,7 @@ function renderPrimitiveUnionField(
         </button>`
       : nothing;
 
-  const fieldLabel = options.label ?? schema.title ?? "Value";
+  const fieldLabel = options.label ?? schema.title ?? "";
   if (!schema.description) {
     return renderInlineSimpleField(
       ctx,
@@ -1164,7 +1164,6 @@ function renderInlineSimpleField(
   afterControl: TemplateResult | typeof nothing = nothing,
   path: JsonPointerPath = [],
 ): TemplateResult {
-  const hasLabel = Boolean(label.trim());
   const controls = html`
     ${afterControl}
     ${options.present && options.onRemove
@@ -1174,7 +1173,7 @@ function renderInlineSimpleField(
 
   return html`
     <div data-lipstick-inline>
-      ${hasLabel ? html`<label for=${inputId}>${label}</label>` : nothing} ${control}
+      ${label ? html`<label for=${inputId}>${label}</label>` : nothing} ${control}
       ${afterControl !== nothing || (options.present && options.onRemove)
         ? html`<nav class="lipstick-actions" aria-label="Field controls">${controls}</nav>`
         : nothing}
