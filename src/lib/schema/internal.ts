@@ -1,9 +1,5 @@
 import type { JsonPrimitive, JsonSchema202012, JsonValue } from "../types.js";
 
-export function getBranchLabel(schema: JsonSchema202012, index: number): string {
-  return schema.title?.trim() || `Option ${index + 1}`;
-}
-
 export function getLiteralBranchValue(
   schema: JsonSchema202012,
   resolveSchema: (

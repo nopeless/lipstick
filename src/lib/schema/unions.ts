@@ -1,6 +1,6 @@
 import type { JsonPrimitive, JsonSchema202012, JsonValue } from "../types.js";
 import { isJsonObject } from "../value.js";
-import { getBranchLabel, getLiteralBranchValue } from "./internal.js";
+import { getLiteralBranchValue } from "./internal.js";
 import { matchesSchema, resolveSchema } from "./resolution.js";
 
 export interface DiscriminatorInfo {
@@ -36,9 +36,12 @@ export function describeUnion(
   }
 
   const selectedIndex = preferredIndex ?? pickBestBranchIndex(branches, value, root);
+
+  let unnamedIndex = 0;
+
   const literalOptions = branches.map((branch, index) => ({
     index,
-    label: getBranchLabel(branch, index),
+    label: branch.type === "null" ? "null" : branch.title?.trim() || `Option ${++unnamedIndex}`,
     literal: getLiteralBranchValue(branch, resolveSchema, root),
   }));
 
@@ -137,10 +140,10 @@ export function inferDiscriminator(
 
     return {
       property,
-      options: entries.map((entry) => ({
+      options: entries.map((entry, index) => ({
         index: entry.index,
         value: entry.value,
-        label: getBranchLabel(branches[entry.index], entry.index),
+        label: `Variant ${index + 1}`,
       })),
     };
   }
