@@ -54,7 +54,6 @@ interface ScalarControlOptions {
 
 interface ScalarControlResult {
   control: TemplateResult;
-  multiline: boolean;
   isBoolean: boolean;
 }
 
@@ -274,7 +273,6 @@ function renderScalarControl(
         readonly
         ?data-null=${isNull}
       />`,
-      multiline: false,
       isBoolean: false,
     };
   }
@@ -308,7 +306,6 @@ function renderScalarControl(
           )}
         </select>
       `,
-      multiline: false,
       isBoolean: false,
     };
   }
@@ -327,7 +324,6 @@ function renderScalarControl(
             updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
         />
       `,
-      multiline: false,
       isBoolean: true,
     };
   }
@@ -406,7 +402,6 @@ function renderScalarControl(
             />
           </div>
         `,
-        multiline: false,
         isBoolean: false,
       };
     }
@@ -440,7 +435,6 @@ function renderScalarControl(
             )}
         />
       `,
-      multiline: false,
       isBoolean: false,
     };
   }
@@ -492,11 +486,7 @@ function renderScalarControl(
         />
       `;
 
-  return {
-    control,
-    multiline,
-    isBoolean: false,
-  };
+  return { control, isBoolean: false };
 }
 
 function renderUnionBranch(
@@ -863,7 +853,7 @@ function renderScalarField(
     invalid,
     describedBy: getControlDescribedBy(ctx, schema, path, value),
   });
-  const inlineSimpleValue = !schema.description && !control.isBoolean && !control.multiline;
+  const inlineSimpleValue = !schema.description && !control.isBoolean;
 
   if (inlineSimpleValue || (control.isBoolean && !schema.description)) {
     return renderInlineSimpleField(
