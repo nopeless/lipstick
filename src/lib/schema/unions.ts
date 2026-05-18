@@ -150,6 +150,10 @@ function resolveUnionOptionLabel(
     return "null";
   }
 
+  if (branch.title?.trim()) {
+    return branch.title.trim();
+  }
+
   if (branch.description?.trim()) {
     return branch.description?.trim();
   }
