@@ -70,6 +70,12 @@ lip-stick {
     align-items: center;
   }
 
+  & .lipstick-union-picker {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
   & :where(.lipstick-switch-track, .lipstick-switch-thumb) {
     display: none;
   }

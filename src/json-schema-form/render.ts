@@ -517,22 +517,32 @@ function renderUnionSelector(
   union: NonNullable<ReturnType<typeof describeUnion>>,
   changeBranch: (index: number) => void,
 ): TemplateResult {
+  const renderCycleAndSelect = (
+    selectedIndex: number,
+    options: Array<{ index: number; label: string }>,
+  ): TemplateResult => html`
+    <div class="lipstick-union-picker">
+      <button
+        type="button"
+        class="lipstick-cycle"
+        ?disabled=${ctx.formDisabled}
+        @click=${() => changeBranch((selectedIndex + 1) % options.length)}
+        aria-label="Cycle variant"
+      >
+        ⇄
+      </button>
+      <select
+        .disabled=${ctx.formDisabled}
+        .value=${String(selectedIndex)}
+        @change=${(event: Event) => changeBranch(Number((event.target as HTMLSelectElement).value))}
+      >
+        ${options.map((option) => html` <option value=${String(option.index)}>${option.label}</option> `)}
+      </select>
+    </div>
+  `;
+
   if (schema.anyOf?.length && union.kind !== "discriminator") {
-    return html`
-      <label>
-        <span>Variant</span>
-        <select
-          .disabled=${ctx.formDisabled}
-          .value=${String(union.selectedIndex)}
-          @change=${(event: Event) =>
-            changeBranch(Number((event.target as HTMLSelectElement).value))}
-        >
-          ${union.options.map(
-            (option) => html` <option value=${String(option.index)}>${option.label}</option> `,
-          )}
-        </select>
-      </label>
-    `;
+    return renderCycleAndSelect(union.selectedIndex, union.options);
   }
 
   if (union.kind === "discriminator" && union.discriminator) {
@@ -556,21 +566,7 @@ function renderUnionSelector(
   }
 
   if (union.kind === "generic") {
-    return html`
-      <label>
-        <span>Variant</span>
-        <select
-          .disabled=${ctx.formDisabled}
-          .value=${String(union.selectedIndex)}
-          @change=${(event: Event) =>
-            changeBranch(Number((event.target as HTMLSelectElement).value))}
-        >
-          ${union.options.map(
-            (option) => html` <option value=${String(option.index)}>${option.label}</option> `,
-          )}
-        </select>
-      </label>
-    `;
+    return renderCycleAndSelect(union.selectedIndex, union.options);
   }
 
   return html`
