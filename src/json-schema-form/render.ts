@@ -646,7 +646,7 @@ function renderObjectBody(
         onRemove: () => removeProperty(ctx, [...path, key]),
       }),
     )}
-    ${schema.additionalProperties !== false
+    ${schema.additionalProperties === true
       ? renderAdditionalPropertyComposer(ctx, schema, path)
       : nothing}
   `;
@@ -1014,7 +1014,8 @@ function renderFramedFieldset(
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       <div>
         ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
-        ${isUnionContainer ? nothing : renderValidationMessages(ctx, path, schema, value)} ${content}
+        ${isUnionContainer ? nothing : renderValidationMessages(ctx, path, schema, value)}
+        ${content}
       </div>
     </fieldset>
   `;
