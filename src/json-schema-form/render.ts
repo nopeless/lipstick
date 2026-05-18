@@ -246,7 +246,10 @@ function renderPrimitiveUnionField(
         <span>${fieldLabel}</span>
         ${cycleButton}${removeButton}
       </header>
-      <div>${renderLeafBody(ctx, schema, path)} ${scalarControl}</div>
+      <div>
+        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)} ${scalarControl}
+        ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
+      </div>
     </section>
   `;
 }
@@ -321,7 +324,15 @@ function renderScalarControl(
     const formattedValue = formatNumericValue(numericValue, step);
 
     if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
-      return renderScalarControlRange(ctx, schema, path, options, step, numericValue, formattedValue);
+      return renderScalarControlRange(
+        ctx,
+        schema,
+        path,
+        options,
+        step,
+        numericValue,
+        formattedValue,
+      );
     }
 
     return html`
@@ -841,7 +852,10 @@ function renderScalarField(
   return html`
     <section>
       ${renderLeafHeader(ctx, fieldLabel, { ...options, collapsible: false }, path)}
-      <div>${renderLeafBody(ctx, schema, path)} ${control}</div>
+      <div>
+        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)} ${control}
+        ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
+      </div>
     </section>
   `;
 }
@@ -1026,17 +1040,6 @@ function getControlDescribedBy(
     describedByIds.push(`${inputId}-validation`);
   }
   return describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
-}
-
-function renderLeafBody(
-  ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
-  path: JsonPointerPath,
-): TemplateResult {
-  return html`
-    ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
-    ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
-  `;
 }
 
 function renderLeafMeta(
