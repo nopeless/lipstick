@@ -52,9 +52,7 @@ export function renderForm(ctx: JsonSchemaFormContext) {
     return html`<p role="alert">${ctx.validation.schemaError}</p>`;
   }
 
-  const rootSchema = ctx.rootSchema;
-  const schema = resolveSchema(rootSchema, rootSchema, ctx.value);
-  const serializedValue = JSON.stringify(ctx.value ?? null);
+  const schema = resolveSchema(ctx.rootSchema, ctx.rootSchema, ctx.value);
 
   return html`
     ${renderNode(ctx, schema, ctx.value, [], {
@@ -63,7 +61,9 @@ export function renderForm(ctx: JsonSchemaFormContext) {
       framed: true,
       collapsible: false,
     })}
-    ${ctx.name ? html`<input type="hidden" name=${ctx.name} .value=${serializedValue} />` : nothing}
+    ${ctx.name
+      ? html`<input type="hidden" name=${ctx.name} .value=${JSON.stringify(ctx.value ?? null)} />`
+      : nothing}
   `;
 }
 
@@ -117,9 +117,10 @@ function renderCollapsedOptionalField(
   options: FieldRenderOptions,
 ): TemplateResult {
   const label = options.label ?? schema.title ?? "Field";
-  const collapsedOptions = { ...options, collapsible: false };
 
-  return html` <section>${renderLeafHeader(ctx, label, collapsedOptions, path)}</section> `;
+  return html`
+    <section>${renderLeafHeader(ctx, label, { ...options, collapsible: false }, path)}</section>
+  `;
 }
 
 function renderUnionField(
@@ -176,9 +177,6 @@ function renderPrimitiveUnionField(
   const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
   const inputId = createInputId(ctx, path);
   const messages = getFieldMessages(ctx, path, schema, value);
-  const changeBranch = (index: number) => {
-    switchUnionBranch(ctx, path, value, branches, rootSchema, index);
-  };
   const scalarControl = renderScalarControl(ctx, branchSchema, value, path, {
     inputId,
     disabled: ctx.formDisabled || branchSchema.readOnly === true,
@@ -194,7 +192,15 @@ function renderPrimitiveUnionField(
             type="button"
             class="lipstick-cycle"
             ?disabled=${ctx.formDisabled}
-            @click=${() => changeBranch((union.selectedIndex + 1) % branches.length)}
+            @click=${() =>
+              switchUnionBranch(
+                ctx,
+                path,
+                value,
+                branches,
+                rootSchema,
+                (union.selectedIndex + 1) % branches.length,
+              )}
             aria-label="Cycle variant"
           >
             ⇄
@@ -630,7 +636,7 @@ function renderObjectBody(
       const required = requiredSet.has(key);
       const present = required || key in objectValue;
 
-      return renderObjectProperty(ctx, childSchema, objectValue[key], [...path, key], {
+      return renderNode(ctx, childSchema, objectValue[key], [...path, key], {
         label: childSchema.title ?? humanizeLabel(key),
         required,
         present,
@@ -641,7 +647,7 @@ function renderObjectBody(
       });
     })}
     ${additionalKeys.map((key) =>
-      renderObjectProperty(
+      renderNode(
         ctx,
         getAdditionalPropertySchema(schema),
         objectValue[key],
@@ -660,16 +666,6 @@ function renderObjectBody(
       ? renderAdditionalPropertyComposer(ctx, schema, path)
       : nothing}
   `;
-}
-
-function renderObjectProperty(
-  ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
-  value: JsonValue | undefined,
-  path: JsonPointerPath,
-  options: FieldRenderOptions,
-): TemplateResult {
-  return html` ${renderNode(ctx, schema, value, path, options)} `;
 }
 
 function renderAdditionalPropertyComposer(
@@ -732,10 +728,15 @@ function renderArrayField(
 ): TemplateResult {
   const arrayValue = Array.isArray(value) ? value : [];
   const arrayRules = getArrayMutationRules(schema, arrayValue.length);
-  const nextIndex = arrayRules.nextIndex;
-  const addSchema = getArrayItemSchema(schema, nextIndex) ?? {};
-  const addLabel = addSchema.title;
-  const body = renderArrayBody(ctx, schema, arrayValue, path, nextIndex, addLabel, arrayRules.canAdd);
+  const body = renderArrayBody(
+    ctx,
+    schema,
+    arrayValue,
+    path,
+    arrayRules.nextIndex,
+    (getArrayItemSchema(schema, arrayRules.nextIndex) ?? {}).title,
+    arrayRules.canAdd,
+  );
 
   const framed = options.framed ?? true;
 
