@@ -54,7 +54,6 @@ interface ScalarControlOptions {
 
 interface ScalarControlResult {
   control: TemplateResult;
-  useSpanLabel: boolean;
   multiline: boolean;
   isBoolean: boolean;
 }
@@ -238,7 +237,6 @@ function renderPrimitiveUnionField(
     inputId,
     schema,
     scalarControl.control,
-    scalarControl.useSpanLabel,
     cycleButton,
     path,
   );
@@ -251,10 +249,10 @@ function renderScalarControl(
   path: JsonPointerPath,
   options: ScalarControlOptions,
 ): ScalarControlResult {
-  if (schema.const !== undefined) {
+  if (schema.const !== undefined || acceptsType(schema, "null")) {
+    const fixedValue = schema.const !== undefined ? String(schema.const) : "null";
     return {
-      control: html`<output id=${options.inputId}>${String(schema.const)}</output>`,
-      useSpanLabel: true,
+      control: html`<input id=${options.inputId} type="text" .value=${fixedValue} readonly />`,
       multiline: false,
       isBoolean: false,
     };
@@ -289,7 +287,6 @@ function renderScalarControl(
           )}
         </select>
       `,
-      useSpanLabel: false,
       multiline: false,
       isBoolean: false,
     };
@@ -309,7 +306,6 @@ function renderScalarControl(
             updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
         />
       `,
-      useSpanLabel: false,
       multiline: false,
       isBoolean: true,
     };
@@ -389,7 +385,6 @@ function renderScalarControl(
             />
           </div>
         `,
-        useSpanLabel: false,
         multiline: false,
         isBoolean: false,
       };
@@ -424,16 +419,6 @@ function renderScalarControl(
             )}
         />
       `,
-      useSpanLabel: false,
-      multiline: false,
-      isBoolean: false,
-    };
-  }
-
-  if (acceptsType(schema, "null")) {
-    return {
-      control: html`<code id=${options.inputId} class="lipstick-null-value">null</code>`,
-      useSpanLabel: true,
       multiline: false,
       isBoolean: false,
     };
@@ -488,7 +473,6 @@ function renderScalarControl(
 
   return {
     control,
-    useSpanLabel: false,
     multiline,
     isBoolean: false,
   };
@@ -870,7 +854,6 @@ function renderScalarField(
       inputId,
       schema,
       control.control,
-      control.useSpanLabel,
       options.inlineActions ?? nothing,
       path,
     );
@@ -884,7 +867,6 @@ function renderScalarField(
       inputId,
       schema,
       control.control,
-      control.useSpanLabel,
       options.inlineActions ?? nothing,
       path,
     );
@@ -1219,7 +1201,6 @@ function renderInlineSimpleField(
   inputId: string,
   schema: JsonSchema202012,
   control: TemplateResult,
-  useSpanLabel = false,
   afterControl: TemplateResult | typeof nothing = nothing,
   path: JsonPointerPath = [],
 ): TemplateResult {
@@ -1233,11 +1214,7 @@ function renderInlineSimpleField(
 
   return html`
     <div data-lipstick-inline>
-      ${hasLabel
-        ? useSpanLabel
-          ? html`<span>${label}</span>`
-          : html`<label for=${inputId}>${label}</label>`
-        : nothing}
+      ${hasLabel ? html`<label for=${inputId}>${label}</label>` : nothing}
       ${control}
       ${afterControl !== nothing || (options.present && options.onRemove)
         ? html`<nav class="lipstick-actions" aria-label="Field controls">${controls}</nav>`
