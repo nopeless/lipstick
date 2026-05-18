@@ -23,8 +23,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "oxlint .",
-    "format": "oxfmt --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"vite.config.ts\"",
-    "format:check": "oxfmt --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"vite.config.ts\""
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "lit": "^3.3.2",
