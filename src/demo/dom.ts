@@ -1,7 +1,7 @@
-import type { JsonSchemaFormElement } from "../json-schema-form.js";
+import type { LipstickFormElement } from "../lipstick-form.js";
 
 export interface DemoRefs {
-  form: JsonSchemaFormElement;
+  form: LipstickFormElement;
   output: HTMLElement;
   schemaSourcePicker: HTMLSelectElement;
   schemaUrlInput: HTMLInputElement;
@@ -11,7 +11,7 @@ export interface DemoRefs {
 }
 
 export function getDemoRefs(): DemoRefs {
-  const form = document.querySelector<JsonSchemaFormElement>("#demo");
+  const form = document.querySelector<LipstickFormElement>("#demo");
   const output = document.querySelector<HTMLElement>('[data-role="output"]');
   const schemaSourcePicker = document.querySelector<HTMLSelectElement>(
     '[data-role="schema-source-picker"]',

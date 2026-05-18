@@ -5,7 +5,7 @@ import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
 import type { JsonSchema202012, JsonValue } from "./lib/types.js";
 import { validateValueAgainstSchema, type ValidationSnapshot } from "./lib/validation.js";
 
-export class JsonSchemaFormElement extends LitElement implements JsonSchemaFormContext {
+export class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
   @property({ attribute: false })
   schema?: JsonSchema202012;
 
@@ -82,6 +82,6 @@ export class JsonSchemaFormElement extends LitElement implements JsonSchemaFormC
 
 declare global {
   interface HTMLElementTagNameMap {
-    "lipstick-form": JsonSchemaFormElement;
+    "lipstick-form": LipstickFormElement;
   }
 }
