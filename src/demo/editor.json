@@ -167,6 +167,7 @@
           "shortText",
           "titledScalar",
           "describedScalar",
+          "describedRange",
           "slug",
           "email",
           "website",
@@ -203,6 +204,12 @@
             "description": "Tests scalar helper text rendering when no schema title is provided.",
             "minLength": 1,
             "maxLength": 40
+          },
+          "describedRange": {
+            "type": "number",
+            "description": "Testing section behavior.",
+            "minimum": 0,
+            "maximum": 10
           },
           "slug": {
             "type": "string",
@@ -656,6 +663,7 @@
       "shortText": "alpha",
       "titledScalar": "has title",
       "describedScalar": "generates property name by normalizing",
+      "describedRange": "description here",
       "slug": "alpha-beta",
       "email": "alpha@example.com",
       "website": "https://example.com",
