@@ -1,108 +1,100 @@
-# Lipstick Input Value Semantics (Draft 2020-12)
+# Lipstick Input/Schema Semantics (Concise)
 
-This document describes how `lipstick-form` interprets schema definitions and updates form values.
+Last updated: 2026-05-18
 
-## Scope
+This is a practical reference for how `<lipstick-form>` behaves today.
 
-- Only JSON Schema Draft 2020-12 is supported.
-- Supported `$schema` values:
-  - `https://json-schema.org/draft/2020-12/schema`
-  - `https://json-schema.org/draft/2020-12/schema#`
-  - `http://json-schema.org/draft/2020-12/schema`
-  - `http://json-schema.org/draft/2020-12/schema#`
-- If `$schema` is omitted, the form treats the schema as Draft 2020-12.
-- Any other `$schema` value is rejected and shown as a form-level error.
+## Component Contract
 
-## Event Model
+- Props: `schema`, `value`, `name`, `disabled`, `readonly`.
+- `readonly` and `disabled` both disable interaction.
+- If `name` is set, a hidden input mirrors full JSON as `JSON.stringify(value ?? null)`.
 
-- User edits emit an `input` event with a cloned full-root value.
-- Commit actions emit `change` immediately after `input`.
-- `input` is used for live updates (typing, slider drag).
-- `change` is used for committed updates (blur/select/release).
+## Update Events
 
-## Initialization Rules
+- Edits emit `CustomEvent` detail: `{ value, path, schema }`.
+- `value` is always a cloned full-root JSON value.
+- Live edits emit `input`; committed edits emit `input` then `change`.
+- Structural actions (add/remove/reorder/switch union branch) emit both `input` and `change`.
 
-When a value is created from schema (for required fields, added properties, added array items):
+## Supported Schema Features (as implemented)
 
-- `default` wins first.
-- Else `const` wins.
-- Else first `enum` value wins.
-- `oneOf` and `anyOf` initialize from the first branch.
-- Object fields initialize required children, plus children with `default` or `const`.
-- Arrays initialize as `[]`.
-- Primitive fallback values:
-  - `boolean` -> `false`
-  - `integer` / `number` -> `0`
-  - `null` -> `null`
-  - `string` (or unknown primitive) -> `""`
+- Core: `type`, `enum`, `const`, `default`, `required`, `properties`, `additionalProperties`, `prefixItems`, `items`, `minItems`, `maxItems`.
+- Composition/conditionals: `oneOf`, `anyOf`, `allOf`, `if/then/else`, `dependentRequired`, `dependentSchemas`.
+- Refs: local `$ref` (`#...`) only.
+- Validation engine: TypeBox compile/validate.
 
-## Per-Type Input Behavior
+## Resolution + Validation Notes
 
-- `string`
-  - Uses `<input type="text">` unless format maps to `email`, `url`, `date`, `datetime-local`, or `color`.
-  - Uses `<textarea>` when `format: "textarea"` or `maxLength > 200`.
-  - For `format: "date-time"`, UI uses `datetime-local` for editing, then converts user input to RFC3339 (`YYYY-MM-DDTHH:mm:ss±HH:MM`) before storing.
-  - Existing RFC3339 `date-time` values are converted to local `YYYY-MM-DDTHH:mm` for display in the control.
-- `writeOnly: true`
-  - Uses `<input type="password">`.
-- `boolean`
-  - Uses a checkbox switch.
-- `integer` / `number`
-  - Uses a number input.
-  - If both `minimum` and `maximum` exist, uses range + number pair.
-  - `multipleOf` sets `step`; otherwise integers use `1`, and numbers infer step.
-- `enum`
-  - Uses `<select>`.
-  - If current value is not in enum, first enum value is displayed/used on commit.
-- `const`
-  - Renders as non-editable output.
-- `null`
-  - Renders as non-editable `null`.
+- No strict `$schema` allow-list is enforced by the component.
+- Non-local `$ref` is not resolved; an inline ref warning is shown.
+- Schema compile failures are shown as a form-level error.
+- Validation messages are path-keyed (`#`, `#/...`) and shown inline.
+- `required` and `dependentRequired` errors are expanded to concrete field paths.
 
-## Union Behavior
+## Value Initialization
 
-- `oneOf` / `anyOf` render with a variant selector.
-- Branch selection priority:
-  - explicit user selection for that path
-  - discriminator match (if inferable)
-  - first branch that validates
-  - fallback to branch `0`
-- Switching branches sanitizes the current value to the selected branch shape.
-- Primitive `anyOf` unions render as a compact inline control with cycle support.
+Creation priority:
 
-## Object Behavior
+1. `default`
+2. `const`
+3. first `enum`
+4. first `oneOf` branch
+5. first `anyOf` branch
+6. type fallback
 
-- Required keys are always shown.
-- Optional known keys are add/remove capable.
-- Unknown keys are editable only when `additionalProperties !== false`.
-- Added dynamic keys use the `additionalProperties` schema when provided; otherwise open schema `{}`.
-- `dependentRequired` contributes to runtime required-key calculation.
+Type fallback:
 
-## Array Behavior
+- object: required fields + fields with `default`/`const`
+- array: `[]`
+- boolean: `false`
+- number/integer: `0`
+- null: `null`
+- string/other: `""`
 
-- Item schema resolution order:
-  - `prefixItems[index]`
-  - `items` schema (or open `{}` if `items` is absent/object)
-- Add is hidden when `maxItems` is reached.
-- Add is also hidden when `items === false` and `prefixItems` are exhausted.
-- Remove is allowed for any index when current array length is greater than `minItems`.
-- Remove actions are shown for all items whenever add/remove is possible for the array; hidden only when array length is fixed by schema constraints.
-- Reorder controls are hidden when neither move direction is valid, and `prefixItems` positions are protected from reordering.
+## Sanitization Rules
 
-## Validation Behavior
+- `const` is forced.
+- Invalid `enum` value falls back to first enum option.
+- `oneOf`/`anyOf` sanitize against selected branch.
+- Object unknown keys:
+  - removed when `additionalProperties: false`
+  - sanitized by `additionalProperties` schema when provided
+  - otherwise kept
+- Array items sanitize by `prefixItems[index]`, else `items`, else `{}`.
+- Arrays are truncated to `maxItems`.
 
-- Validation uses `typebox` (`typebox/schema`) against the current root value.
-- Errors are mapped to field paths using JSON Pointer.
-- Required/dependent/additional-property errors are expanded to concrete field paths when possible.
-- Invalid fields receive:
-  - `aria-invalid="true"`
-  - `aria-errormessage` reference
-  - inline error text (`role="alert"`)
+## Rendering Behavior
 
-## Semantics and Accessibility
+- Scalars:
+  - `const`/`null`: readonly text
+  - `enum`: select
+  - `boolean`: checkbox
+  - `number`/`integer`: number input, or range + number when both min/max exist
+  - strings: text input; textarea for `format: "textarea"` or `maxLength > 200`
+  - string formats map to `email`, `url`, `date`, `datetime-local`, `color`
+  - `writeOnly` uses password input
+- Date-time values are edited via `datetime-local` and stored as offset date-time strings (`YYYY-MM-DDTHH:mm:ss±HH:MM`).
 
-- Editable controls are label-associated by `for/id`.
-- Fields are treated as implicitly required unless a remove (`x`) action is shown for that field.
-- Required controls set HTML `required` where meaningful.
-- Controls reference description and validation text through `aria-describedby`.
-- `readOnly` schema or form-level disabled state disables interaction.
+## Unions, Objects, Arrays
+
+- Union branch selection priority:
+  - explicit prior selection
+  - discriminator literal match
+  - first validating branch
+  - index `0`
+- Switching branches sanitizes current value to branch shape.
+- Objects:
+  - required fields always visible
+  - optional known fields are add/remove
+  - additional keys are addable when `additionalProperties !== false`
+- Arrays:
+  - add hidden when blocked by `maxItems` or tuple exhaustion (`items: false`)
+  - remove allowed when `length > minItems`
+  - tuple prefix region is protected from reorder/mutation across boundary
+
+## Known Gaps
+
+- No remote `$ref` resolution.
+- `patternProperties` is not used to drive dynamic-key UI behavior.
+- Many JSON Schema keywords are validator-only (not enforced by UI mechanics).
