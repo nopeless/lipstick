@@ -16,6 +16,7 @@ export interface FieldRenderOptions {
   onAdd?: () => void
   onRemove?: () => void
   removeLabel?: string
+  removeDisabled?: boolean
   deferValidationMessage?: boolean
 }
 

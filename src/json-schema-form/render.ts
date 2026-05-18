@@ -787,8 +787,15 @@ function renderArrayItem(
   const itemPath = [...path, index];
   const itemSchema = getArrayItemSchema(schema, index) ?? {};
   const prefixItemsLength = schema.prefixItems?.length ?? 0;
-  const canRemove = index >= (schema.minItems ?? 0);
   const arrayValue = getValueAtPath(ctx.value, path);
+  const arrayLength = Array.isArray(arrayValue) ? arrayValue.length : 0;
+  const canRemove = arrayLength > (schema.minItems ?? 0);
+  const nextIndex = arrayLength;
+  const withinMaxItems = schema.maxItems === undefined || nextIndex < schema.maxItems;
+  const canAdd =
+    withinMaxItems && (schema.items !== false || nextIndex < (schema.prefixItems?.length ?? 0));
+  const canRemoveAny = arrayLength > (schema.minItems ?? 0);
+  const showRemoveAction = canAdd || canRemoveAny;
   const canMoveUp = index > prefixItemsLength;
   const canMoveDown =
     Array.isArray(arrayValue) &&
@@ -819,7 +826,7 @@ function renderArrayItem(
             canMoveDown,
             prefixItemsLength,
           )}
-          ${renderArrayItemRemoveAction(ctx, itemPath, canRemove)}
+          ${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
         </nav>
         ${renderValidationMessages(ctx, itemPath, itemSchema, item)}
       </article>
@@ -843,7 +850,8 @@ function renderArrayItem(
           prefixItemsLength,
         )}`,
         removeLabel: "Delete array item",
-        onRemove: canRemove ? () => removeArrayItem(ctx, itemPath) : undefined,
+        removeDisabled: !canRemove,
+        onRemove: showRemoveAction ? () => removeArrayItem(ctx, itemPath) : undefined,
       })}
     </article>
   `;
@@ -947,7 +955,9 @@ function renderFieldsetHeader(
               <span aria-hidden="true"> ${collapsed ? "+" : "−"} </span>
             </button>
           `}
-      ${options.onRemove ? renderRemoveButton(ctx, options.onRemove, options.removeLabel) : nothing}
+      ${options.onRemove
+        ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
+        : nothing}
     </legend>
   `;
 }
@@ -970,7 +980,12 @@ function renderLeafHeader(
         ${options.headerPrefix ?? nothing}
         <span>${label}</span>
         ${options.present && options.onRemove
-          ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
+          ? renderRemoveButton(
+              ctx,
+              options.onRemove,
+              options.removeLabel,
+              options.removeDisabled,
+            )
           : nothing}
       </header>
     `;
@@ -989,7 +1004,7 @@ function renderLeafHeader(
         <span aria-hidden="true"> ${collapsed ? "+" : "−"} </span>
       </button>
       ${options.present && options.onRemove
-        ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
+        ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
         : nothing}
     </header>
   `;
@@ -1124,32 +1139,24 @@ function renderArrayItemReorderActions(
   }
 
   return html`
-    ${canMoveUp
-      ? html`
-          <button
-            type="button"
-            class="lipstick-move-up"
-            ?disabled=${ctx.formDisabled}
-            @click=${() => reorderArrayItem(ctx, path, index, index - 1, prefixItemsLength)}
-            aria-label="Move item up"
-          >
-            ↑
-          </button>
-        `
-      : nothing}
-    ${canMoveDown
-      ? html`
-          <button
-            type="button"
-            class="lipstick-move-down"
-            ?disabled=${ctx.formDisabled}
-            @click=${() => reorderArrayItem(ctx, path, index, index + 1, prefixItemsLength)}
-            aria-label="Move item down"
-          >
-            ↓
-          </button>
-        `
-      : nothing}
+    <button
+      type="button"
+      class="lipstick-move-up"
+      ?disabled=${ctx.formDisabled || !canMoveUp}
+      @click=${() => reorderArrayItem(ctx, path, index, index - 1, prefixItemsLength)}
+      aria-label="Move item up"
+    >
+      ↑
+    </button>
+    <button
+      type="button"
+      class="lipstick-move-down"
+      ?disabled=${ctx.formDisabled || !canMoveDown}
+      @click=${() => reorderArrayItem(ctx, path, index, index + 1, prefixItemsLength)}
+      aria-label="Move item down"
+    >
+      ↓
+    </button>
   `;
 }
 
@@ -1198,12 +1205,13 @@ function renderRemoveButton(
   ctx: JsonSchemaFormContext,
   action: () => void,
   label = "Remove optional field",
+  disabled = false,
 ): TemplateResult {
   return html`
     <button
       type="button"
       class="lipstick-remove"
-      ?disabled=${ctx.formDisabled}
+      ?disabled=${ctx.formDisabled || disabled}
       @click=${(event: Event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -1231,7 +1239,7 @@ function renderInlineSimpleField(
   const controls = html`
     ${afterControl}
     ${options.present && options.onRemove
-      ? renderRemoveButton(ctx, options.onRemove, options.removeLabel)
+      ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
       : nothing}
   `;
 
