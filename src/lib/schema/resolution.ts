@@ -1,12 +1,7 @@
 import type { JsonPointerPath, JsonSchema202012, JsonValue } from "../types.js";
 import { Check } from "typebox/value";
 import { isJsonObject } from "../value.js";
-import { mergeSchemas, resolveLocalRefs, isSchemaObject, REF_ERROR_KEY } from "./internal.js";
-
-export function getRefError(schema: JsonSchema202012): string | undefined {
-  const candidate = schema[REF_ERROR_KEY];
-  return typeof candidate === "string" ? candidate : undefined;
-}
+import { mergeSchemas, resolveLocalRefs, isSchemaObject } from "./internal.js";
 
 export * from "./internal.js";
 

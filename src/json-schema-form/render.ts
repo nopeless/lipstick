@@ -4,7 +4,6 @@ import {
   acceptsType,
   describeUnion,
   getArrayItemSchema,
-  getRefError,
   getRequiredProperties,
   humanizeLabel,
   isArraySchema,
@@ -247,7 +246,7 @@ function renderPrimitiveUnionField(
         ${cycleButton}${removeButton}
       </header>
       <div>
-        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)} ${scalarControl}
+        ${renderDescription(ctx, schema, path)} ${scalarControl}
         ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
       </div>
     </section>
@@ -853,7 +852,7 @@ function renderScalarField(
     <section>
       ${renderLeafHeader(ctx, fieldLabel, { ...options, collapsible: false }, path)}
       <div>
-        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)} ${control}
+        ${renderDescription(ctx, schema, path)} ${control}
         ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
       </div>
     </section>
@@ -952,11 +951,6 @@ function renderDescription(
   return schema.description ? html`<p>${schema.description}</p>` : nothing;
 }
 
-function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof nothing {
-  const refError = getRefError(schema);
-  return refError ? html`<p>${refError}</p>` : nothing;
-}
-
 function renderValidationMessages(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
@@ -987,7 +981,7 @@ function renderFramedFieldset(
     <fieldset ?data-collapsed=${shouldCollapse}>
       ${renderFieldsetHeader(ctx, schema, options, path, collapsed)}
       <div>
-        ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
+        ${renderDescription(ctx, schema, path)}
         ${isUnionContainer ? nothing : renderValidationMessages(ctx, path, schema, value)}
         ${content}
       </div>
@@ -1033,9 +1027,6 @@ function getControlDescribedBy(
   if (schema.description) {
     describedByIds.push(`${inputId}-description`);
   }
-  if (getRefError(schema)) {
-    describedByIds.push(`${inputId}-ref-error`);
-  }
   if (getFieldMessages(ctx, path, schema, value).length > 0) {
     describedByIds.push(`${inputId}-validation`);
   }
@@ -1047,7 +1038,7 @@ function renderLeafMeta(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  return html` ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)} `;
+  return html` ${renderDescription(ctx, schema, path)} `;
 }
 
 function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {

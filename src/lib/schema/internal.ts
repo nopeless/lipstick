@@ -1,7 +1,5 @@
 import type { JsonPrimitive, JsonSchema202012, JsonValue } from "../types.js";
 
-export const REF_ERROR_KEY = "x-lipstick-ref-error";
-
 export function getBranchLabel(schema: JsonSchema202012, index: number): string {
   return schema.title?.trim() || `Option ${index + 1}`;
 }
@@ -152,26 +150,17 @@ export function resolveLocalRefs(
   }
 
   if (!schema.$ref.startsWith("#")) {
-    return {
-      ...omitSchemaKeys(schema, ["$ref"]),
-      [REF_ERROR_KEY]: `Unsupported non-local $ref: ${schema.$ref}`,
-    };
+    return omitSchemaKeys(schema, ["$ref"]);
   }
 
   if (seen.has(schema.$ref)) {
-    return {
-      ...omitSchemaKeys(schema, ["$ref"]),
-      [REF_ERROR_KEY]: `Circular $ref detected: ${schema.$ref}`,
-    };
+    return omitSchemaKeys(schema, ["$ref"]);
   }
 
   const target = resolvePointer(root, schema.$ref);
 
   if (!isSchemaObject(target)) {
-    return {
-      ...omitSchemaKeys(schema, ["$ref"]),
-      [REF_ERROR_KEY]: `Unresolved $ref: ${schema.$ref}`,
-    };
+    return omitSchemaKeys(schema, ["$ref"]);
   }
 
   const nextSeen = new Set(seen);
