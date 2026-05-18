@@ -851,10 +851,8 @@ function renderScalarField(
   return html`
     <section>
       ${renderLeafHeader(ctx, fieldLabel, { ...options, collapsible: false }, path)}
-      <div>
-        ${renderDescription(ctx, schema, path)} ${control}
-        ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
-      </div>
+      ${renderDescription(ctx, schema, path)} ${control}
+      ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
     </section>
   `;
 }

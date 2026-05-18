@@ -2,13 +2,23 @@ lipstick-form {
   display: block;
   color: inherit;
 
-  input[readonly] {
+  & input[readonly] {
     background: transparent;
     pointer-events: none;
     border: none;
 
     &[data-null] {
       font-family: 'Courier New', Courier, monospace;
+    }
+  }
+
+  & section {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    & button {
+      align-self: flex-start;
     }
   }
 
