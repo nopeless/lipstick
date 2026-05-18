@@ -44,6 +44,28 @@ import {
   updatePathValue,
 } from "./state.js";
 
+interface ScalarControlOptions {
+  inputId: string;
+  disabled: boolean;
+  required: boolean;
+  invalid: boolean;
+  describedBy?: string;
+}
+
+interface ScalarControlResult {
+  control: TemplateResult;
+  useSpanLabel: boolean;
+  multiline: boolean;
+  isBoolean: boolean;
+}
+
+interface ArrayMutationRules {
+  nextIndex: number;
+  canAdd: boolean;
+  canRemoveAny: boolean;
+  canMutate: boolean;
+}
+
 export function renderForm(ctx: JsonSchemaFormContext) {
   if (!ctx.schema) {
     return nothing;
@@ -220,21 +242,6 @@ function renderPrimitiveUnionField(
     cycleButton,
     path,
   );
-}
-
-interface ScalarControlOptions {
-  inputId: string;
-  disabled: boolean;
-  required: boolean;
-  invalid: boolean;
-  describedBy?: string;
-}
-
-interface ScalarControlResult {
-  control: TemplateResult;
-  useSpanLabel: boolean;
-  multiline: boolean;
-  isBoolean: boolean;
 }
 
 function renderScalarControl(
@@ -1120,13 +1127,6 @@ function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): st
 function formatObjectArrayItemLabel(schema: JsonSchema202012, index: number): string {
   const title = schema.title?.trim() || "Item";
   return `${title} ${index + 1}`;
-}
-
-interface ArrayMutationRules {
-  nextIndex: number;
-  canAdd: boolean;
-  canRemoveAny: boolean;
-  canMutate: boolean;
 }
 
 function getArrayMutationRules(schema: JsonSchema202012, arrayLength: number): ArrayMutationRules {

@@ -2,11 +2,6 @@ import Schema from "typebox/schema";
 import type { TLocalizedValidationError } from "typebox/error";
 import type { JsonSchema202012, JsonValue } from "./types.js";
 
-export const DRAFT_2020_12_SCHEMA_URI = "https://json-schema.org/draft/2020-12/schema";
-
-const validatorCache = new WeakMap<JsonSchema202012, ReturnType<typeof Schema.Compile>>();
-const validatorErrorCache = new WeakMap<JsonSchema202012, string>();
-
 export interface ValidationIssue {
   keyword: string;
   instancePath: string;
@@ -19,6 +14,11 @@ export interface ValidationSnapshot {
   fieldMessages: Map<string, string[]>;
   schemaError?: string;
 }
+
+export const DRAFT_2020_12_SCHEMA_URI = "https://json-schema.org/draft/2020-12/schema";
+
+const validatorCache = new WeakMap<JsonSchema202012, ReturnType<typeof Schema.Compile>>();
+const validatorErrorCache = new WeakMap<JsonSchema202012, string>();
 
 export function validateValueAgainstSchema(
   schema: JsonSchema202012,
