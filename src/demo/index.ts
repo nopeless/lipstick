@@ -9,8 +9,18 @@ import type { JsonSchema202012 } from "../index.js";
 let value: JsonValue = null;
 
 const refs = getDemoRefs();
+const THEME_LINK_DATA_ATTR = "data-demo-theme";
+const THEME_STORAGE_KEY = "lipstick-demo-theme";
+
+const themeStyles = {
+  none: undefined,
+  "easy-eye": new URL("./css/theme-easy-eye.css", import.meta.url).href,
+} as const;
+
+type DemoTheme = keyof typeof themeStyles;
 
 refs.schemaSourcePicker.value = "editor";
+initializeThemePicker();
 setStatus("Loading editor demo...");
 void bootstrap();
 
@@ -50,6 +60,13 @@ refs.schemaJson.addEventListener("input", autoSizeSchemaJson);
 
 refs.schemaSourcePicker.addEventListener("change", (event: Event) => {
   void loadSelectedDemo((event.target as HTMLSelectElement).value as DemoFixtureName);
+});
+
+refs.themePicker.addEventListener("change", (event: Event) => {
+  const nextTheme = coerceTheme((event.target as HTMLSelectElement).value);
+  refs.themePicker.value = nextTheme;
+  applyTheme(nextTheme);
+  persistTheme(nextTheme);
 });
 
 document.querySelector<HTMLButtonElement>('[data-role="scroll-top"]')?.addEventListener("click", () => {
@@ -132,4 +149,69 @@ function applyPastedSchema(schemaText = refs.schemaJson.value) {
 function autoSizeSchemaJson() {
   refs.schemaJson.style.height = "auto";
   refs.schemaJson.style.height = `${refs.schemaJson.scrollHeight}px`;
+}
+
+function initializeThemePicker() {
+  const desiredOptions: Array<{ value: DemoTheme; label: string }> = [
+    { value: "none", label: "None" },
+    { value: "easy-eye", label: "Easy Eye" },
+  ];
+
+  for (const option of desiredOptions) {
+    if (refs.themePicker.querySelector(`option[value="${option.value}"]`)) {
+      continue;
+    }
+
+    refs.themePicker.append(new Option(option.label, option.value));
+  }
+
+  const savedTheme = readPersistedTheme();
+  refs.themePicker.value = savedTheme;
+  applyTheme(savedTheme);
+}
+
+function applyTheme(theme: DemoTheme) {
+  const existingThemeLink = document.head.querySelector<HTMLLinkElement>(
+    `link[${THEME_LINK_DATA_ATTR}]`,
+  );
+  const stylesheetHref = themeStyles[theme];
+
+  if (!stylesheetHref) {
+    existingThemeLink?.remove();
+    return;
+  }
+
+  const themeLink = existingThemeLink ?? document.createElement("link");
+  themeLink.rel = "stylesheet";
+  themeLink.setAttribute(THEME_LINK_DATA_ATTR, "true");
+  themeLink.href = stylesheetHref;
+
+  if (!existingThemeLink) {
+    document.head.append(themeLink);
+  }
+}
+
+function readPersistedTheme(): DemoTheme {
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    return coerceTheme(stored);
+  } catch {
+    return "none";
+  }
+}
+
+function persistTheme(theme: DemoTheme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Ignore storage access errors in restricted contexts.
+  }
+}
+
+function coerceTheme(value: string | null | undefined): DemoTheme {
+  if (value && value in themeStyles) {
+    return value as DemoTheme;
+  }
+
+  return "none";
 }
