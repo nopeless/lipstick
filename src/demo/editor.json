@@ -20,7 +20,10 @@
         "type": "object",
         "title": "Person",
         "description": "Tests a reusable object ref with required fields and an enum.",
-        "required": ["name", "email"],
+        "required": [
+          "name",
+          "email"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -34,25 +37,36 @@
           "role": {
             "type": "string",
             "title": "Role",
-            "enum": ["editor", "designer", "reviewer", "owner"]
+            "enum": [
+              "editor",
+              "designer",
+              "reviewer",
+              "owner"
+            ]
           },
           "phone": {
             "type": "string",
             "title": "Phone"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "money": {
         "type": "object",
         "title": "Money",
         "description": "Tests a reusable object ref with numeric bounds and defaults.",
-        "required": ["currency", "amount"],
+        "required": [
+          "currency",
+          "amount"
+        ],
         "properties": {
           "currency": {
             "type": "string",
             "title": "Currency",
-            "enum": ["USD", "EUR", "GBP"],
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
             "default": "USD"
           },
           "amount": {
@@ -62,14 +76,16 @@
             "maximum": 100000,
             "multipleOf": 0.01
           }
-        },
-        "additionalProperties": false
+        }
       },
       "attachment": {
         "type": "object",
         "title": "Attachment",
         "description": "Tests nested media objects with URI, text, and optional metadata.",
-        "required": ["url", "alt"],
+        "required": [
+          "url",
+          "alt"
+        ],
         "properties": {
           "url": {
             "type": "string",
@@ -83,21 +99,26 @@
           "kind": {
             "type": "string",
             "title": "Kind",
-            "enum": ["image", "file"]
+            "enum": [
+              "image",
+              "file"
+            ]
           },
           "caption": {
             "type": "string",
             "title": "Caption",
             "maxLength": 140
           }
-        },
-        "additionalProperties": false
+        }
       },
       "auditStamp": {
         "type": "object",
         "title": "Audit stamp",
         "description": "Tests allOf composition with required timestamp fields.",
-        "required": ["createdAt", "updatedAt"],
+        "required": [
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
           "createdAt": {
             "type": "string",
@@ -109,14 +130,16 @@
             "title": "Updated at",
             "format": "date-time"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "fixedPrice": {
         "type": "object",
         "title": "Fixed price",
         "description": "Tests oneOf branches with a fixed pricing mode.",
-        "required": ["mode", "price"],
+        "required": [
+          "mode",
+          "price"
+        ],
         "properties": {
           "mode": {
             "const": "fixed",
@@ -128,14 +151,16 @@
           "salePrice": {
             "$ref": "#/$defs/money"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "tieredPrice": {
         "type": "object",
         "title": "Tiered price",
         "description": "Tests oneOf branches with nested arrays of objects.",
-        "required": ["mode", "tiers"],
+        "required": [
+          "mode",
+          "tiers"
+        ],
         "properties": {
           "mode": {
             "const": "tiered",
@@ -147,7 +172,10 @@
             "minItems": 1,
             "items": {
               "type": "object",
-              "required": ["minimum", "price"],
+              "required": [
+                "minimum",
+                "price"
+              ],
               "properties": {
                 "minimum": {
                   "type": "integer",
@@ -157,12 +185,10 @@
                 "price": {
                   "$ref": "#/$defs/money"
                 }
-              },
-              "additionalProperties": false
+              }
             }
           }
-        },
-        "additionalProperties": false
+        }
       }
     },
     "properties": {
@@ -270,19 +296,26 @@
               }
             ]
           }
-        },
-        "additionalProperties": false
+        }
       },
       "enums": {
         "type": "object",
         "title": "Enums",
         "description": "Tests enum rendering and const handling.",
-        "required": ["status", "kind", "mode"],
+        "required": [
+          "status",
+          "kind",
+          "mode"
+        ],
         "properties": {
           "status": {
             "type": "string",
             "title": "Status",
-            "enum": ["draft", "review", "published"]
+            "enum": [
+              "draft",
+              "review",
+              "published"
+            ]
           },
           "kind": {
             "const": "test-case",
@@ -291,16 +324,22 @@
           "mode": {
             "type": "string",
             "title": "Mode",
-            "enum": ["manual", "automatic"]
+            "enum": [
+              "manual",
+              "automatic"
+            ]
           }
-        },
-        "additionalProperties": false
+        }
       },
       "arrays": {
         "type": "object",
         "title": "Arrays",
         "description": "Tests plain arrays, tuple arrays, and arrays of refs.",
-        "required": ["tags", "tuple", "attachments"],
+        "required": [
+          "tags",
+          "tuple",
+          "attachments"
+        ],
         "properties": {
           "tags": {
             "type": "array",
@@ -342,19 +381,24 @@
               "$ref": "#/$defs/attachment"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "objects": {
         "type": "object",
         "title": "Objects",
         "description": "Tests closed objects and nested object shapes.",
-        "required": ["closedRecord", "nestedRecord"],
+        "required": [
+          "closedRecord",
+          "nestedRecord"
+        ],
         "properties": {
           "closedRecord": {
             "type": "object",
             "title": "Closed record",
-            "required": ["id", "label"],
+            "required": [
+              "id",
+              "label"
+            ],
             "properties": {
               "id": {
                 "type": "string",
@@ -369,13 +413,15 @@
                 "title": "Active",
                 "default": true
               }
-            },
-            "additionalProperties": false
+            }
           },
           "nestedRecord": {
             "type": "object",
             "title": "Nested record",
-            "required": ["owner", "attachment"],
+            "required": [
+              "owner",
+              "attachment"
+            ],
             "properties": {
               "owner": {
                 "$ref": "#/$defs/person"
@@ -383,17 +429,19 @@
               "attachment": {
                 "$ref": "#/$defs/attachment"
               }
-            },
-            "additionalProperties": false
+            }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "refs": {
         "type": "object",
         "title": "Refs",
         "description": "Tests direct $ref rendering for reusable definitions.",
-        "required": ["personRef", "moneyRef", "attachmentRef"],
+        "required": [
+          "personRef",
+          "moneyRef",
+          "attachmentRef"
+        ],
         "properties": {
           "personRef": {
             "$ref": "#/$defs/person"
@@ -404,14 +452,17 @@
           "attachmentRef": {
             "$ref": "#/$defs/attachment"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "composition": {
         "type": "object",
         "title": "Composition",
         "description": "Tests allOf, anyOf, and oneOf in separate branches.",
-        "required": ["identity", "contactChoice", "pricingStrategy"],
+        "required": [
+          "identity",
+          "contactChoice",
+          "pricingStrategy"
+        ],
         "properties": {
           "identity": {
             "title": "Identity",
@@ -435,7 +486,10 @@
               {
                 "type": "object",
                 "title": "Contact card",
-                "required": ["name", "email"],
+                "required": [
+                  "name",
+                  "email"
+                ],
                 "properties": {
                   "name": {
                     "type": "string",
@@ -450,8 +504,7 @@
                     "type": "string",
                     "title": "Phone"
                   }
-                },
-                "additionalProperties": false
+                }
               }
             ]
           },
@@ -466,24 +519,32 @@
               }
             ]
           }
-        },
-        "additionalProperties": false
+        }
       },
       "conditionals": {
         "type": "object",
         "title": "Conditionals",
         "description": "Tests if/then/else, dependentRequired, and dependentSchemas.",
-        "required": ["schedule", "approvalRules", "ssoConfig"],
+        "required": [
+          "schedule",
+          "approvalRules",
+          "ssoConfig"
+        ],
         "properties": {
           "schedule": {
             "type": "object",
             "title": "Schedule",
-            "required": ["mode"],
+            "required": [
+              "mode"
+            ],
             "properties": {
               "mode": {
                 "type": "string",
                 "title": "Mode",
-                "enum": ["immediate", "scheduled"]
+                "enum": [
+                  "immediate",
+                  "scheduled"
+                ]
               },
               "publishAt": {
                 "type": "string",
@@ -506,20 +567,28 @@
                   "const": "scheduled"
                 }
               },
-              "required": ["mode"]
+              "required": [
+                "mode"
+              ]
             },
             "then": {
-              "required": ["publishAt", "timezone"]
+              "required": [
+                "publishAt",
+                "timezone"
+              ]
             },
             "else": {
-              "required": ["notes"]
-            },
-            "additionalProperties": false
+              "required": [
+                "notes"
+              ]
+            }
           },
           "approvalRules": {
             "type": "object",
             "title": "Approval rules",
-            "required": ["approvalRequired"],
+            "required": [
+              "approvalRequired"
+            ],
             "properties": {
               "approvalRequired": {
                 "type": "boolean",
@@ -535,19 +604,26 @@
               }
             },
             "dependentRequired": {
-              "approvalRequired": ["approvers"]
-            },
-            "additionalProperties": false
+              "approvalRequired": [
+                "approvers"
+              ]
+            }
           },
           "ssoConfig": {
             "type": "object",
             "title": "SSO config",
-            "required": ["provider"],
+            "required": [
+              "provider"
+            ],
             "properties": {
               "provider": {
                 "type": "string",
                 "title": "Provider",
-                "enum": ["saml", "oauth", "passwordless"]
+                "enum": [
+                  "saml",
+                  "oauth",
+                  "passwordless"
+                ]
               },
               "issuerUrl": {
                 "type": "string",
@@ -566,19 +642,25 @@
             },
             "dependentSchemas": {
               "provider": {
-                "required": ["issuerUrl", "clientId", "clientSecret"]
+                "required": [
+                  "issuerUrl",
+                  "clientId",
+                  "clientSecret"
+                ]
               }
-            },
-            "additionalProperties": false
+            }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "maps": {
         "type": "object",
         "title": "Maps",
         "description": "Tests open-ended objects and key-patterned maps.",
-        "required": ["stringMap", "booleanMap", "patternMap"],
+        "required": [
+          "stringMap",
+          "booleanMap",
+          "patternMap"
+        ],
         "properties": {
           "stringMap": {
             "type": "object",
@@ -605,17 +687,19 @@
               "^flag-": {
                 "type": "boolean"
               }
-            },
-            "additionalProperties": false
+            }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "secrets": {
         "type": "object",
         "title": "Secrets",
         "description": "Tests readOnly, writeOnly, and defaulted fields together.",
-        "required": ["readOnlyId", "apiSecret", "webhookSecret"],
+        "required": [
+          "readOnlyId",
+          "apiSecret",
+          "webhookSecret"
+        ],
         "properties": {
           "readOnlyId": {
             "type": "string",
@@ -637,11 +721,9 @@
             "title": "Enabled",
             "default": true
           }
-        },
-        "additionalProperties": false
+        }
       }
-    },
-    "additionalProperties": false
+    }
   },
   "value": {
     "primitives": {
@@ -662,8 +744,15 @@
       "mode": "manual"
     },
     "arrays": {
-      "tags": ["one", "two"],
-      "tuple": ["primary", 2, true],
+      "tags": [
+        "one",
+        "two"
+      ],
+      "tuple": [
+        "primary",
+        2,
+        true
+      ],
       "attachments": [
         {
           "url": "https://example.com/assets/a.png",

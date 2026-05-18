@@ -4,34 +4,61 @@
     "title": "Marketplace Listing Builder",
     "description": "A larger JSON Schema 2020-12 demo with refs, nested objects, arrays, unions, conditionals, and additional properties.",
     "type": "object",
-    "required": ["product", "pricing", "inventory", "fulfillment", "marketing", "compliance"],
+    "required": [
+      "product",
+      "pricing",
+      "inventory",
+      "fulfillment",
+      "marketing",
+      "compliance"
+    ],
     "$defs": {
       "category": {
         "type": "string",
         "title": "Category",
-        "enum": ["beauty", "fashion", "home", "wellness", "electronics", "grocery"]
+        "enum": [
+          "beauty",
+          "fashion",
+          "home",
+          "wellness",
+          "electronics",
+          "grocery"
+        ]
       },
       "money": {
         "type": "object",
         "title": "Money",
-        "required": ["currency", "amount"],
+        "required": [
+          "currency",
+          "amount"
+        ],
         "properties": {
           "currency": {
             "type": "string",
-            "enum": ["USD", "EUR", "GBP"],
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
             "default": "USD"
           },
           "amount": {
             "type": "number",
             "minimum": 0
           }
-        },
-        "additionalProperties": false
+        }
       },
       "address": {
         "type": "object",
         "title": "Address",
-        "required": ["name", "line1", "city", "region", "postalCode", "country"],
+        "required": [
+          "name",
+          "line1",
+          "city",
+          "region",
+          "postalCode",
+          "country"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -62,13 +89,15 @@
             "title": "Country",
             "default": "US"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "image": {
         "type": "object",
         "title": "Image",
-        "required": ["url", "alt"],
+        "required": [
+          "url",
+          "alt"
+        ],
         "properties": {
           "url": {
             "type": "string",
@@ -82,13 +111,16 @@
             "type": "string",
             "title": "Caption"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "seo": {
         "type": "object",
         "title": "SEO",
-        "required": ["slug", "title", "description"],
+        "required": [
+          "slug",
+          "title",
+          "description"
+        ],
         "properties": {
           "slug": {
             "type": "string",
@@ -110,13 +142,16 @@
               "type": "string"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "warehouse": {
         "type": "object",
         "title": "Warehouse",
-        "required": ["name", "location", "priority"],
+        "required": [
+          "name",
+          "location",
+          "priority"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -136,13 +171,16 @@
             "title": "Active",
             "default": true
           }
-        },
-        "additionalProperties": false
+        }
       },
       "testimonial": {
         "type": "object",
         "title": "Testimonial",
-        "required": ["quote", "author", "role"],
+        "required": [
+          "quote",
+          "author",
+          "role"
+        ],
         "properties": {
           "quote": {
             "type": "string",
@@ -156,13 +194,16 @@
             "type": "string",
             "title": "Role"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "variant": {
         "type": "object",
         "title": "Variant",
-        "required": ["sku", "label", "price"],
+        "required": [
+          "sku",
+          "label",
+          "price"
+        ],
         "properties": {
           "sku": {
             "type": "string",
@@ -186,13 +227,15 @@
               "type": "string"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "faqItem": {
         "type": "object",
         "title": "FAQ item",
-        "required": ["question", "answer"],
+        "required": [
+          "question",
+          "answer"
+        ],
         "properties": {
           "question": {
             "type": "string",
@@ -202,15 +245,19 @@
             "type": "string",
             "title": "Answer"
           }
-        },
-        "additionalProperties": false
+        }
       }
     },
     "properties": {
       "product": {
         "type": "object",
         "title": "Product",
-        "required": ["name", "slug", "category", "primaryImage"],
+        "required": [
+          "name",
+          "slug",
+          "category",
+          "primaryImage"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -260,8 +307,7 @@
               "type": "string"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "pricing": {
         "title": "Pricing strategy",
@@ -269,7 +315,10 @@
           {
             "title": "Fixed",
             "type": "object",
-            "required": ["mode", "listPrice"],
+            "required": [
+              "mode",
+              "listPrice"
+            ],
             "properties": {
               "mode": {
                 "const": "fixed",
@@ -284,13 +333,15 @@
               "compareAt": {
                 "$ref": "#/$defs/money"
               }
-            },
-            "additionalProperties": false
+            }
           },
           {
             "title": "Tiered",
             "type": "object",
-            "required": ["mode", "tiers"],
+            "required": [
+              "mode",
+              "tiers"
+            ],
             "properties": {
               "mode": {
                 "const": "tiered",
@@ -301,7 +352,10 @@
                 "title": "Tiers",
                 "items": {
                   "type": "object",
-                  "required": ["minimum", "price"],
+                  "required": [
+                    "minimum",
+                    "price"
+                  ],
                   "properties": {
                     "minimum": {
                       "type": "number",
@@ -311,17 +365,19 @@
                     "price": {
                       "$ref": "#/$defs/money"
                     }
-                  },
-                  "additionalProperties": false
+                  }
                 }
               }
-            },
-            "additionalProperties": false
+            }
           },
           {
             "title": "Subscription",
             "type": "object",
-            "required": ["mode", "cadence", "amount"],
+            "required": [
+              "mode",
+              "cadence",
+              "amount"
+            ],
             "properties": {
               "mode": {
                 "const": "subscription",
@@ -330,7 +386,11 @@
               "cadence": {
                 "type": "string",
                 "title": "Cadence",
-                "enum": ["monthly", "quarterly", "yearly"]
+                "enum": [
+                  "monthly",
+                  "quarterly",
+                  "yearly"
+                ]
               },
               "amount": {
                 "$ref": "#/$defs/money"
@@ -340,15 +400,18 @@
                 "title": "Trial days",
                 "minimum": 0
               }
-            },
-            "additionalProperties": false
+            }
           }
         ]
       },
       "inventory": {
         "type": "object",
         "title": "Inventory",
-        "required": ["sku", "trackStock", "warehouses"],
+        "required": [
+          "sku",
+          "trackStock",
+          "warehouses"
+        ],
         "properties": {
           "sku": {
             "type": "string",
@@ -367,7 +430,11 @@
           "backorderPolicy": {
             "type": "string",
             "title": "Backorder policy",
-            "enum": ["deny", "allow", "notify"]
+            "enum": [
+              "deny",
+              "allow",
+              "notify"
+            ]
           },
           "allowOversell": {
             "type": "boolean",
@@ -386,7 +453,10 @@
             "title": "Bundle components",
             "items": {
               "type": "object",
-              "required": ["sku", "quantity"],
+              "required": [
+                "sku",
+                "quantity"
+              ],
               "properties": {
                 "sku": {
                   "type": "string",
@@ -397,17 +467,18 @@
                   "title": "Quantity",
                   "minimum": 1
                 }
-              },
-              "additionalProperties": false
+              }
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "fulfillment": {
         "type": "object",
         "title": "Fulfillment",
-        "required": ["shippingRequired", "originAddress"],
+        "required": [
+          "shippingRequired",
+          "originAddress"
+        ],
         "properties": {
           "shippingRequired": {
             "type": "boolean",
@@ -438,8 +509,7 @@
                 "title": "Depth",
                 "minimum": 0
               }
-            },
-            "additionalProperties": false
+            }
           },
           "originAddress": {
             "$ref": "#/$defs/address"
@@ -449,7 +519,12 @@
             "title": "Carriers",
             "items": {
               "type": "string",
-              "enum": ["ups", "fedex", "usps", "dhl"]
+              "enum": [
+                "ups",
+                "fedex",
+                "usps",
+                "dhl"
+              ]
             }
           },
           "international": {
@@ -466,7 +541,12 @@
                 "title": "Regions",
                 "items": {
                   "type": "string",
-                  "enum": ["north-america", "europe", "asia-pacific", "latin-america"]
+                  "enum": [
+                    "north-america",
+                    "europe",
+                    "asia-pacific",
+                    "latin-america"
+                  ]
                 }
               },
               "customsDeclaration": {
@@ -480,20 +560,26 @@
                   "const": true
                 }
               },
-              "required": ["enabled"]
+              "required": [
+                "enabled"
+              ]
             },
             "then": {
-              "required": ["regions"]
-            },
-            "additionalProperties": false
+              "required": [
+                "regions"
+              ]
+            }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "marketing": {
         "type": "object",
         "title": "Marketing",
-        "required": ["seo", "launchDate", "campaignBudget"],
+        "required": [
+          "seo",
+          "launchDate",
+          "campaignBudget"
+        ],
         "properties": {
           "seo": {
             "$ref": "#/$defs/seo"
@@ -511,12 +597,20 @@
             "title": "Channels",
             "items": {
               "type": "object",
-              "required": ["type", "active"],
+              "required": [
+                "type",
+                "active"
+              ],
               "properties": {
                 "type": {
                   "type": "string",
                   "title": "Type",
-                  "enum": ["email", "social", "search", "affiliate"]
+                  "enum": [
+                    "email",
+                    "social",
+                    "search",
+                    "affiliate"
+                  ]
                 },
                 "active": {
                   "type": "boolean",
@@ -527,8 +621,7 @@
                   "type": "string",
                   "title": "Notes"
                 }
-              },
-              "additionalProperties": false
+              }
             }
           },
           "testimonials": {
@@ -538,13 +631,15 @@
               "$ref": "#/$defs/testimonial"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "compliance": {
         "type": "object",
         "title": "Compliance",
-        "required": ["ageRestricted", "regulatedGoods"],
+        "required": [
+          "ageRestricted",
+          "regulatedGoods"
+        ],
         "properties": {
           "ageRestricted": {
             "type": "boolean",
@@ -556,7 +651,13 @@
             "title": "Certifications",
             "items": {
               "type": "string",
-              "enum": ["cpsia", "organic", "fair-trade", "energy-star", "ce"]
+              "enum": [
+                "cpsia",
+                "organic",
+                "fair-trade",
+                "energy-star",
+                "ce"
+              ]
             }
           },
           "regulatedGoods": {
@@ -579,12 +680,16 @@
               "const": true
             }
           },
-          "required": ["regulatedGoods"]
+          "required": [
+            "regulatedGoods"
+          ]
         },
         "then": {
-          "required": ["hazardClass", "contact"]
-        },
-        "additionalProperties": false
+          "required": [
+            "hazardClass",
+            "contact"
+          ]
+        }
       },
       "analytics": {
         "type": "object",
@@ -607,7 +712,10 @@
             "title": "Events",
             "items": {
               "type": "object",
-              "required": ["name", "enabled"],
+              "required": [
+                "name",
+                "enabled"
+              ],
               "properties": {
                 "name": {
                   "type": "string",
@@ -624,12 +732,10 @@
                   "minimum": 0,
                   "maximum": 1
                 }
-              },
-              "additionalProperties": false
+              }
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "support": {
         "type": "object",
@@ -650,8 +756,7 @@
               "$ref": "#/$defs/faqItem"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "metadata": {
         "type": "object",
@@ -661,8 +766,7 @@
           "type": "string"
         }
       }
-    },
-    "additionalProperties": false
+    }
   },
   "value": {
     "product": {
@@ -672,7 +776,11 @@
       "category": "beauty",
       "shortDescription": "A lightweight daily serum with hydration and glow.",
       "longDescription": "This serum layers under moisturizer and makeup, with a fast-absorbing finish and a fragrance-free formula.",
-      "tags": ["hydrating", "fragrance-free", "daily-care"],
+      "tags": [
+        "hydrating",
+        "fragrance-free",
+        "daily-care"
+      ],
       "primaryImage": {
         "url": "https://example.com/images/velvet-serum-hero.jpg",
         "alt": "Bottle of Velvet Serum on a stone surface",
@@ -692,7 +800,11 @@
           "alt": "Velvet Serum in packaging"
         }
       ],
-      "features": ["Fast absorbing", "Fragrance free", "Suitable for daily use"]
+      "features": [
+        "Fast absorbing",
+        "Fragrance free",
+        "Suitable for daily use"
+      ]
     },
     "pricing": {
       "mode": "fixed",
@@ -770,10 +882,16 @@
         "postalCode": "60607",
         "country": "US"
       },
-      "carriers": ["ups", "usps"],
+      "carriers": [
+        "ups",
+        "usps"
+      ],
       "international": {
         "enabled": true,
-        "regions": ["north-america", "europe"],
+        "regions": [
+          "north-america",
+          "europe"
+        ],
         "customsDeclaration": "Cosmetic serum, non-hazardous, retail packaging."
       }
     },
@@ -782,7 +900,12 @@
         "slug": "velvet-serum",
         "title": "Velvet Serum | Hydrating Daily Glow",
         "description": "A fragrance-free hydrating serum designed for daily use.",
-        "keywords": ["serum", "hydration", "skincare", "fragrance-free"]
+        "keywords": [
+          "serum",
+          "hydration",
+          "skincare",
+          "fragrance-free"
+        ]
       },
       "launchDate": "2026-06-01",
       "campaignBudget": {
@@ -821,12 +944,18 @@
     },
     "compliance": {
       "ageRestricted": false,
-      "certifications": ["organic", "ce"],
+      "certifications": [
+        "organic",
+        "ce"
+      ],
       "regulatedGoods": false
     },
     "analytics": {
       "enabled": true,
-      "pixelIds": ["PIX-12345", "PIX-67890"],
+      "pixelIds": [
+        "PIX-12345",
+        "PIX-67890"
+      ],
       "events": [
         {
           "name": "view_item",
