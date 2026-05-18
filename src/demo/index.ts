@@ -52,6 +52,10 @@ refs.schemaSourcePicker.addEventListener("change", (event: Event) => {
   void loadSelectedDemo((event.target as HTMLSelectElement).value as DemoFixtureName);
 });
 
+document.querySelector<HTMLButtonElement>('[data-role="scroll-top"]')?.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 async function bootstrap() {
   try {
     await loadSelectedDemo(refs.schemaSourcePicker.value as DemoFixtureName);

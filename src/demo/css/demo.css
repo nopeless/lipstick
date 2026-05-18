@@ -139,3 +139,28 @@ body {
     0.92rem/1.55 "IBM Plex Mono",
     monospace;
 }
+
+.demo-top-button {
+  position: fixed;
+  right: clamp(0.8rem, 3vw, 1.5rem);
+  bottom: clamp(0.8rem, 3vw, 1.5rem);
+  z-index: 20;
+  border: 1px solid color-mix(in srgb, var(--demo-accent) 30%, var(--demo-panel-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 85%, var(--demo-bg-top));
+  color: var(--demo-ink);
+  box-shadow: 0 10px 20px rgba(37, 29, 23, 0.12);
+  padding: 0.55rem 0.8rem;
+  font: 700 0.8rem/1 "IBM Plex Sans", "Segoe UI", sans-serif;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.demo-top-button:hover {
+  background: color-mix(in srgb, #fff 70%, var(--demo-bg-top));
+}
+
+.demo-top-button:focus-visible {
+  outline: 2px solid var(--demo-accent);
+  outline-offset: 2px;
+}
