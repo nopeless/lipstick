@@ -650,7 +650,7 @@
       "email": "alpha@example.com",
       "website": "https://example.com",
       "favoriteColor": "#ff4d6d",
-      "launchAt": "2026-06-01T09:30:00",
+      "launchAt": "2026-06-01T09:30:00-05:00",
       "score": 42.5,
       "count": 3,
       "enabled": false,
@@ -712,8 +712,8 @@
         "name": "Casey Park",
         "email": "casey@example.com",
         "role": "editor",
-        "createdAt": "2026-05-14T10:00:00",
-        "updatedAt": "2026-05-14T10:15:00"
+        "createdAt": "2026-05-14T10:00:00-05:00",
+        "updatedAt": "2026-05-14T10:15:00-05:00"
       },
       "contactChoice": "contact@example.com",
       "pricingStrategy": {
@@ -727,7 +727,7 @@
     "conditionals": {
       "schedule": {
         "mode": "scheduled",
-        "publishAt": "2026-06-15T09:30:00",
+        "publishAt": "2026-06-15T09:30:00-05:00",
         "timezone": "America/Chicago"
       },
       "approvalRules": {
