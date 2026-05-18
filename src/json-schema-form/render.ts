@@ -646,9 +646,7 @@ function renderObjectBody(
         onRemove: () => removeProperty(ctx, [...path, key]),
       }),
     )}
-    ${schema.additionalProperties === true
-      ? renderAdditionalPropertyComposer(ctx, schema, path)
-      : nothing}
+    ${schema.additionalProperties ? renderAdditionalPropertyComposer(ctx, schema, path) : nothing}
   `;
 }
 
