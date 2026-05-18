@@ -82,6 +82,6 @@ export class JsonSchemaFormElement extends LitElement implements JsonSchemaFormC
 
 declare global {
   interface HTMLElementTagNameMap {
-    lipstick: JsonSchemaFormElement;
+    "lip-stick": JsonSchemaFormElement;
   }
 }

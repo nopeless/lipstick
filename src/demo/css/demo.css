@@ -16,10 +16,17 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  font: 16px/1.5 "IBM Plex Sans", "Segoe UI", sans-serif;
+  font:
+    16px/1.5 "IBM Plex Sans",
+    "Segoe UI",
+    sans-serif;
   color: var(--demo-ink);
   background:
-    radial-gradient(circle at top, color-mix(in srgb, var(--demo-accent) 12%, transparent), transparent 38%),
+    radial-gradient(
+      circle at top,
+      color-mix(in srgb, var(--demo-accent) 12%, transparent),
+      transparent 38%
+    ),
     linear-gradient(180deg, var(--demo-bg-top) 0%, var(--demo-bg-bottom) 100%);
 }
 
@@ -37,7 +44,9 @@ body {
 .demo-kicker {
   margin: 0;
   color: var(--demo-accent);
-  font: 700 0.84rem/1.2 "IBM Plex Mono", monospace;
+  font:
+    700 0.84rem/1.2 "IBM Plex Mono",
+    monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -103,7 +112,9 @@ body {
   min-height: 180px;
   overflow: hidden;
   resize: none;
-  font: 0.9rem/1.5 "IBM Plex Mono", monospace;
+  font:
+    0.9rem/1.5 "IBM Plex Mono",
+    monospace;
 }
 
 .demo-row {
@@ -124,5 +135,7 @@ body {
   background: var(--demo-panel-bg);
   white-space: pre-wrap;
   word-break: break-word;
-  font: 0.92rem/1.55 "IBM Plex Mono", monospace;
+  font:
+    0.92rem/1.55 "IBM Plex Mono",
+    monospace;
 }

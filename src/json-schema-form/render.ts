@@ -33,6 +33,7 @@ import {
   createInputId,
   getAdditionalPropertySchema,
   isCollapsed,
+  isSimpleArrayItemSchema,
   omitObjectProperty,
   parseLiteralOption,
   reorderArrayItem,
@@ -182,7 +183,7 @@ function renderPrimitiveUnionField(
     disabled: ctx.formDisabled || branchSchema.readOnly === true,
     required: options.required,
     invalid: messages.length > 0,
-    describedBy: getControlDescribedBy(ctx, schema, path),
+    describedBy: getControlDescribedBy(ctx, schema, path, value),
   });
 
   const cycleButton =
@@ -536,7 +537,9 @@ function renderUnionSelector(
         .value=${String(selectedIndex)}
         @change=${(event: Event) => changeBranch(Number((event.target as HTMLSelectElement).value))}
       >
-        ${options.map((option) => html` <option value=${String(option.index)}>${option.label}</option> `)}
+        ${options.map(
+          (option) => html` <option value=${String(option.index)}>${option.label}</option> `,
+        )}
       </select>
     </div>
   `;
@@ -643,20 +646,14 @@ function renderObjectBody(
       });
     })}
     ${additionalKeys.map((key) =>
-      renderNode(
-        ctx,
-        getAdditionalPropertySchema(schema),
-        objectValue[key],
-        [...path, key],
-        {
-          label: humanizeLabel(key),
-          required: false,
-          present: true,
-          framed: true,
-          collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
-          onRemove: () => removeProperty(ctx, [...path, key]),
-        },
-      ),
+      renderNode(ctx, getAdditionalPropertySchema(schema), objectValue[key], [...path, key], {
+        label: humanizeLabel(key),
+        required: false,
+        present: true,
+        framed: true,
+        collapsible: canCollapseSchema(ctx, getAdditionalPropertySchema(schema)),
+        onRemove: () => removeProperty(ctx, [...path, key]),
+      }),
     )}
     ${schema.additionalProperties !== false
       ? renderAdditionalPropertyComposer(ctx, schema, path)
@@ -790,9 +787,7 @@ function renderArrayItem(
   const showRemoveAction = arrayRules.canMutate;
   const canMoveUp = index > prefixItemsLength;
   const canMoveDown =
-    Array.isArray(arrayValue) &&
-    index >= prefixItemsLength &&
-    index < arrayValue.length - 1;
+    Array.isArray(arrayValue) && index >= prefixItemsLength && index < arrayValue.length - 1;
   const isSimpleItem = isSimpleArrayItemSchema(ctx, resolvedItemSchema);
   const simpleItemLabel = formatSimpleArrayItemLabel(resolvedItemSchema, index);
   const objectItemLabel = formatObjectArrayItemLabel(resolvedItemSchema, index);
@@ -849,15 +844,6 @@ function renderArrayItem(
   `;
 }
 
-function isSimpleArrayItemSchema(ctx: JsonSchemaFormContext, schema: JsonSchema202012): boolean {
-  const resolved = resolveSchema(schema, ctx.rootSchema, undefined);
-  return !(
-    describeUnion(resolved, undefined, ctx.rootSchema) ||
-    isObjectSchema(resolved) ||
-    isArraySchema(resolved)
-  );
-}
-
 function renderScalarField(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
@@ -875,7 +861,7 @@ function renderScalarField(
     disabled,
     required: options.required,
     invalid,
-    describedBy: getControlDescribedBy(ctx, schema, path),
+    describedBy: getControlDescribedBy(ctx, schema, path, value),
   });
   const inlineSimpleValue = !schema.description && !control.isBoolean && !control.multiline;
 
@@ -972,12 +958,7 @@ function renderLeafHeader(
         ${options.headerPrefix ?? nothing}
         <span>${label}</span>
         ${options.present && options.onRemove
-          ? renderRemoveButton(
-              ctx,
-              options.onRemove,
-              options.removeLabel,
-              options.removeDisabled,
-            )
+          ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
           : nothing}
       </header>
     `;
@@ -1006,15 +987,16 @@ function renderDescription(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
   path: JsonPointerPath,
+  id?: string,
 ): TemplateResult | typeof nothing {
   void ctx;
   void path;
-  return schema.description ? html`<p>${schema.description}</p>` : nothing;
+  return schema.description ? html`<p id=${ifDefined(id)}>${schema.description}</p>` : nothing;
 }
 
-function renderRefWarning(schema: JsonSchema202012): TemplateResult | typeof nothing {
+function renderRefWarning(schema: JsonSchema202012, id?: string): TemplateResult | typeof nothing {
   const refError = getRefError(schema);
-  return refError ? html`<p>${refError}</p>` : nothing;
+  return refError ? html`<p id=${ifDefined(id)}>${refError}</p>` : nothing;
 }
 
 function renderValidationMessages(
@@ -1022,13 +1004,14 @@ function renderValidationMessages(
   path: JsonPointerPath,
   schema?: JsonSchema202012,
   value?: JsonValue | undefined,
+  id?: string,
 ): TemplateResult | typeof nothing {
   const messages = getFieldMessages(ctx, path, schema, value);
   if (messages.length === 0) {
     return nothing;
   }
 
-  return html` <p role="alert">${messages.join(" ")}</p> `;
+  return html` <p id=${ifDefined(id)} role="alert">${messages.join(" ")}</p> `;
 }
 
 function renderFramedFieldset(
@@ -1082,11 +1065,20 @@ function getControlDescribedBy(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
   path: JsonPointerPath,
+  value: JsonValue | undefined,
 ): string | undefined {
-  void ctx;
-  void schema;
-  void path;
-  return undefined;
+  const describedByIds: string[] = [];
+  const inputId = createInputId(ctx, path);
+  if (schema.description) {
+    describedByIds.push(`${inputId}-description`);
+  }
+  if (getRefError(schema)) {
+    describedByIds.push(`${inputId}-ref-error`);
+  }
+  if (getFieldMessages(ctx, path, schema, value).length > 0) {
+    describedByIds.push(`${inputId}-validation`);
+  }
+  return describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
 }
 
 function renderLeafBody(
@@ -1094,9 +1086,17 @@ function renderLeafBody(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
+  const inputId = createInputId(ctx, path);
   return html`
-    ${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}
-    ${renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
+    ${renderDescription(ctx, schema, path, `${inputId}-description`)}
+    ${renderRefWarning(schema, `${inputId}-ref-error`)}
+    ${renderValidationMessages(
+      ctx,
+      path,
+      schema,
+      getValueAtPath(ctx.value, path),
+      `${inputId}-validation`,
+    )}
   `;
 }
 
@@ -1105,7 +1105,11 @@ function renderLeafMeta(
   schema: JsonSchema202012,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  return html`${renderDescription(ctx, schema, path)} ${renderRefWarning(schema)}`;
+  const inputId = createInputId(ctx, path);
+  return html`
+    ${renderDescription(ctx, schema, path, `${inputId}-description`)}
+    ${renderRefWarning(schema, `${inputId}-ref-error`)}
+  `;
 }
 
 function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
@@ -1271,6 +1275,12 @@ function renderInlineSimpleField(
     </div>
     ${options.deferValidationMessage
       ? nothing
-      : renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
+      : renderValidationMessages(
+          ctx,
+          path,
+          schema,
+          getValueAtPath(ctx.value, path),
+          `${inputId}-validation`,
+        )}
   `;
 }

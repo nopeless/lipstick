@@ -7,22 +7,22 @@ import {
   pathToKey,
   resolveSchema,
   sanitizeValueForSchema,
-} from '../lib/schema.js'
-import type { JsonSchemaFormContext } from './shared.js'
+} from "../lib/schema.js";
+import type { JsonSchemaFormContext } from "./shared.js";
 import type {
   JsonPointerPath,
   JsonPrimitive,
   JsonSchema202012,
   JsonSchemaFormEventDetail,
   JsonValue,
-} from '../lib/types.js'
+} from "../lib/types.js";
 import {
   cloneJsonValue,
   deleteValueAtPath,
   getValueAtPath,
   moveArrayItem,
   setValueAtPath,
-} from '../lib/value.js'
+} from "../lib/value.js";
 
 /**
  * Emits a path-scoped value update by patching `ctx.value` at `path`.
@@ -34,11 +34,11 @@ export function updatePathValue(
   schema: JsonSchema202012,
   commit: boolean,
 ) {
-  const nextRootValue = setValueAtPath(ctx.value, path, nextValue)
-  emitValue(ctx, 'input', path, nextRootValue, schema)
+  const nextRootValue = setValueAtPath(ctx.value, path, nextValue);
+  emitValue(ctx, "input", path, nextRootValue, schema);
 
   if (commit) {
-    emitValue(ctx, 'change', path, nextRootValue, schema)
+    emitValue(ctx, "change", path, nextRootValue, schema);
   }
 }
 
@@ -49,8 +49,8 @@ export function emitWholeValue(
   nextValue: JsonValue,
   schema: JsonSchema202012,
 ) {
-  emitValue(ctx, 'input', path, nextValue, schema)
-  emitValue(ctx, 'change', path, nextValue, schema)
+  emitValue(ctx, "input", path, nextValue, schema);
+  emitValue(ctx, "change", path, nextValue, schema);
 }
 
 /**
@@ -65,12 +65,12 @@ export function switchUnionBranch(
   rootSchema: JsonSchema202012,
   index: number,
 ) {
-  const pathKey = pathToKey(path)
-  ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index)
-  const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema)
-  updatePathValue(ctx, path, nextValue, branches[index], true)
+  const pathKey = pathToKey(path);
+  ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
+  const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema);
+  updatePathValue(ctx, path, nextValue, branches[index], true);
 
-  return nextValue
+  return nextValue;
 }
 
 export function addKnownProperty(
@@ -83,8 +83,8 @@ export function addKnownProperty(
     ctx.value,
     [...objectPath, key],
     buildInitialValue(schema, ctx.rootSchema),
-  )
-  emitWholeValue(ctx, [...objectPath, key], nextValue, schema)
+  );
+  emitWholeValue(ctx, [...objectPath, key], nextValue, schema);
 }
 
 export function addAdditionalProperty(
@@ -94,27 +94,24 @@ export function addAdditionalProperty(
   schema: JsonSchema202012,
 ) {
   if (!key) {
-    return
+    return;
   }
 
-  const additionalSchema = getAdditionalPropertySchema(schema)
+  const additionalSchema = getAdditionalPropertySchema(schema);
   const nextValue = setValueAtPath(
     ctx.value,
     [...objectPath, key],
     buildInitialValue(additionalSchema, ctx.rootSchema),
-  )
-  const nextDrafts = new Map(ctx.additionalPropertyDrafts)
-  nextDrafts.delete(pathToKey(objectPath))
-  ctx.additionalPropertyDrafts = nextDrafts
-  emitWholeValue(ctx, [...objectPath, key], nextValue, additionalSchema)
+  );
+  const nextDrafts = new Map(ctx.additionalPropertyDrafts);
+  nextDrafts.delete(pathToKey(objectPath));
+  ctx.additionalPropertyDrafts = nextDrafts;
+  emitWholeValue(ctx, [...objectPath, key], nextValue, additionalSchema);
 }
 
-export function removeProperty(
-  ctx: JsonSchemaFormContext,
-  path: JsonPointerPath,
-) {
-  const nextValue = deleteValueAtPath(ctx.value, path)
-  emitWholeValue(ctx, path, nextValue, ctx.rootSchema)
+export function removeProperty(ctx: JsonSchemaFormContext, path: JsonPointerPath) {
+  const nextValue = deleteValueAtPath(ctx.value, path);
+  emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
 }
 
 export function addArrayItem(
@@ -123,24 +120,21 @@ export function addArrayItem(
   schema: JsonSchema202012,
   index: number,
 ) {
-  const itemSchema = getArrayItemSchema(schema, index) ?? {}
-  const currentArray = getValueAtPath(ctx.value, path)
+  const itemSchema = getArrayItemSchema(schema, index) ?? {};
+  const currentArray = getValueAtPath(ctx.value, path);
   const nextArray = Array.isArray(currentArray)
     ? [...currentArray, buildInitialValue(itemSchema, ctx.rootSchema)]
-    : [buildInitialValue(itemSchema, ctx.rootSchema)]
-  const nextValue = setValueAtPath(ctx.value, path, nextArray)
+    : [buildInitialValue(itemSchema, ctx.rootSchema)];
+  const nextValue = setValueAtPath(ctx.value, path, nextArray);
   ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
     ? createInputId(ctx, [...path, index])
-    : undefined
-  emitWholeValue(ctx, [...path, index], nextValue, itemSchema)
+    : undefined;
+  emitWholeValue(ctx, [...path, index], nextValue, itemSchema);
 }
 
-export function removeArrayItem(
-  ctx: JsonSchemaFormContext,
-  path: JsonPointerPath,
-) {
-  const nextValue = deleteValueAtPath(ctx.value, path)
-  emitWholeValue(ctx, path, nextValue, ctx.rootSchema)
+export function removeArrayItem(ctx: JsonSchemaFormContext, path: JsonPointerPath) {
+  const nextValue = deleteValueAtPath(ctx.value, path);
+  emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
 }
 
 export function reorderArrayItem(
@@ -150,52 +144,42 @@ export function reorderArrayItem(
   toIndex: number,
   prefixItemsLength = 0,
 ) {
-  if (
-    fromIndex < prefixItemsLength ||
-    toIndex < prefixItemsLength ||
-    fromIndex === toIndex
-  ) {
-    return
+  if (fromIndex < prefixItemsLength || toIndex < prefixItemsLength || fromIndex === toIndex) {
+    return;
   }
 
-  const nextValue = moveArrayItem(ctx.value, path, fromIndex, toIndex)
-  emitWholeValue(ctx, path, nextValue, ctx.rootSchema)
+  const nextValue = moveArrayItem(ctx.value, path, fromIndex, toIndex);
+  emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
 }
 
-export function getAdditionalPropertySchema(
-  schema: JsonSchema202012,
-): JsonSchema202012 {
-  return typeof schema.additionalProperties === 'object' &&
-    schema.additionalProperties !== null
+export function getAdditionalPropertySchema(schema: JsonSchema202012): JsonSchema202012 {
+  return typeof schema.additionalProperties === "object" && schema.additionalProperties !== null
     ? schema.additionalProperties
-    : {}
+    : {};
 }
 
 export function canAddAdditionalProperty(schema: JsonSchema202012): boolean {
-  return schema.additionalProperties !== false
+  return schema.additionalProperties !== false;
 }
 
-export function omitObjectProperty(
-  schema: JsonSchema202012,
-  property: string,
-): JsonSchema202012 {
-  const next = { ...schema }
+export function omitObjectProperty(schema: JsonSchema202012, property: string): JsonSchema202012 {
+  const next = { ...schema };
 
   if (schema.properties) {
-    const { [property]: _removed, ...rest } = schema.properties
-    next.properties = rest
+    const { [property]: _removed, ...rest } = schema.properties;
+    next.properties = rest;
   }
 
   if (schema.required) {
-    next.required = schema.required.filter((entry) => entry !== property)
+    next.required = schema.required.filter((entry) => entry !== property);
   }
 
-  return next
+  return next;
 }
 
 export function emitValue(
   ctx: JsonSchemaFormContext,
-  type: 'input' | 'change',
+  type: "input" | "change",
   path: JsonPointerPath,
   nextValue: JsonValue,
   schema: JsonSchema202012,
@@ -204,7 +188,7 @@ export function emitValue(
     value: cloneJsonValue(nextValue),
     path,
     schema,
-  }
+  };
 
   ctx.dispatchEvent(
     new CustomEvent<JsonSchemaFormEventDetail>(type, {
@@ -212,78 +196,69 @@ export function emitValue(
       composed: true,
       detail,
     }),
-  )
+  );
 }
 
 export function parseLiteralOption(
   rawValue: string,
   options: readonly JsonPrimitive[],
 ): JsonPrimitive {
-  return options.find((option) => String(option) === rawValue) ?? rawValue
+  return options.find((option) => String(option) === rawValue) ?? rawValue;
 }
 
 export function createInputId(
-  ctx: Pick<JsonSchemaFormContext, 'id'>,
+  ctx: Pick<JsonSchemaFormContext, "id">,
   path: JsonPointerPath,
 ): string {
-  const formIdPrefix = ctx.id?.trim() || 'lipstick'
-  const pathKey = pathToKey(path)
-  if (pathKey === '#') {
-    return `${formIdPrefix}-lipstick-root`
+  const formIdPrefix = ctx.id?.trim() || "lipstick";
+  const pathKey = pathToKey(path);
+  if (pathKey === "#") {
+    return `${formIdPrefix}-lipstick-root`;
   }
 
   const normalizedPathKey = pathKey
-    .replace(/^#\//, '')
-    .replaceAll(/[^a-z0-9_-]/gi, '-')
-    .replaceAll(/-+/g, '-')
-    .replaceAll(/^-|-$/g, '')
+    .replace(/^#\//, "")
+    .replaceAll(/[^a-z0-9_-]/gi, "-")
+    .replaceAll(/-+/g, "-")
+    .replaceAll(/^-|-$/g, "");
 
-  return `${formIdPrefix}-lipstick-${normalizedPathKey || 'root'}`
+  return `${formIdPrefix}-lipstick-${normalizedPathKey || "root"}`;
 }
 
-export function isCollapsed(
-  ctx: JsonSchemaFormContext,
-  path: JsonPointerPath,
-): boolean {
-  return ctx.collapsedSections.has(pathToKey(path))
+export function isCollapsed(ctx: JsonSchemaFormContext, path: JsonPointerPath): boolean {
+  return ctx.collapsedSections.has(pathToKey(path));
 }
 
-export function toggleCollapsed(
-  ctx: JsonSchemaFormContext,
-  path: JsonPointerPath,
-) {
-  const key = pathToKey(path)
-  const next = new Set(ctx.collapsedSections)
+export function toggleCollapsed(ctx: JsonSchemaFormContext, path: JsonPointerPath) {
+  const key = pathToKey(path);
+  const next = new Set(ctx.collapsedSections);
 
   if (next.has(key)) {
-    next.delete(key)
+    next.delete(key);
   } else {
-    next.add(key)
+    next.add(key);
   }
 
-  ctx.collapsedSections = next
+  ctx.collapsedSections = next;
 }
 
-export function canCollapseSchema(
-  ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
-): boolean {
-  const resolved = resolveSchema(schema, ctx.rootSchema, undefined)
+export function canCollapseSchema(ctx: JsonSchemaFormContext, schema: JsonSchema202012): boolean {
+  const resolved = resolveSchema(schema, ctx.rootSchema, undefined);
   return Boolean(
     describeUnion(resolved, undefined, ctx.rootSchema) ||
-      isObjectSchema(resolved) ||
-      isArraySchema(resolved),
-  )
+    isObjectSchema(resolved) ||
+    isArraySchema(resolved),
+  );
 }
 
-function isSimpleArrayItemSchema(
+export function isSimpleArrayItemSchema(
   ctx: JsonSchemaFormContext,
   schema: JsonSchema202012,
 ): boolean {
-  const resolved = resolveSchema(schema, ctx.rootSchema, undefined)
+  const resolved = resolveSchema(schema, ctx.rootSchema, undefined);
   return !(
     describeUnion(resolved, undefined, ctx.rootSchema) ||
     isObjectSchema(resolved) ||
     isArraySchema(resolved)
-  )
+  );
 }
