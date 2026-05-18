@@ -784,6 +784,7 @@ function renderArrayItem(
 ): TemplateResult {
   const itemPath = [...path, index];
   const itemSchema = getArrayItemSchema(schema, index) ?? {};
+  const resolvedItemSchema = resolveSchema(itemSchema, ctx.rootSchema, item);
   const prefixItemsLength = schema.prefixItems?.length ?? 0;
   const arrayValue = getValueAtPath(ctx.value, path);
   const arrayLength = Array.isArray(arrayValue) ? arrayValue.length : 0;
@@ -795,9 +796,9 @@ function renderArrayItem(
     Array.isArray(arrayValue) &&
     index >= prefixItemsLength &&
     index < arrayValue.length - 1;
-  const isSimpleItem = isSimpleArrayItemSchema(ctx, itemSchema);
-  const simpleItemLabel = formatSimpleArrayItemLabel(itemSchema, index);
-  const objectItemLabel = formatObjectArrayItemLabel(itemSchema, index);
+  const isSimpleItem = isSimpleArrayItemSchema(ctx, resolvedItemSchema);
+  const simpleItemLabel = formatSimpleArrayItemLabel(resolvedItemSchema, index);
+  const objectItemLabel = formatObjectArrayItemLabel(resolvedItemSchema, index);
 
   if (isSimpleItem) {
     return html`
