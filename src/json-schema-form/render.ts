@@ -52,11 +52,6 @@ interface ScalarControlOptions {
   describedBy?: string;
 }
 
-interface ScalarControlResult {
-  control: TemplateResult;
-  isBoolean: boolean;
-}
-
 interface ArrayMutationRules {
   nextIndex: number;
   canAdd: boolean;
@@ -235,7 +230,7 @@ function renderPrimitiveUnionField(
       options,
       inputId,
       schema,
-      scalarControl.control,
+      scalarControl,
       cycleButton,
       path,
     );
@@ -251,7 +246,7 @@ function renderPrimitiveUnionField(
         <span>${fieldLabel}</span>
         ${cycleButton}${removeButton}
       </header>
-      <div>${renderLeafBody(ctx, schema, path)} ${scalarControl.control}</div>
+      <div>${renderLeafBody(ctx, schema, path)} ${scalarControl}</div>
     </section>
   `;
 }
@@ -262,19 +257,16 @@ function renderScalarControl(
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: ScalarControlOptions,
-): ScalarControlResult {
+): TemplateResult {
   const isNull = acceptsType(schema, "null");
   if (isNull || schema.const) {
-    return {
-      control: html`<input
-        id=${options.inputId}
-        type="text"
-        .value=${String(schema.const ?? null)}
-        readonly
-        ?data-null=${isNull}
-      />`,
-      isBoolean: false,
-    };
+    return html`<input
+      id=${options.inputId}
+      type="text"
+      .value=${String(schema.const ?? null)}
+      readonly
+      ?data-null=${isNull}
+    />`;
   }
 
   if (schema.enum?.length) {
@@ -284,48 +276,42 @@ function renderScalarControl(
         ? String(value)
         : String(optionsList[0] ?? "");
 
-    return {
-      control: html`
-        <select
-          id=${options.inputId}
-          .disabled=${options.disabled}
-          .value=${normalizedValue}
-          ?required=${options.required}
-          aria-invalid=${options.invalid ? "true" : "false"}
-          aria-describedby=${ifDefined(options.describedBy)}
-          @change=${(event: Event) => {
-            const nextValue = parseLiteralOption(
-              (event.target as HTMLSelectElement).value,
-              optionsList,
-            );
-            updatePathValue(ctx, path, nextValue, schema, true);
-          }}
-        >
-          ${optionsList.map(
-            (option) => html`<option value=${String(option)}>${String(option)}</option>`,
-          )}
-        </select>
-      `,
-      isBoolean: false,
-    };
+    return html`
+      <select
+        id=${options.inputId}
+        .disabled=${options.disabled}
+        .value=${normalizedValue}
+        ?required=${options.required}
+        aria-invalid=${options.invalid ? "true" : "false"}
+        aria-describedby=${ifDefined(options.describedBy)}
+        @change=${(event: Event) => {
+          const nextValue = parseLiteralOption(
+            (event.target as HTMLSelectElement).value,
+            optionsList,
+          );
+          updatePathValue(ctx, path, nextValue, schema, true);
+        }}
+      >
+        ${optionsList.map(
+          (option) => html`<option value=${String(option)}>${String(option)}</option>`,
+        )}
+      </select>
+    `;
   }
 
   if (acceptsType(schema, "boolean")) {
-    return {
-      control: html`
-        <input
-          id=${options.inputId}
-          type="checkbox"
-          .disabled=${options.disabled}
-          .checked=${value === true}
-          aria-invalid=${options.invalid ? "true" : "false"}
-          aria-describedby=${ifDefined(options.describedBy)}
-          @change=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
-        />
-      `,
-      isBoolean: true,
-    };
+    return html`
+      <input
+        id=${options.inputId}
+        type="checkbox"
+        .disabled=${options.disabled}
+        .checked=${value === true}
+        aria-invalid=${options.invalid ? "true" : "false"}
+        aria-describedby=${ifDefined(options.describedBy)}
+        @change=${(event: Event) =>
+          updatePathValue(ctx, path, (event.target as HTMLInputElement).checked, schema, true)}
+      />
+    `;
   }
 
   if (acceptsType(schema, "integer") || acceptsType(schema, "number")) {
@@ -335,86 +321,89 @@ function renderScalarControl(
     const formattedValue = formatNumericValue(numericValue, step);
 
     if (typeof schema.minimum === "number" && typeof schema.maximum === "number") {
-      return {
-        control: html`
-          <div class="lipstick-range-component">
-            <div class="lipstick-range-slider">
-              <input
-                id=${options.inputId}
-                type="range"
-                .disabled=${options.disabled}
-                .min=${String(schema.minimum)}
-                .max=${String(schema.maximum)}
-                .step=${String(step)}
-                .value=${String(numericValue)}
-                aria-invalid=${options.invalid ? "true" : "false"}
-                aria-describedby=${ifDefined(options.describedBy)}
-                @input=${(event: Event) =>
-                  updatePathValue(
-                    ctx,
-                    path,
-                    parseNumericInputValue(event.target as HTMLInputElement),
-                    schema,
-                    false,
-                  )}
-                @change=${(event: Event) =>
-                  updatePathValue(
-                    ctx,
-                    path,
-                    parseNumericInputValue(event.target as HTMLInputElement),
-                    schema,
-                    true,
-                  )}
-              />
-              <div class="lipstick-range-meta">
-                <span>${schema.minimum}</span>
-                <span>${schema.maximum}</span>
-              </div>
-            </div>
-            <input
-              id=${`${options.inputId}-manual`}
-              class="lipstick-range-number"
-              type="number"
-              .disabled=${options.disabled}
-              .min=${String(schema.minimum)}
-              .max=${String(schema.maximum)}
-              .step=${String(step)}
-              .value=${formattedValue}
-              ?required=${options.required}
-              aria-invalid=${options.invalid ? "true" : "false"}
-              aria-describedby=${ifDefined(options.describedBy)}
-              @input=${(event: Event) =>
-                updatePathValue(
-                  ctx,
-                  path,
-                  parseNumericInputValue(event.target as HTMLInputElement),
-                  schema,
-                  false,
-                )}
-              @change=${(event: Event) =>
-                updatePathValue(
-                  ctx,
-                  path,
-                  parseNumericInputValue(event.target as HTMLInputElement),
-                  schema,
-                  true,
-                )}
-            />
-          </div>
-        `,
-        isBoolean: false,
-      };
+      return renderScalarControlRange(ctx, schema, path, options, step, numericValue, formattedValue);
     }
 
-    return {
-      control: html`
+    return html`
+      <input
+        id=${options.inputId}
+        type="number"
+        .disabled=${options.disabled}
+        .step=${String(step)}
+        .value=${typeof value === "number" ? formattedValue : ""}
+        ?required=${options.required}
+        aria-invalid=${options.invalid ? "true" : "false"}
+        aria-describedby=${ifDefined(options.describedBy)}
+        @input=${(event: Event) =>
+          updatePathValue(
+            ctx,
+            path,
+            parseNumericInputValue(event.target as HTMLInputElement),
+            schema,
+            false,
+          )}
+        @change=${(event: Event) =>
+          updatePathValue(
+            ctx,
+            path,
+            parseNumericInputValue(event.target as HTMLInputElement),
+            schema,
+            true,
+          )}
+      />
+    `;
+  }
+
+  const inputType = getStringInputType(schema);
+  const isDateTimeInput = inputType === "datetime-local";
+  const currentValue =
+    typeof value === "string" ? (isDateTimeInput ? formatDateTimeForInput(value) : value) : "";
+
+  return html`
+    <input
+      id=${options.inputId}
+      type=${inputType}
+      placeholder="Enter a value"
+      .disabled=${options.disabled}
+      .value=${currentValue}
+      step=${ifDefined(isDateTimeInput ? "60" : undefined)}
+      ?required=${options.required}
+      aria-invalid=${options.invalid ? "true" : "false"}
+      aria-describedby=${ifDefined(options.describedBy)}
+      @input=${(event: Event) => {
+        const rawValue = (event.target as HTMLInputElement).value;
+        const nextValue = isDateTimeInput ? normalizeDateTimeFromInput(rawValue) : rawValue;
+        updatePathValue(ctx, path, nextValue, schema, false);
+      }}
+      @change=${(event: Event) => {
+        const rawValue = (event.target as HTMLInputElement).value;
+        const nextValue = isDateTimeInput ? normalizeDateTimeFromInput(rawValue) : rawValue;
+        updatePathValue(ctx, path, nextValue, schema, true);
+      }}
+    />
+  `;
+}
+
+function renderScalarControlRange(
+  ctx: JsonSchemaFormContext,
+  schema: JsonSchema202012,
+  path: JsonPointerPath,
+  options: ScalarControlOptions,
+  step: number,
+  numericValue: number,
+  formattedValue: string,
+): TemplateResult {
+  return html`
+    <div class="lipstick-range-component">
+      <div class="lipstick-range-slider">
         <input
           id=${options.inputId}
-          type="number"
+          type="range"
           .disabled=${options.disabled}
+          .min=${String(schema.minimum)}
+          .max=${String(schema.maximum)}
           .step=${String(step)}
-          .value=${typeof value === "number" ? formattedValue : ""}
-          ?required=${options.required}
+          .value=${String(numericValue)}
           aria-invalid=${options.invalid ? "true" : "false"}
           aria-describedby=${ifDefined(options.describedBy)}
           @input=${(event: Event) =>
@@ -434,59 +423,42 @@ function renderScalarControl(
               true,
             )}
         />
-      `,
-      isBoolean: false,
-    };
-  }
-
-  const multiline =
-    schema.format === "textarea" ||
-    (typeof schema.maxLength === "number" && schema.maxLength > 200);
-  const inputType = getStringInputType(schema);
-  const isDateTimeInput = inputType === "datetime-local";
-  const currentValue =
-    typeof value === "string" ? (isDateTimeInput ? formatDateTimeForInput(value) : value) : "";
-  const control = multiline
-    ? html`
-        <textarea
-          id=${options.inputId}
-          placeholder="Enter a value"
-          .disabled=${options.disabled}
-          .value=${currentValue}
-          ?required=${options.required}
-          aria-invalid=${options.invalid ? "true" : "false"}
-          aria-describedby=${ifDefined(options.describedBy)}
-          @input=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, false)}
-          @change=${(event: Event) =>
-            updatePathValue(ctx, path, (event.target as HTMLTextAreaElement).value, schema, true)}
-        ></textarea>
-      `
-    : html`
-        <input
-          id=${options.inputId}
-          type=${inputType}
-          placeholder="Enter a value"
-          .disabled=${options.disabled}
-          .value=${currentValue}
-          step=${ifDefined(isDateTimeInput ? "60" : undefined)}
-          ?required=${options.required}
-          aria-invalid=${options.invalid ? "true" : "false"}
-          aria-describedby=${ifDefined(options.describedBy)}
-          @input=${(event: Event) => {
-            const rawValue = (event.target as HTMLInputElement).value;
-            const nextValue = isDateTimeInput ? normalizeDateTimeFromInput(rawValue) : rawValue;
-            updatePathValue(ctx, path, nextValue, schema, false);
-          }}
-          @change=${(event: Event) => {
-            const rawValue = (event.target as HTMLInputElement).value;
-            const nextValue = isDateTimeInput ? normalizeDateTimeFromInput(rawValue) : rawValue;
-            updatePathValue(ctx, path, nextValue, schema, true);
-          }}
-        />
-      `;
-
-  return { control, isBoolean: false };
+        <div class="lipstick-range-meta">
+          <span>${schema.minimum}</span>
+          <span>${schema.maximum}</span>
+        </div>
+      </div>
+      <input
+        id=${`${options.inputId}-manual`}
+        class="lipstick-range-number"
+        type="number"
+        .disabled=${options.disabled}
+        .min=${String(schema.minimum)}
+        .max=${String(schema.maximum)}
+        .step=${String(step)}
+        .value=${formattedValue}
+        ?required=${options.required}
+        aria-invalid=${options.invalid ? "true" : "false"}
+        aria-describedby=${ifDefined(options.describedBy)}
+        @input=${(event: Event) =>
+          updatePathValue(
+            ctx,
+            path,
+            parseNumericInputValue(event.target as HTMLInputElement),
+            schema,
+            false,
+          )}
+        @change=${(event: Event) =>
+          updatePathValue(
+            ctx,
+            path,
+            parseNumericInputValue(event.target as HTMLInputElement),
+            schema,
+            true,
+          )}
+      />
+    </div>
+  `;
 }
 
 function renderUnionBranch(
@@ -853,16 +825,14 @@ function renderScalarField(
     invalid,
     describedBy: getControlDescribedBy(ctx, schema, path, value),
   });
-  const inlineSimpleValue = !schema.description && !control.isBoolean;
-
-  if (inlineSimpleValue || (control.isBoolean && !schema.description)) {
+  if (!schema.description) {
     return renderInlineSimpleField(
       ctx,
       fieldLabel,
       options,
       inputId,
       schema,
-      control.control,
+      control,
       options.inlineActions ?? nothing,
       path,
     );
@@ -871,7 +841,7 @@ function renderScalarField(
   return html`
     <section>
       ${renderLeafHeader(ctx, fieldLabel, { ...options, collapsible: false }, path)}
-      <div>${renderLeafBody(ctx, schema, path)} ${control.control}</div>
+      <div>${renderLeafBody(ctx, schema, path)} ${control}</div>
     </section>
   `;
 }
