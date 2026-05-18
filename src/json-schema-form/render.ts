@@ -865,20 +865,7 @@ function renderScalarField(
   });
   const inlineSimpleValue = !schema.description && !control.isBoolean && !control.multiline;
 
-  if (inlineSimpleValue) {
-    return renderInlineSimpleField(
-      ctx,
-      fieldLabel,
-      options,
-      inputId,
-      schema,
-      control.control,
-      options.inlineActions ?? nothing,
-      path,
-    );
-  }
-
-  if (control.isBoolean && !schema.description) {
+  if (inlineSimpleValue || (control.isBoolean && !schema.description)) {
     return renderInlineSimpleField(
       ctx,
       fieldLabel,
