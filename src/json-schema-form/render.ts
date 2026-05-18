@@ -731,7 +731,7 @@ function renderArrayItem(
     Array.isArray(arrayValue) && index >= prefixItemsLength && index < arrayValue.length - 1;
   const isSimpleItem = isSimpleArrayItemSchema(ctx, resolvedItemSchema);
   const simpleItemLabel = formatSimpleArrayItemLabel(resolvedItemSchema, index);
-  const objectItemLabel = `${resolvedItemSchema.title?.trim() || "Item"} ${index + 1}`;
+  const objectItemLabel = getArrayObjectItemLabel(resolvedItemSchema, item, index);
   const reorderActions = renderArrayItemReorderActions(
     ctx,
     path,
@@ -770,7 +770,7 @@ function renderArrayItem(
         required: index < (schema.minItems ?? 0),
         present: true,
         framed: true,
-        collapsible: false,
+        collapsible: canCollapseSchema(ctx, resolvedItemSchema),
         headerSuffix: html`<nav class="lipstick-actions" aria-label="Item controls">
           ${reorderActions}
           ${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
@@ -1004,6 +1004,47 @@ function renderLeafMeta(
 function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
   const title = schema.title?.trim();
   return title ? `${title} ${index + 1}` : undefined;
+}
+
+function getArrayObjectItemLabel(
+  schema: JsonSchema202012,
+  value: JsonValue,
+  index: number,
+): string {
+  if (isJsonObject(value)) {
+    const properties = schema.properties ?? {};
+    const orderedKeys = [...Object.keys(properties), ...Object.keys(value)];
+    const visited = new Set<string>();
+    for (const key of orderedKeys) {
+      if (visited.has(key)) {
+        continue;
+      }
+      visited.add(key);
+      const fieldValue = value[key];
+      if (fieldValue === undefined) {
+        continue;
+      }
+      if (typeof fieldValue === "string" && fieldValue.trim().length === 0) {
+        continue;
+      }
+      return formatArrayObjectLabelValue(fieldValue);
+    }
+  }
+
+  const title = schema.title?.trim() || "Item";
+  return `${title} ${index + 1}`;
+}
+
+function formatArrayObjectLabelValue(value: JsonValue): string {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (value === null) {
+    return "null";
+  }
+
+  return JSON.stringify(value);
 }
 
 function getArrayMutationRules(schema: JsonSchema202012, arrayLength: number): ArrayMutationRules {
