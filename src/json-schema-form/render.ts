@@ -249,10 +249,16 @@ function renderScalarControl(
   path: JsonPointerPath,
   options: ScalarControlOptions,
 ): ScalarControlResult {
-  if (schema.const !== undefined || acceptsType(schema, "null")) {
-    const fixedValue = schema.const !== undefined ? String(schema.const) : "null";
+  const isNull = acceptsType(schema, "null");
+  if (isNull || schema.const) {
     return {
-      control: html`<input id=${options.inputId} type="text" .value=${fixedValue} readonly />`,
+      control: html`<input
+        id=${options.inputId}
+        type="text"
+        .value=${String(schema.const ?? null)}
+        readonly
+        ?data-null=${isNull}
+      />`,
       multiline: false,
       isBoolean: false,
     };
@@ -1214,8 +1220,7 @@ function renderInlineSimpleField(
 
   return html`
     <div data-lipstick-inline>
-      ${hasLabel ? html`<label for=${inputId}>${label}</label>` : nothing}
-      ${control}
+      ${hasLabel ? html`<label for=${inputId}>${label}</label>` : nothing} ${control}
       ${afterControl !== nothing || (options.present && options.onRemove)
         ? html`<nav class="lipstick-actions" aria-label="Field controls">${controls}</nav>`
         : nothing}

@@ -2,6 +2,16 @@ lipstick-form {
   display: block;
   color: inherit;
 
+  input[readonly] {
+    background: transparent;
+    pointer-events: none;
+    border: none;
+
+    &[data-null] {
+      font-family: 'Courier New', Courier, monospace;
+    }
+  }
+
   & textarea {
     resize: vertical;
   }
