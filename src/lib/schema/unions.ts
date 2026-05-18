@@ -150,13 +150,8 @@ function resolveUnionOptionLabel(
     return "null";
   }
 
-  const option = [branch.title?.trim(), branch.description?.trim()]
-    .filter(Boolean)
-    .join(": ")
-    .substring(0, 50);
-
-  if (option) {
-    return option;
+  if (branch.description?.trim()) {
+    return branch.description?.trim();
   }
 
   if (discriminator) {
@@ -164,7 +159,7 @@ function resolveUnionOptionLabel(
       (option) => option.index === index,
     )?.value;
     if (discriminatorValue !== undefined) {
-      return `${discriminator.property}: ${String(discriminatorValue)}`;
+      return String(discriminatorValue);
     }
   }
 
