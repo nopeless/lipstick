@@ -209,37 +209,52 @@ function renderPrimitiveUnionField(
 
   const cycleButton =
     branches.length > 1
-      ? html`
-          <button
-            type="button"
-            class="lipstick-cycle"
-            ?disabled=${ctx.formDisabled}
-            @click=${() =>
-              switchUnionBranch(
-                ctx,
-                path,
-                value,
-                branches,
-                rootSchema,
-                (union.selectedIndex + 1) % branches.length,
-              )}
-            aria-label="Cycle variant"
-          >
-            ⇄
-          </button>
-        `
+      ? html`<button
+          type="button"
+          class="lipstick-cycle"
+          ?disabled=${ctx.formDisabled}
+          @click=${() =>
+            switchUnionBranch(
+              ctx,
+              path,
+              value,
+              branches,
+              rootSchema,
+              (union.selectedIndex + 1) % branches.length,
+            )}
+          aria-label="Cycle variant"
+        >
+          ⇄
+        </button>`
       : nothing;
 
-  return renderInlineSimpleField(
-    ctx,
-    options.label ?? schema.title ?? "Value",
-    options,
-    inputId,
-    schema,
-    scalarControl.control,
-    cycleButton,
-    path,
-  );
+  const fieldLabel = options.label ?? schema.title ?? "Value";
+  if (!schema.description) {
+    return renderInlineSimpleField(
+      ctx,
+      fieldLabel,
+      options,
+      inputId,
+      schema,
+      scalarControl.control,
+      cycleButton,
+      path,
+    );
+  }
+  const removeButton =
+    options.present && options.onRemove
+      ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
+      : nothing;
+
+  return html`
+    <section>
+      <header>
+        <span>${fieldLabel}</span>
+        ${cycleButton}${removeButton}
+      </header>
+      <div>${renderLeafBody(ctx, schema, path)} ${scalarControl.control}</div>
+    </section>
+  `;
 }
 
 function renderScalarControl(
@@ -863,7 +878,7 @@ function renderScalarField(
     );
   }
 
-  if (control.isBoolean) {
+  if (control.isBoolean && !schema.description) {
     return renderInlineSimpleField(
       ctx,
       fieldLabel,
@@ -878,7 +893,7 @@ function renderScalarField(
 
   return html`
     <section>
-      ${renderLeafHeader(ctx, fieldLabel, options, path)}
+      ${renderLeafHeader(ctx, fieldLabel, { ...options, collapsible: false }, path)}
       <div>${renderLeafBody(ctx, schema, path)} ${control.control}</div>
     </section>
   `;
@@ -1185,21 +1200,19 @@ function renderRemoveButton(
   label = "Remove optional field",
   disabled = false,
 ): TemplateResult {
-  return html`
-    <button
-      type="button"
-      class="lipstick-remove"
-      ?disabled=${ctx.formDisabled || disabled}
-      @click=${(event: Event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        action();
-      }}
-      aria-label=${label}
-    >
-      ×
-    </button>
-  `;
+  return html`<button
+    type="button"
+    class="lipstick-remove"
+    ?disabled=${ctx.formDisabled || disabled}
+    @click=${(event: Event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      action();
+    }}
+    aria-label=${label}
+  >
+    ×
+  </button> `;
 }
 
 function renderInlineSimpleField(
