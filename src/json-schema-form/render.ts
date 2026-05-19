@@ -692,9 +692,11 @@ function renderArrayBody(
   addLabel: string | undefined,
   canAdd: boolean,
 ): TemplateResult {
-  return html` <section>
-      ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
-    </section>
+  return html` ${arrayValue.length > 0
+      ? html`<section>
+          ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
+        </section>`
+      : nothing}
     ${canAdd
       ? html`<button
           type="button"
