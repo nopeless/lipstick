@@ -161,9 +161,7 @@ function renderUnionField(
     value,
     html`
       ${renderUnionSelector(ctx, union, changeBranch)}
-      ${branchSchema.type === "null"
-        ? nothing
-        : renderUnionBranch(ctx, branchSchema, value, path)}
+      ${branchSchema.type === "null" ? nothing : renderUnionBranch(ctx, branchSchema, value, path)}
     `,
   );
 }
@@ -740,11 +738,13 @@ function renderArrayItem(
     canMoveDown,
     prefixItemsLength,
   );
-
   if (isSimpleItem) {
-    const inlineActions = html`
-      ${reorderActions}${showRemoveAction ? renderArrayItemRemoveAction(ctx, itemPath, canRemove) : nothing}
-    `;
+    const inlineActions =
+      reorderActions !== nothing || showRemoveAction
+        ? html`${reorderActions}${showRemoveAction
+            ? renderArrayItemRemoveAction(ctx, itemPath, canRemove)
+            : nothing}`
+        : undefined;
 
     return html`
       <article data-lipstick-simple-array-item>
