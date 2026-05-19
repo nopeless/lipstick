@@ -5,6 +5,7 @@ import { formatDateTimeForInput, formatNumericValue, getNumericInputStep, getStr
 import { getValueAtPath, isJsonObject } from "../lib/value.js";
 import { getFieldMessagesForSchema } from "../lib/validation.js";
 import { addAdditionalProperty, addArrayItem, addKnownProperty, canAddAdditionalProperty, canCollapseSchema, createInputId, getAdditionalPropertySchema, isCollapsed, isSimpleArrayItemSchema, parseLiteralOption, reorderArrayItem, removeArrayItem, removeProperty, switchUnionBranch, toggleCollapsed, updatePathValue, } from "./state.js";
+import { copyRootValueToClipboard, pasteRootValueFromClipboard } from "./clipboard.js";
 export function renderForm(ctx) {
     if (!ctx.schema) {
         return nothing;
@@ -492,10 +493,31 @@ function renderFieldsetHeader(ctx, schema, options, path, collapsed) {
     if (!options.present && options.onAdd) {
         return html ` <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend> `;
     }
+    const rootActions = path.length === 0
+        ? html `<nav class="lipstick-actions" aria-label="Form controls">
+          <button
+            type="button"
+            class="lipstick-copy"
+            @click=${(event) => copyRootValueToClipboard(ctx, event)}
+            aria-label="Copy form value"
+          >
+            Copy
+          </button>
+          <button
+            type="button"
+            class="lipstick-paste"
+            ?disabled=${ctx.formDisabled}
+            @click=${(event) => pasteRootValueFromClipboard(ctx, event)}
+            aria-label="Paste form value"
+          >
+            Paste
+          </button>
+        </nav>`
+        : nothing;
     return html `
     <legend>
       ${options.collapsible === false
-        ? html `<span>${text}</span>`
+        ? html `<span>${text}</span>${rootActions}`
         : html `
             <button
               type="button"

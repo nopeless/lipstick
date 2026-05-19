@@ -172,7 +172,15 @@ lipstick-form {
     border-radius: calc(var(--radius) - 2px);
   }
 
-  & :is(.lipstick-add, .lipstick-remove, .lipstick-cycle, .lipstick-move-up, .lipstick-move-down) {
+  & :is(
+    .lipstick-add,
+    .lipstick-remove,
+    .lipstick-cycle,
+    .lipstick-move-up,
+    .lipstick-move-down,
+    .lipstick-copy,
+    .lipstick-paste
+  ) {
     min-width: 2rem;
     min-height: 2rem;
     padding: 0.25rem;

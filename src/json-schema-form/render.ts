@@ -41,6 +41,7 @@ import {
   toggleCollapsed,
   updatePathValue,
 } from "./state.js";
+import { copyRootValueToClipboard, pasteRootValueFromClipboard } from "./clipboard.js";
 
 interface ScalarControlOptions {
   inputId: string;
@@ -839,10 +840,36 @@ function renderFieldsetHeader(
     return html` <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend> `;
   }
 
+  const rootActions =
+    path.length === 0
+      ? html`<nav class="lipstick-actions" aria-label="Form controls">
+          <button
+            type="button"
+            class="lipstick-copy"
+            @click=${(event: Event) => copyRootValueToClipboard(ctx, event)}
+            title="Copy"
+            aria-label="Copy form value"
+            style="font-size: 1.2em;"
+          >
+            ◰
+          </button>
+          <button
+            type="button"
+            class="lipstick-paste"
+            ?disabled=${ctx.formDisabled}
+            @click=${(event: Event) => pasteRootValueFromClipboard(ctx, event)}
+            title="Paste"
+            aria-label="Paste form value"
+          >
+            ▞
+          </button>
+        </nav>`
+      : nothing;
+
   return html`
     <legend>
       ${options.collapsible === false
-        ? html`<span>${text}</span>`
+        ? html`<span>${text}</span>${rootActions}`
         : html`
             <button
               type="button"
@@ -1008,11 +1035,7 @@ function formatSimpleArrayItemLabel(schema: TSchema, index: number): string | un
   return title ? `${title} ${index + 1}` : undefined;
 }
 
-function getArrayObjectItemLabel(
-  schema: TSchema,
-  value: JsonValue,
-  index: number,
-): string {
+function getArrayObjectItemLabel(schema: TSchema, value: JsonValue, index: number): string {
   if (isJsonObject(value)) {
     const properties = schema.properties ?? {};
     const orderedKeys = [...Object.keys(properties), ...Object.keys(value)];
@@ -1171,4 +1194,3 @@ function renderInlineSimpleField(
       : renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
   `;
 }
-
