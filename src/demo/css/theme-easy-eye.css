@@ -1,232 +1,59 @@
 @import "./base-shared.css";
 
 :root {
-  --demo-bg-top: #f6f9fc;
-  --demo-bg-bottom: #edf2f7;
-  --demo-ink: #1f2a37;
-  --demo-muted: #526070;
-  --demo-accent: #2f6ea5;
-  --demo-panel-bg: rgba(255, 255, 255, 0.9);
-  --demo-panel-border: #dbe3ec;
-  --demo-panel-shadow: 0 8px 26px rgba(20, 41, 61, 0.08);
-  --demo-radius: 16px;
-  --demo-button-bg: color-mix(in srgb, #ffffff 78%, var(--demo-bg-top));
-  --demo-button-border: color-mix(in srgb, var(--demo-accent) 24%, #a9b8c7);
-  --demo-button-shadow: 0 1px 2px rgba(16, 36, 56, 0.16);
-  --demo-button-shadow-hover: 0 3px 8px rgba(16, 36, 56, 0.18);
-  --demo-button-ink: color-mix(in srgb, var(--demo-accent) 68%, #1f2a37);
+  /* Minimal theme tokens */
+  --bg-1: #f6f9fc;
+  --bg-2: #edf2f7;
+  --text: #1f2a37;
+  --muted: #526070;
+  --accent: #2f6ea5;
+
+  --surface: color-mix(in srgb, #ffffff 90%, var(--bg-1));
+  --surface-2: color-mix(in srgb, #ffffff 84%, var(--bg-1));
+  --border: #dbe3ec;
+  --shadow: 0 8px 26px rgba(20, 41, 61, 0.08);
+
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+
+  --btn-bg: color-mix(in srgb, #ffffff 78%, var(--bg-1));
+  --btn-border: color-mix(in srgb, var(--accent) 24%, #a9b8c7);
+  --btn-text: color-mix(in srgb, var(--accent) 68%, var(--text));
+  --btn-shadow: 0 1px 2px rgba(16, 36, 56, 0.16);
+  --btn-shadow-hover: 0 3px 8px rgba(16, 36, 56, 0.18);
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  font:
-    16px/1.62 "Atkinson Hyperlegible",
-    "Segoe UI",
-    sans-serif;
-  color: var(--demo-ink);
-  background:
-    radial-gradient(
-      1300px circle at 8% -10%,
-      color-mix(in srgb, var(--demo-accent) 14%, transparent),
-      transparent 52%
-    ),
-    linear-gradient(180deg, var(--demo-bg-top) 0%, var(--demo-bg-bottom) 100%);
-}
-
-.demo-shell {
-  display: grid;
-  gap: 1.8rem;
-  padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 3vw, 1.5rem) 4rem;
-}
-
-.demo-header {
-  display: grid;
-  gap: 0.7rem;
-}
-
-.demo-kicker {
-  margin: 0;
-  color: var(--demo-accent);
-  font:
-    700 0.82rem/1.2 "IBM Plex Mono",
-    monospace;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.demo-title {
-  margin: 0;
-  font-size: clamp(2rem, 5.4vw, 4.2rem);
-  line-height: 1.02;
-}
-
-.demo-intro,
-.demo-panel p {
-  margin: 0;
-  color: var(--demo-muted);
-}
-
-.demo-intro {
-  max-inline-size: none;
-}
-
-.demo-layout {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.2fr) minmax(320px, 1fr);
-  align-items: start;
-}
-
-.demo-sidebar {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.demo-panel {
-  display: grid;
-  gap: 0.75rem;
-  padding: 1rem 1.05rem;
-  border: 1px solid var(--demo-panel-border);
-  border-radius: var(--demo-radius);
-  background: var(--demo-panel-bg);
-  box-shadow: var(--demo-panel-shadow);
-  backdrop-filter: blur(3px);
-}
-
-.demo-panel :is(h2, h3) {
-  margin: 0;
-}
-
-.demo-field {
-  display: grid;
-  gap: 0.4rem;
-}
-
-.demo-field > span {
-  font-weight: 600;
-}
-
-:is(.demo-input, .demo-select, .demo-textarea) {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0.28rem 0.1rem;
-  min-height: 1.75rem;
-  border: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--demo-panel-border) 86%, #b8c4d1);
-  border-radius: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-}
-
-.demo-button {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0.72rem 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--demo-panel-border) 78%, #9aabba);
-  border-radius: 10px;
-  background: #fff;
-  color: inherit;
-  font: inherit;
-}
-
-:is(.demo-input, .demo-select, .demo-textarea):focus-visible,
 lipstick-form :is(input, select, textarea, button):focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--demo-accent) 78%, #ffffff);
+  outline: 2px solid color-mix(in srgb, var(--accent) 78%, #ffffff);
   outline-offset: 2px;
 }
 
-.demo-textarea {
-  min-height: 180px;
-  overflow: hidden;
-  resize: none;
-  font:
-    0.9rem/1.6 "IBM Plex Mono",
-    monospace;
-}
-
-.demo-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-
-.demo-row .demo-button {
-  width: auto;
-}
-
-.demo-output {
-  margin: 0;
-  padding: 1rem 1.1rem;
-  border: 1px solid var(--demo-panel-border);
-  border-radius: var(--demo-radius);
-  background: color-mix(in srgb, #ffffff 85%, var(--demo-bg-top));
-  white-space: pre-wrap;
-  word-break: break-word;
-  font:
-    0.92rem/1.65 "IBM Plex Mono",
-    monospace;
-}
-
-.demo-top-button {
-  position: fixed;
-  right: clamp(0.8rem, 3vw, 1.5rem);
-  bottom: clamp(0.8rem, 3vw, 1.5rem);
-  z-index: 20;
-  border: 1px solid color-mix(in srgb, var(--demo-accent) 28%, var(--demo-panel-border));
-  border-radius: 12px;
-  background: var(--demo-button-bg);
-  color: var(--demo-button-ink);
-  box-shadow: var(--demo-button-shadow-hover);
-  padding: 0.7rem 1rem;
-  min-height: 2.6rem;
-  font: 700 0.88rem/1 "Atkinson Hyperlegible", "Segoe UI", sans-serif;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    background-color 120ms ease,
-    border-color 120ms ease;
-}
-
-.demo-top-button:hover {
-  background: color-mix(in srgb, var(--demo-button-bg) 76%, #ffffff);
-  border-color: color-mix(in srgb, var(--demo-accent) 38%, var(--demo-panel-border));
-  transform: translateY(-1px);
-}
-
-.demo-top-button:focus-visible {
-  outline: 2px solid var(--demo-accent);
-  outline-offset: 2px;
-}
-
-.demo-top-button:active {
-  transform: translateY(0);
-  box-shadow: var(--demo-button-shadow);
-}
-
+/* Lipstick form theme */
 lipstick-form {
-  --lipstick-surface: color-mix(in srgb, #ffffff 86%, var(--demo-bg-top));
-  --lipstick-border: color-mix(in srgb, var(--demo-panel-border) 62%, #b6c3d0);
-  --lipstick-text: var(--demo-ink);
+  --lipstick-surface: var(--surface-2);
+  --lipstick-border: color-mix(in srgb, var(--border) 62%, #b6c3d0);
+  --lipstick-text: var(--text);
   --lipstick-control-bg: transparent;
+  background-color: var(--surface);
+
+  padding: 1rem;
 
   & :is(section, article) {
-    border-radius: 12px;
+    border-radius: var(--radius-md);
   }
 
   & button {
     min-height: 2.5rem;
     padding: 0.56rem 1rem;
-    border: 1px solid var(--demo-button-border);
-    background: var(--demo-button-bg);
-    color: var(--demo-button-ink);
+    border: 1px solid var(--btn-border);
+    border-radius: var(--radius-sm);
+    background: var(--btn-bg);
+    color: var(--btn-text);
     font-weight: 600;
     letter-spacing: 0.01em;
-    box-shadow: var(--demo-button-shadow);
+    box-shadow: var(--btn-shadow);
+    cursor: pointer;
     transition:
       transform 120ms ease,
       box-shadow 120ms ease,
@@ -234,10 +61,30 @@ lipstick-form {
       border-color 120ms ease;
   }
 
+  & button:hover:enabled {
+    background: color-mix(in srgb, var(--btn-bg) 76%, #ffffff);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--btn-border));
+    box-shadow: var(--btn-shadow-hover);
+    transform: translateY(-1px);
+  }
+
+  & button:active:enabled {
+    transform: translateY(0);
+    box-shadow: var(--btn-shadow);
+  }
+
+  & button:disabled {
+    opacity: 0.56;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  /* Keep disclosure/legend toggles looking like text controls */
   & button[aria-expanded] {
     min-height: auto;
     padding: 0;
     border: none;
+    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
@@ -254,137 +101,90 @@ lipstick-form {
     transform: none;
   }
 
-  & button:hover:enabled {
-    background: color-mix(in srgb, var(--demo-button-bg) 76%, #ffffff);
-    border-color: color-mix(in srgb, var(--demo-accent) 40%, var(--demo-button-border));
-    box-shadow: var(--demo-button-shadow-hover);
-    transform: translateY(-1px);
-  }
-
-  & button:active:enabled {
-    transform: translateY(0);
-    box-shadow: var(--demo-button-shadow);
-  }
-
-  & button:disabled {
-    opacity: 0.56;
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-
   & fieldset {
+    margin: 0.6rem 0 0.85rem;
+    padding: 0.7rem 0 0.8rem;
     border: 1px solid var(--lipstick-border);
-    background: var(--lipstick-surface);
-    border-radius: 0;
-    padding-left: 0;
-    padding-right: 0;
-    margin-left: 0;
-    margin-right: 0;
     border-left: none;
     border-right: none;
     border-bottom: none;
-    padding-top: 0.95rem;
-    padding-bottom: 1.05rem;
-    margin-top: 0.75rem;
-    margin-bottom: 1.1rem;
+    border-radius: 0;
   }
 
   & fieldset[data-collapsed] {
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
-    margin-top: 0.25rem;
-    margin-bottom: 0.4rem;
+    margin: 0.6rem 0 0.3rem;
+    padding: 0.2rem 0;
   }
 
-  & fieldset[data-collapsed] + fieldset {
-    margin-top: 0.6rem;
-  }
-
-  & fieldset + fieldset {
-    margin-top: 1.3rem;
-  }
-
-  & fieldset > div {
+  & fieldset>div {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.55rem;
   }
 
   & section {
-    gap: 0.65rem;
-    margin-top: 0.45rem;
-    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+    margin: 0.3rem 0 0.5rem;
   }
 
   & :where([data-lipstick-inline]) {
-    gap: 0.7rem;
-    padding: 0.25rem 0;
-    margin-top: 0.28rem;
-    margin-bottom: 0.42rem;
+    gap: 0.9rem;
+    margin: 0.15rem 0 0.28rem;
+    padding: 0.15rem 0;
   }
 
   & :where(.lipstick-actions, .lipstick-union-picker, .lipstick-range-component) {
-    gap: 0.4rem;
+    gap: 0.5rem;
+  }
+
+  & .lipstick-range-component {
+    align-items: flex-start;
+  }
+
+  & .lipstick-range-slider {
+    padding-bottom: 0.95rem;
+  }
+
+  & .lipstick-range-slider>.lipstick-range-meta {
+    top: calc(100% + 0.08rem);
+    font-size: 0.9em;
+    color: var(--muted);
+  }
+
+  & :where([data-lipstick-inline])>.lipstick-actions {
+    align-self: flex-start;
   }
 
   & article,
   & article[data-lipstick-simple-array-item] {
-    margin-left: 0.95rem;
-    padding-left: 0.7rem;
+    margin-left: 0.75rem;
+    padding-left: 0.55rem;
     border-left: 1px solid color-mix(in srgb, var(--lipstick-border) 70%, transparent);
   }
 
-  & .lipstick-range-slider {
-    position: relative;
-  }
-
-  & .lipstick-range-slider > .lipstick-range-meta {
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-  }
-
-  & :is(.lipstick-add, .lipstick-remove, .lipstick-cycle, .lipstick-move-up, .lipstick-move-down) {
-    min-width: 2.4rem;
-    min-height: 2.4rem;
-    padding: 0.42rem;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-  }
-
   & :is(input:not([type="checkbox"]):not([type="range"]):not([type="color"]), select, textarea) {
-    background: var(--lipstick-control-bg);
+    min-height: 1.7rem;
+    padding: 0.22rem 0.08rem;
     border: none;
     border-bottom: 1px solid color-mix(in srgb, var(--lipstick-border) 88%, #b8c7d5);
     border-radius: 0;
+    background: var(--lipstick-control-bg);
     box-shadow: none;
-    min-height: 1.7rem;
-    padding: 0.22rem 0.08rem;
   }
 
   & :is(input:not([type="checkbox"]):not([type="range"]):not([type="color"]), select, textarea):hover {
-    border-bottom-color: color-mix(in srgb, var(--demo-accent) 14%, var(--lipstick-border));
+    border-bottom-color: color-mix(in srgb, var(--accent) 14%, var(--lipstick-border));
   }
 
-  & :is(
-      input:not([type="checkbox"]):not([type="range"]):not([type="color"]),
-      select,
-      textarea
-    ):focus-visible {
+  & :is(input:not([type="checkbox"]):not([type="range"]):not([type="color"]), select, textarea):focus-visible {
     background: transparent;
-    border-bottom-color: color-mix(in srgb, var(--demo-accent) 24%, var(--lipstick-border));
+    border-bottom-color: color-mix(in srgb, var(--accent) 24%, var(--lipstick-border));
   }
 
   & input[readonly]:not([type="checkbox"]):not([type="range"]):not([type="color"]) {
-    border: none;
+    min-height: 1.25rem;
     padding-left: 0;
     padding-right: 0;
-    min-height: 1.25rem;
+    border: none;
   }
 
   & input[type="color"] {
@@ -402,18 +202,20 @@ lipstick-form {
     border-radius: 6px;
   }
 
-  & input[type="color"]::-webkit-color-swatch {
-    border: none;
-    border-radius: 6px;
-  }
-
+  & input[type="color"]::-webkit-color-swatch,
   & input[type="color"]::-moz-color-swatch {
     border: none;
     border-radius: 6px;
   }
 
-  & p:not([role="alert"]) {
-    font-style: italic;
+  & :is(.lipstick-add, .lipstick-remove, .lipstick-cycle, .lipstick-move-up, .lipstick-move-down) {
+    min-width: 2.4rem;
+    min-height: 2.4rem;
+    padding: 0.42rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
   }
 
   & .lipstick-remove {
@@ -430,6 +232,8 @@ lipstick-form {
 
   & input[type="number"] {
     appearance: textfield;
+    min-inline-size: 7rem;
+    width: 4rem;
   }
 
   & input[type="number"]::-webkit-outer-spin-button,
@@ -438,13 +242,11 @@ lipstick-form {
     margin: 0;
   }
 
+  & p:not([role="alert"]) {
+    font-style: italic;
+  }
+
   & p[role="alert"] {
     color: #b42338;
-  }
-}
-
-@media (max-width: 980px) {
-  .demo-layout {
-    grid-template-columns: 1fr;
   }
 }
