@@ -22,6 +22,11 @@ lipstick-form {
     }
   }
 
+  & select {
+    max-width: 50em;
+    text-overflow: ellipsis;
+  }
+
   & legend {
     display: flex;
     align-items: center;

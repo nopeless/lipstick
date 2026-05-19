@@ -1,27 +1,25 @@
 @import "./base-shared.css";
 
 :root {
-  /* Minimal theme tokens */
-  --bg-1: #f6f9fc;
-  --bg-2: #edf2f7;
-  --text: #1f2a37;
-  --muted: #526070;
+  --bg-1: #f4f8fc;
+  --text: #1d2935;
+  --muted: #526274;
   --accent: #2f6ea5;
+  --danger: #b0132a;
 
-  --surface: color-mix(in srgb, #ffffff 90%, var(--bg-1));
-  --surface-2: color-mix(in srgb, #ffffff 84%, var(--bg-1));
-  --border: #dbe3ec;
-  --shadow: 0 8px 26px rgba(20, 41, 61, 0.08);
+  --surface: color-mix(in srgb, #ffffff 88%, var(--bg-1));
+  --surface-2: color-mix(in srgb, #ffffff 80%, var(--bg-1));
+  --border: #d6e0ea;
+  --border-strong: #becbda;
 
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 10px;
+  --radius: 10px;
 
-  --btn-bg: color-mix(in srgb, #ffffff 78%, var(--bg-1));
-  --btn-border: color-mix(in srgb, var(--accent) 24%, #a9b8c7);
-  --btn-text: color-mix(in srgb, var(--accent) 68%, var(--text));
-  --btn-shadow: 0 1px 2px rgba(16, 36, 56, 0.16);
-  --btn-shadow-hover: 0 3px 8px rgba(16, 36, 56, 0.18);
+  --btn-text: color-mix(in srgb, var(--accent) 58%, var(--text));
+  --btn-text-hover: color-mix(in srgb, var(--accent) 72%, var(--text));
+
+  --field-border: color-mix(in srgb, var(--border) 64%, var(--border-strong));
+  --control-border: color-mix(in srgb, var(--field-border) 88%, #b6c7d8);
+  --indent-border: color-mix(in srgb, var(--field-border) 70%, transparent);
 }
 
 lipstick-form :is(input, select, textarea, button):focus-visible {
@@ -29,110 +27,85 @@ lipstick-form :is(input, select, textarea, button):focus-visible {
   outline-offset: 2px;
 }
 
-/* Lipstick form theme */
 lipstick-form {
   --lipstick-surface: var(--surface-2);
-  --lipstick-border: color-mix(in srgb, var(--border) 62%, #b6c3d0);
+  --lipstick-border: var(--field-border);
   --lipstick-text: var(--text);
   --lipstick-control-bg: transparent;
-  background-color: var(--surface);
+  --lipstick-control-border: var(--control-border);
+  --lipstick-indent-border: var(--indent-border);
 
+  background-color: var(--surface);
   padding: 1rem;
 
-  & :is(section, article) {
-    border-radius: var(--radius-md);
+  & :where(fieldset, section) {
+    padding-right: 0;
+    margin-right: 0;
   }
 
   & button {
-    min-height: 2.5rem;
-    padding: 0.56rem 1rem;
-    border: 1px solid var(--btn-border);
-    border-radius: var(--radius-sm);
-    background: var(--btn-bg);
+    min-height: 2rem;
+    padding: 0.35rem 0.5rem;
+    border: none;
+    border-radius: 0;
+    background: transparent;
     color: var(--btn-text);
     font-weight: 600;
-    letter-spacing: 0.01em;
-    box-shadow: var(--btn-shadow);
     cursor: pointer;
-    transition:
-      transform 120ms ease,
-      box-shadow 120ms ease,
-      background-color 120ms ease,
-      border-color 120ms ease;
+    transition: color 120ms ease;
   }
 
   & button:hover:enabled {
-    background: color-mix(in srgb, var(--btn-bg) 76%, #ffffff);
-    border-color: color-mix(in srgb, var(--accent) 40%, var(--btn-border));
-    box-shadow: var(--btn-shadow-hover);
-    transform: translateY(-1px);
-  }
-
-  & button:active:enabled {
-    transform: translateY(0);
-    box-shadow: var(--btn-shadow);
+    background: transparent;
+    color: var(--btn-text-hover);
   }
 
   & button:disabled {
     opacity: 0.56;
-    box-shadow: none;
     cursor: not-allowed;
   }
 
-  /* Keep disclosure/legend toggles looking like text controls */
   & button[aria-expanded] {
     min-height: auto;
     padding: 0;
     border: none;
-    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
-    letter-spacing: inherit;
-    box-shadow: none;
-    transform: none;
   }
 
-  & button[aria-expanded]:hover:enabled,
-  & button[aria-expanded]:active:enabled {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    transform: none;
+  >fieldset {
+    border: none !important;
+    padding: 0 !important;
   }
 
   & fieldset {
-    margin: 0.6rem 0 0.85rem;
-    padding: 0.7rem 0 0.8rem;
     border: 1px solid var(--lipstick-border);
-    border-left: none;
     border-right: none;
     border-bottom: none;
     border-radius: 0;
   }
 
   & fieldset[data-collapsed] {
-    margin: 0.6rem 0 0.3rem;
-    padding: 0.2rem 0;
+    border-left-color: transparent;
   }
 
   & fieldset>div {
     display: grid;
-    gap: 0.55rem;
+    gap: 0.5rem;
   }
 
   & section {
     gap: 0.5rem;
-    margin: 0.3rem 0 0.5rem;
+    margin: 0.25rem 0 0.5rem;
   }
 
   & :where([data-lipstick-inline]) {
     gap: 0.9rem;
-    margin: 0.15rem 0 0.28rem;
-    padding: 0.15rem 0;
+    margin: 0.15rem 0 0.25rem;
   }
 
-  & :where(.lipstick-actions, .lipstick-union-picker, .lipstick-range-component) {
+  & :where(.lipstick-union-picker, .lipstick-range-component) {
     gap: 0.5rem;
   }
 
@@ -141,11 +114,11 @@ lipstick-form {
   }
 
   & .lipstick-range-slider {
-    padding-bottom: 0.95rem;
+    padding-bottom: 0.9rem;
   }
 
   & .lipstick-range-slider>.lipstick-range-meta {
-    top: calc(100% + 0.08rem);
+    top: calc(100% + 0.1rem);
     font-size: 0.9em;
     color: var(--muted);
   }
@@ -154,21 +127,17 @@ lipstick-form {
     align-self: flex-start;
   }
 
-  & article,
   & article[data-lipstick-simple-array-item] {
-    margin-left: 0.75rem;
-    padding-left: 0.55rem;
-    border-left: 1px solid color-mix(in srgb, var(--lipstick-border) 70%, transparent);
+    padding-left: 0;
   }
 
   & :is(input:not([type="checkbox"]):not([type="range"]):not([type="color"]), select, textarea) {
     min-height: 1.7rem;
-    padding: 0.22rem 0.08rem;
+    padding: 0.2rem 0.1rem;
     border: none;
-    border-bottom: 1px solid color-mix(in srgb, var(--lipstick-border) 88%, #b8c7d5);
+    border-bottom: 1px solid var(--lipstick-control-border);
     border-radius: 0;
     background: var(--lipstick-control-bg);
-    box-shadow: none;
   }
 
   & :is(input:not([type="checkbox"]):not([type="range"]):not([type="color"]), select, textarea):hover {
@@ -176,64 +145,52 @@ lipstick-form {
   }
 
   & :is(input:not([type="checkbox"]):not([type="range"]):not([type="color"]), select, textarea):focus-visible {
-    background: transparent;
-    border-bottom-color: color-mix(in srgb, var(--accent) 24%, var(--lipstick-border));
-  }
-
-  & input[readonly]:not([type="checkbox"]):not([type="range"]):not([type="color"]) {
-    min-height: 1.25rem;
-    padding-left: 0;
-    padding-right: 0;
-    border: none;
+    border-bottom-color: color-mix(in srgb, var(--accent) 26%, var(--lipstick-border));
   }
 
   & input[type="color"] {
     min-width: 3rem;
     min-height: 2rem;
-    padding: 0.18rem;
+    padding: 0.2rem;
     border: 1px solid color-mix(in srgb, var(--lipstick-border) 84%, #b9c6d3);
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 1px 2px rgba(16, 36, 56, 0.1);
-  }
-
-  & input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-    border-radius: 6px;
+    border-radius: var(--radius);
+    background: #ffffff;
   }
 
   & input[type="color"]::-webkit-color-swatch,
   & input[type="color"]::-moz-color-swatch {
     border: none;
-    border-radius: 6px;
+    border-radius: calc(var(--radius) - 2px);
   }
 
   & :is(.lipstick-add, .lipstick-remove, .lipstick-cycle, .lipstick-move-up, .lipstick-move-down) {
-    min-width: 2.4rem;
-    min-height: 2.4rem;
-    padding: 0.42rem;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.25rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
   }
 
+  & section+.lipstick-add {
+    justify-self: start;
+  }
+
   & .lipstick-remove {
-    border-color: color-mix(in srgb, #cf2338 45%, #e8b7be);
-    background: color-mix(in srgb, #fff 82%, #f7d7dc);
-    color: #b0132a;
+    border: none;
+    background: transparent;
+    color: var(--danger);
   }
 
   & .lipstick-remove:hover:enabled {
-    border-color: #cf2338;
-    background: color-mix(in srgb, #fff 70%, #f3c4cc);
-    color: #9c0f24;
+    background: transparent;
+    color: #980f23;
   }
 
   & input[type="number"] {
     appearance: textfield;
-    min-inline-size: 7rem;
-    width: 4rem;
+    width: 7rem;
   }
 
   & input[type="number"]::-webkit-outer-spin-button,
@@ -244,6 +201,7 @@ lipstick-form {
 
   & p:not([role="alert"]) {
     font-style: italic;
+    color: var(--muted);
   }
 
   & p[role="alert"] {
