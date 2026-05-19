@@ -860,6 +860,7 @@ function renderFieldsetHeader(
             @click=${(event: Event) => pasteRootValueFromClipboard(ctx, event)}
             title="Paste"
             aria-label="Paste form value"
+            style="font-size: 0.9em; transform: translateY(-0.08em);"
           >
             ▞
           </button>
