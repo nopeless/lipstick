@@ -11,6 +11,9 @@ export function getLiteralBranchValue(schema, resolveSchema, root) {
 export function matchesType(value, type, getJsonValueType) {
     const expected = Array.isArray(type) ? type : [type];
     const actual = getJsonValueType(value);
+    if (actual === "integer" && expected.includes("number")) {
+        return true;
+    }
     return expected.includes(actual);
 }
 export function getJsonValueType(value) {

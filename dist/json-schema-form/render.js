@@ -499,18 +499,21 @@ function renderFieldsetHeader(ctx, schema, options, path, collapsed) {
             type="button"
             class="lipstick-copy"
             @click=${(event) => copyRootValueToClipboard(ctx, event)}
+            title="Copy"
             aria-label="Copy form value"
+            style="font-size: 1.2em;"
           >
-            Copy
+            ◰
           </button>
           <button
             type="button"
             class="lipstick-paste"
             ?disabled=${ctx.formDisabled}
             @click=${(event) => pasteRootValueFromClipboard(ctx, event)}
+            title="Paste"
             aria-label="Paste form value"
           >
-            Paste
+            ▞
           </button>
         </nav>`
         : nothing;
