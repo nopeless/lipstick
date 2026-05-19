@@ -693,21 +693,21 @@ function renderArrayBody(
   canAdd: boolean,
 ): TemplateResult {
   return html` ${arrayValue.length > 0
-      ? html`<section>
-          ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
-        </section>`
-      : nothing}
-    ${canAdd
-      ? html`<button
-          type="button"
-          class="lipstick-add"
-          ?disabled=${ctx.formDisabled}
-          aria-label=${addLabel ? `Add ${addLabel}` : "Add item"}
-          @click=${() => addArrayItem(ctx, path, schema, nextIndex)}
-        >
-          +
-        </button>`
-      : nothing}`;
+    ? html`<section>
+        ${arrayValue.map((item, index) => renderArrayItem(ctx, schema, item, path, index))}
+      </section>`
+    : nothing}
+  ${canAdd
+    ? html`<button
+        type="button"
+        class="lipstick-add"
+        ?disabled=${ctx.formDisabled}
+        aria-label=${addLabel ? `Add ${addLabel}` : "Add item"}
+        @click=${() => addArrayItem(ctx, path, schema, nextIndex)}
+      >
+        +
+      </button>`
+    : nothing}`;
 }
 
 function renderArrayItem(
@@ -1023,30 +1023,17 @@ function getArrayObjectItemLabel(
       }
       visited.add(key);
       const fieldValue = value[key];
-      if (fieldValue === undefined) {
-        continue;
+      if (fieldValue !== undefined && typeof fieldValue !== "object") {
+        const formatted = String(fieldValue);
+        if (formatted) {
+          return formatted;
+        }
       }
-      if (typeof fieldValue === "string" && fieldValue.trim().length === 0) {
-        continue;
-      }
-      return formatArrayObjectLabelValue(fieldValue);
     }
   }
 
   const title = schema.title?.trim() || "Item";
   return `${title} ${index + 1}`;
-}
-
-function formatArrayObjectLabelValue(value: JsonValue): string {
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
-
-  if (value === null) {
-    return "null";
-  }
-
-  return JSON.stringify(value);
 }
 
 function getArrayMutationRules(schema: JsonSchema202012, arrayLength: number): ArrayMutationRules {
