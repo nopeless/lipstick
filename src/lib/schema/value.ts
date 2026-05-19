@@ -1,11 +1,11 @@
-import type { JsonSchema202012, JsonValue } from "../types.js";
+import type { TSchema, JsonValue } from "../types.js";
 import { cloneJsonValue, isJsonObject } from "../value.js";
 import { getArrayItemSchema, isArraySchema, isObjectSchema } from "./resolution.js";
 import { pickBestBranchIndex } from "./unions.js";
 import { acceptsType, getRequiredProperties, resolveSchema } from "./resolution.js";
 import { getJsonValueType, matchesType } from "./internal.js";
 
-export function buildInitialValue(schema: JsonSchema202012, root: JsonSchema202012): JsonValue {
+export function buildInitialValue(schema: TSchema, root: TSchema): JsonValue {
   const resolved = resolveSchema(schema, root, undefined);
 
   if (resolved.default !== undefined) {
@@ -62,8 +62,8 @@ export function buildInitialValue(schema: JsonSchema202012, root: JsonSchema2020
 
 export function sanitizeValueForSchema(
   value: JsonValue | undefined,
-  schema: JsonSchema202012,
-  root: JsonSchema202012,
+  schema: TSchema,
+  root: TSchema,
 ): JsonValue {
   const resolved = resolveSchema(schema, root, value);
 
@@ -140,3 +140,4 @@ export function sanitizeValueForSchema(
 
   return value === undefined ? buildInitialValue(resolved, root) : value;
 }
+

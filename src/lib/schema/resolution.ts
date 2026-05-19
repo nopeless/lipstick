@@ -1,4 +1,4 @@
-import type { JsonPointerPath, JsonSchema202012, JsonValue } from "../types.js";
+import type { JsonPointerPath, TSchema, JsonValue } from "../types.js";
 import { Check } from "typebox/value";
 import { isJsonObject } from "../value.js";
 import { mergeSchemas, resolveLocalRefs, isSchemaObject } from "./internal.js";
@@ -6,10 +6,10 @@ import { mergeSchemas, resolveLocalRefs, isSchemaObject } from "./internal.js";
 export * from "./internal.js";
 
 export function resolveSchema(
-  schema: JsonSchema202012,
-  root: JsonSchema202012,
+  schema: TSchema,
+  root: TSchema,
   value: JsonValue | undefined,
-): JsonSchema202012 {
+): TSchema {
   let resolved = resolveLocalRefs(schema, root, new Set(), resolveSchema);
 
   if (resolved.allOf?.length) {
@@ -43,7 +43,7 @@ export function resolveSchema(
 }
 
 export function getRequiredProperties(
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
 ): Set<string> {
   const required = new Set(schema.required ?? []);
@@ -65,17 +65,17 @@ export function getRequiredProperties(
 
 export function matchesSchema(
   value: JsonValue | undefined,
-  schema: JsonSchema202012,
-  root: JsonSchema202012,
+  schema: TSchema,
+  root: TSchema,
 ): boolean {
   const resolved = resolveLocalRefs(schema, root, new Set(), resolveSchema);
   return Check(resolved, value);
 }
 
 export function getArrayItemSchema(
-  schema: JsonSchema202012,
+  schema: TSchema,
   index: number,
-): JsonSchema202012 | undefined {
+): TSchema | undefined {
   if (schema.prefixItems?.[index]) {
     return schema.prefixItems[index];
   }
@@ -87,7 +87,7 @@ export function getArrayItemSchema(
   return isSchemaObject(schema.items) ? schema.items : {};
 }
 
-export function isObjectSchema(schema: JsonSchema202012): boolean {
+export function isObjectSchema(schema: TSchema): boolean {
   return (
     acceptsType(schema, "object") ||
     !!schema.properties ||
@@ -95,11 +95,11 @@ export function isObjectSchema(schema: JsonSchema202012): boolean {
   );
 }
 
-export function isArraySchema(schema: JsonSchema202012): boolean {
+export function isArraySchema(schema: TSchema): boolean {
   return acceptsType(schema, "array") || !!schema.prefixItems || schema.items !== undefined;
 }
 
-export function acceptsType(schema: JsonSchema202012, expected: string): boolean {
+export function acceptsType(schema: TSchema, expected: string): boolean {
   if (!schema.type) {
     return false;
   }
@@ -127,10 +127,11 @@ export function pathToKey(path: JsonPointerPath): string {
   );
 }
 
-function omitSchemaKeys(schema: JsonSchema202012, keys: string[]): JsonSchema202012 {
+function omitSchemaKeys(schema: TSchema, keys: string[]): TSchema {
   const next = { ...schema };
   keys.forEach((key) => {
     delete next[key];
   });
   return next;
 }
+

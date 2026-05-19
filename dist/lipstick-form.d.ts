@@ -1,9 +1,9 @@
 import { LitElement } from "lit";
 import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
-import type { JsonSchema202012, JsonValue } from "./lib/types.js";
+import type { TSchema, JsonValue } from "./lib/types.js";
 import { type ValidationSnapshot } from "./lib/validation.js";
 export declare class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
-    schema?: JsonSchema202012;
+    schema?: TSchema;
     value?: JsonValue;
     name?: string;
     disabled: boolean;
@@ -14,7 +14,7 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     pendingFocusId?: string;
     validation: ValidationSnapshot;
     protected createRenderRoot(): HTMLElement | DocumentFragment;
-    get rootSchema(): JsonSchema202012;
+    get rootSchema(): TSchema;
     get formDisabled(): boolean;
     render(): typeof import("lit").nothing | import("lit").TemplateResult<1>;
     protected updated(): void;

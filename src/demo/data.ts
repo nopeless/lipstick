@@ -1,7 +1,7 @@
-import type { JsonSchema202012, JsonValue } from "../index.js";
+import type { TSchema, JsonValue } from "../index.js";
 
 export interface DemoExample {
-  schema: JsonSchema202012;
+  schema: TSchema;
   value: JsonValue;
 }
 
@@ -24,7 +24,7 @@ export async function loadDemoFixture(fixture: DemoFixtureName = "editor"): Prom
   return payload;
 }
 
-export function assertSchema(value: unknown): asserts value is JsonSchema202012 {
+export function assertSchema(value: unknown): asserts value is TSchema {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error("Schema must be a JSON object.");
   }
@@ -46,3 +46,4 @@ export function assertDemoExample(value: unknown): asserts value is DemoExample 
 export function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unable to load schema.";
 }
+

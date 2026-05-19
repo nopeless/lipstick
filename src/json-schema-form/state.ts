@@ -12,7 +12,7 @@ import type { JsonSchemaFormContext } from "./shared.js";
 import type {
   JsonPointerPath,
   JsonPrimitive,
-  JsonSchema202012,
+  TSchema,
   JsonSchemaFormEventDetail,
   JsonValue,
 } from "../lib/types.js";
@@ -31,7 +31,7 @@ export function updatePathValue(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
   nextValue: JsonValue,
-  schema: JsonSchema202012,
+  schema: TSchema,
   commit: boolean,
 ) {
   const nextRootValue = setValueAtPath(ctx.value, path, nextValue);
@@ -47,7 +47,7 @@ export function emitWholeValue(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
   nextValue: JsonValue,
-  schema: JsonSchema202012,
+  schema: TSchema,
 ) {
   emitValue(ctx, "input", path, nextValue, schema);
   emitValue(ctx, "change", path, nextValue, schema);
@@ -61,8 +61,8 @@ export function switchUnionBranch(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
   value: JsonValue | undefined,
-  branches: readonly JsonSchema202012[],
-  rootSchema: JsonSchema202012,
+  branches: readonly TSchema[],
+  rootSchema: TSchema,
   index: number,
 ) {
   const pathKey = pathToKey(path);
@@ -77,7 +77,7 @@ export function addKnownProperty(
   ctx: JsonSchemaFormContext,
   objectPath: JsonPointerPath,
   key: string,
-  schema: JsonSchema202012,
+  schema: TSchema,
 ) {
   const nextValue = setValueAtPath(
     ctx.value,
@@ -91,7 +91,7 @@ export function addAdditionalProperty(
   ctx: JsonSchemaFormContext,
   objectPath: JsonPointerPath,
   key: string,
-  schema: JsonSchema202012,
+  schema: TSchema,
 ) {
   if (!key) {
     return;
@@ -117,7 +117,7 @@ export function removeProperty(ctx: JsonSchemaFormContext, path: JsonPointerPath
 export function addArrayItem(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
-  schema: JsonSchema202012,
+  schema: TSchema,
   index: number,
 ) {
   const itemSchema = getArrayItemSchema(schema, index) ?? {};
@@ -152,17 +152,17 @@ export function reorderArrayItem(
   emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
 }
 
-export function getAdditionalPropertySchema(schema: JsonSchema202012): JsonSchema202012 {
+export function getAdditionalPropertySchema(schema: TSchema): TSchema {
   return typeof schema.additionalProperties === "object" && schema.additionalProperties !== null
     ? schema.additionalProperties
     : {};
 }
 
-export function canAddAdditionalProperty(schema: JsonSchema202012): boolean {
+export function canAddAdditionalProperty(schema: TSchema): boolean {
   return schema.additionalProperties !== false;
 }
 
-export function omitObjectProperty(schema: JsonSchema202012, property: string): JsonSchema202012 {
+export function omitObjectProperty(schema: TSchema, property: string): TSchema {
   const next = { ...schema };
 
   if (schema.properties) {
@@ -182,7 +182,7 @@ export function emitValue(
   type: "input" | "change",
   path: JsonPointerPath,
   nextValue: JsonValue,
-  schema: JsonSchema202012,
+  schema: TSchema,
 ) {
   const detail: JsonSchemaFormEventDetail = {
     value: cloneJsonValue(nextValue),
@@ -242,7 +242,7 @@ export function toggleCollapsed(ctx: JsonSchemaFormContext, path: JsonPointerPat
   ctx.collapsedSections = next;
 }
 
-export function canCollapseSchema(ctx: JsonSchemaFormContext, schema: JsonSchema202012): boolean {
+export function canCollapseSchema(ctx: JsonSchemaFormContext, schema: TSchema): boolean {
   const resolved = resolveSchema(schema, ctx.rootSchema, undefined);
   return Boolean(
     describeUnion(resolved, undefined, ctx.rootSchema) ||
@@ -253,7 +253,7 @@ export function canCollapseSchema(ctx: JsonSchemaFormContext, schema: JsonSchema
 
 export function isSimpleArrayItemSchema(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
 ): boolean {
   const resolved = resolveSchema(schema, ctx.rootSchema, undefined);
   return !(
@@ -262,3 +262,4 @@ export function isSimpleArrayItemSchema(
     isArraySchema(resolved)
   );
 }
+

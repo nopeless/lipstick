@@ -1,5 +1,5 @@
 import type { TemplateResult } from "lit";
-import type { JsonPointerPath, JsonSchema202012, JsonValue } from "../lib/types.js";
+import type { JsonPointerPath, TSchema, JsonValue } from "../lib/types.js";
 import type { ValidationSnapshot } from "../lib/validation.js";
 export interface FieldRenderOptions {
     label?: string;
@@ -17,7 +17,7 @@ export interface FieldRenderOptions {
 }
 export interface JsonSchemaFormContext extends EventTarget {
     id?: string;
-    schema?: JsonSchema202012;
+    schema?: TSchema;
     value?: JsonValue;
     name?: string;
     disabled: boolean;
@@ -26,10 +26,10 @@ export interface JsonSchemaFormContext extends EventTarget {
     additionalPropertyDrafts: Map<string, string>;
     collapsedSections: Set<string>;
     pendingFocusId?: string;
-    rootSchema: JsonSchema202012;
+    rootSchema: TSchema;
     formDisabled: boolean;
     validation: ValidationSnapshot;
     dispatchEvent(event: Event): boolean;
 }
-export type { JsonPointerPath, JsonSchema202012, JsonValue };
+export type { JsonPointerPath, TSchema, JsonValue };
 //# sourceMappingURL=shared.d.ts.map

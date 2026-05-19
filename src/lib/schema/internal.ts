@@ -1,13 +1,13 @@
-import type { JsonPrimitive, JsonSchema202012, JsonValue } from "../types.js";
+import type { JsonPrimitive, TSchema, JsonValue } from "../types.js";
 
 export function getLiteralBranchValue(
-  schema: JsonSchema202012,
+  schema: TSchema,
   resolveSchema: (
-    schema: JsonSchema202012,
-    root: JsonSchema202012,
+    schema: TSchema,
+    root: TSchema,
     value: JsonValue | undefined,
-  ) => JsonSchema202012,
-  root: JsonSchema202012,
+  ) => TSchema,
+  root: TSchema,
 ): JsonPrimitive | undefined {
   const resolved = resolveSchema(schema, root, undefined);
 
@@ -55,7 +55,7 @@ export function getJsonValueType(value: unknown): string {
   }
 }
 
-export function resolvePointer(root: JsonSchema202012, ref: string): unknown {
+export function resolvePointer(root: TSchema, ref: string): unknown {
   if (ref === "#") {
     return root;
   }
@@ -78,7 +78,7 @@ export function resolvePointer(root: JsonSchema202012, ref: string): unknown {
   return cursor;
 }
 
-export function omitSchemaKeys<T extends JsonSchema202012>(schema: T, keys: string[]): T {
+export function omitSchemaKeys<T extends TSchema>(schema: T, keys: string[]): T {
   const next = { ...schema };
   keys.forEach((key) => {
     delete next[key];
@@ -86,8 +86,8 @@ export function omitSchemaKeys<T extends JsonSchema202012>(schema: T, keys: stri
   return next;
 }
 
-export function mergeSchemas(base: JsonSchema202012, overlay: JsonSchema202012): JsonSchema202012 {
-  const merged: JsonSchema202012 = { ...base, ...overlay };
+export function mergeSchemas(base: TSchema, overlay: TSchema): TSchema {
+  const merged: TSchema = { ...base, ...overlay };
 
   if (base.properties || overlay.properties) {
     merged.properties = {
@@ -132,15 +132,15 @@ export function mergeSchemas(base: JsonSchema202012, overlay: JsonSchema202012):
 }
 
 export function resolveLocalRefs(
-  schema: JsonSchema202012,
-  root: JsonSchema202012,
+  schema: TSchema,
+  root: TSchema,
   seen: Set<string>,
   resolveSchema: (
-    schema: JsonSchema202012,
-    root: JsonSchema202012,
+    schema: TSchema,
+    root: TSchema,
     value: JsonValue | undefined,
-  ) => JsonSchema202012,
-): JsonSchema202012 {
+  ) => TSchema,
+): TSchema {
   if (!schema.$ref) {
     return schema;
   }
@@ -168,6 +168,7 @@ export function resolveLocalRefs(
   );
 }
 
-export function isSchemaObject(candidate: unknown): candidate is JsonSchema202012 {
+export function isSchemaObject(candidate: unknown): candidate is TSchema {
   return typeof candidate === "object" && candidate !== null;
 }
+

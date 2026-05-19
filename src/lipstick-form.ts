@@ -2,12 +2,12 @@ import { LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { renderForm } from "./json-schema-form/render.js";
 import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
-import type { JsonSchema202012, JsonValue } from "./lib/types.js";
+import type { TSchema, JsonValue } from "./lib/types.js";
 import { validateValueAgainstSchema, type ValidationSnapshot } from "./lib/validation.js";
 
 export class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
   @property({ attribute: false })
-  schema?: JsonSchema202012;
+  schema?: TSchema;
 
   @property({ attribute: false })
   value?: JsonValue;
@@ -41,7 +41,7 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     return this;
   }
 
-  get rootSchema(): JsonSchema202012 {
+  get rootSchema(): TSchema {
     if (!this.schema) {
       throw new Error("Cannot render without a schema.");
     }
@@ -85,3 +85,4 @@ declare global {
     "lipstick-form": LipstickFormElement;
   }
 }
+

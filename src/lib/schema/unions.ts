@@ -1,4 +1,4 @@
-import type { JsonPrimitive, JsonSchema202012, JsonValue } from "../types.js";
+import type { JsonPrimitive, TSchema, JsonValue } from "../types.js";
 import { isJsonObject } from "../value.js";
 import { getLiteralBranchValue } from "./internal.js";
 import { matchesSchema, resolveSchema } from "./resolution.js";
@@ -22,9 +22,9 @@ export interface UnionPresentation {
 }
 
 export function describeUnion(
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
-  root: JsonSchema202012,
+  root: TSchema,
   preferredIndex?: number,
 ): UnionPresentation | undefined {
   const branches = schema.oneOf ?? schema.anyOf;
@@ -66,9 +66,9 @@ export function describeUnion(
 }
 
 export function pickBestBranchIndex(
-  branches: JsonSchema202012[],
+  branches: TSchema[],
   value: JsonValue | undefined,
-  root: JsonSchema202012,
+  root: TSchema,
 ): number {
   const discriminator = inferDiscriminator(branches, root);
 
@@ -91,8 +91,8 @@ export function pickBestBranchIndex(
 }
 
 export function inferDiscriminator(
-  branches: JsonSchema202012[],
-  root: JsonSchema202012,
+  branches: TSchema[],
+  root: TSchema,
 ): DiscriminatorInfo | undefined {
   const candidateProperties = new Map<string, Array<{ index: number; value: JsonPrimitive }>>();
 
@@ -142,7 +142,7 @@ export function inferDiscriminator(
 }
 
 function resolveUnionOptionLabel(
-  branch: JsonSchema202012,
+  branch: TSchema,
   index: number,
   discriminator: DiscriminatorInfo | undefined,
 ): string | undefined {
@@ -169,3 +169,4 @@ function resolveUnionOptionLabel(
 
   return undefined;
 }
+

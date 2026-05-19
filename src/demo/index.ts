@@ -4,7 +4,7 @@ import { buildInitialValue } from "../lib/schema.js";
 import type { JsonSchemaFormEventDetail, JsonValue } from "../index.js";
 import { getDemoRefs } from "./dom.js";
 import { getErrorMessage, loadDemoFixture, assertSchema, type DemoFixtureName } from "./data.js";
-import type { JsonSchema202012 } from "../index.js";
+import type { TSchema } from "../index.js";
 
 let value: JsonValue = null;
 
@@ -94,7 +94,7 @@ async function loadSelectedDemo(fixture: DemoFixtureName) {
   }
 }
 
-function applySchema(nextSchema: JsonSchema202012, nextValue?: JsonValue) {
+function applySchema(nextSchema: TSchema, nextValue?: JsonValue) {
   value = nextValue !== undefined ? nextValue : buildInitialValue(nextSchema, nextSchema);
   refs.form.schema = nextSchema;
   refs.form.value = value;
@@ -215,3 +215,4 @@ function coerceTheme(value: string | null | undefined): DemoTheme {
 
   return "none";
 }
+

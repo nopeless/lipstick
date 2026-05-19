@@ -1,6 +1,6 @@
 import Schema from "typebox/schema";
 import type { TLocalizedValidationError } from "typebox/error";
-import type { JsonSchema202012, JsonValue } from "./types.js";
+import type { TSchema, JsonValue } from "./types.js";
 
 export interface ValidationIssue {
   keyword: string;
@@ -17,11 +17,11 @@ export interface ValidationSnapshot {
 
 export const DRAFT_2020_12_SCHEMA_URI = "https://json-schema.org/draft/2020-12/schema";
 
-const validatorCache = new WeakMap<JsonSchema202012, ReturnType<typeof Schema.Compile>>();
-const validatorErrorCache = new WeakMap<JsonSchema202012, string>();
+const validatorCache = new WeakMap<TSchema, ReturnType<typeof Schema.Compile>>();
+const validatorErrorCache = new WeakMap<TSchema, string>();
 
 export function validateValueAgainstSchema(
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
 ): ValidationSnapshot {
   const validator = getValidator(schema);
@@ -46,7 +46,7 @@ export function validateValueAgainstSchema(
 }
 
 export function getFieldMessagesForSchema(
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
 ): Map<string, string[]> {
   const validator = getValidator(schema);
@@ -58,7 +58,7 @@ export function getFieldMessagesForSchema(
   return toFieldMessages(toIssues(errors));
 }
 
-function getValidator(schema: JsonSchema202012): ReturnType<typeof Schema.Compile> | undefined {
+function getValidator(schema: TSchema): ReturnType<typeof Schema.Compile> | undefined {
   const cached = validatorCache.get(schema);
   if (cached) {
     return cached;
@@ -150,3 +150,4 @@ function appendPointer(basePointer: string, segment: string): string {
 function pointerToPathKey(pointer: string): string {
   return pointer ? `#${pointer}` : "#";
 }
+

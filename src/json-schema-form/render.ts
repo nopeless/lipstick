@@ -20,7 +20,7 @@ import {
   parseNumericInputValue,
 } from "../lib/input.js";
 import type { JsonSchemaFormContext, FieldRenderOptions } from "./shared.js";
-import type { JsonPointerPath, JsonSchema202012, JsonValue } from "../lib/types.js";
+import type { JsonPointerPath, TSchema, JsonValue } from "../lib/types.js";
 import { getValueAtPath, isJsonObject } from "../lib/value.js";
 import { getFieldMessagesForSchema } from "../lib/validation.js";
 import {
@@ -83,7 +83,7 @@ export function renderForm(ctx: JsonSchemaFormContext) {
 
 function renderNode(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -126,7 +126,7 @@ function renderNode(
 
 function renderCollapsedOptionalField(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
@@ -139,7 +139,7 @@ function renderCollapsedOptionalField(
 
 function renderUnionField(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -166,7 +166,7 @@ function renderUnionField(
   );
 }
 
-function isCycledPrimitiveUnion(schema: JsonSchema202012, rootSchema: JsonSchema202012): boolean {
+function isCycledPrimitiveUnion(schema: TSchema, rootSchema: TSchema): boolean {
   const branches = schema.anyOf ?? [];
 
   return (
@@ -180,7 +180,7 @@ function isCycledPrimitiveUnion(schema: JsonSchema202012, rootSchema: JsonSchema
 
 function renderPrimitiveUnionField(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -254,7 +254,7 @@ function renderPrimitiveUnionField(
 
 function renderScalarControl(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: ScalarControlOptions,
@@ -395,7 +395,7 @@ function renderScalarControl(
 
 function renderScalarControlRange(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   path: JsonPointerPath,
   options: ScalarControlOptions,
   step: number,
@@ -472,7 +472,7 @@ function renderScalarControlRange(
 
 function renderUnionBranch(
   ctx: JsonSchemaFormContext,
-  branchSchema: JsonSchema202012,
+  branchSchema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
 ): TemplateResult {
@@ -538,7 +538,7 @@ function renderUnionSelector(
 
 function renderObjectField(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -569,10 +569,10 @@ function renderObjectField(
 
 function renderObjectBody(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   objectValue: Record<string, JsonValue>,
   path: JsonPointerPath,
-  propertyEntries: Array<[string, JsonSchema202012]>,
+  propertyEntries: Array<[string, TSchema]>,
   requiredSet: Set<string>,
   additionalKeys: string[],
 ): TemplateResult {
@@ -607,7 +607,7 @@ function renderObjectBody(
 
 function renderAdditionalPropertyComposer(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
   const pathKey = pathToKey(path);
@@ -657,7 +657,7 @@ function renderAdditionalPropertyComposer(
 
 function renderArrayField(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -685,7 +685,7 @@ function renderArrayField(
 
 function renderArrayBody(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   arrayValue: JsonValue[],
   path: JsonPointerPath,
   nextIndex: number,
@@ -712,7 +712,7 @@ function renderArrayBody(
 
 function renderArrayItem(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   item: JsonValue,
   path: JsonPointerPath,
   index: number,
@@ -784,7 +784,7 @@ function renderArrayItem(
 
 function renderScalarField(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -825,7 +825,7 @@ function renderScalarField(
 
 function renderFieldsetHeader(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   options: FieldRenderOptions,
   path: JsonPointerPath,
   collapsed: boolean,
@@ -905,7 +905,7 @@ function renderLeafHeader(
 
 function renderDescription(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
   void ctx;
@@ -916,7 +916,7 @@ function renderDescription(
 function renderValidationMessages(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
-  schema?: JsonSchema202012,
+  schema?: TSchema,
   value?: JsonValue | undefined,
 ): TemplateResult | typeof nothing {
   const messages = getFieldMessages(ctx, path, schema, value);
@@ -929,7 +929,7 @@ function renderValidationMessages(
 
 function renderFramedFieldset(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   options: FieldRenderOptions,
   path: JsonPointerPath,
   value: JsonValue | undefined,
@@ -954,7 +954,7 @@ function renderFramedFieldset(
 function getFieldMessages(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
-  schema?: JsonSchema202012,
+  schema?: TSchema,
   value?: JsonValue | undefined,
 ): string[] {
   if (schema) {
@@ -980,7 +980,7 @@ function getFieldMessages(
 
 function getControlDescribedBy(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   path: JsonPointerPath,
   value: JsonValue | undefined,
 ): string | undefined {
@@ -997,19 +997,19 @@ function getControlDescribedBy(
 
 function renderLeafMeta(
   ctx: JsonSchemaFormContext,
-  schema: JsonSchema202012,
+  schema: TSchema,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
   return html` ${renderDescription(ctx, schema, path)} `;
 }
 
-function formatSimpleArrayItemLabel(schema: JsonSchema202012, index: number): string | undefined {
+function formatSimpleArrayItemLabel(schema: TSchema, index: number): string | undefined {
   const title = schema.title?.trim();
   return title ? `${title} ${index + 1}` : undefined;
 }
 
 function getArrayObjectItemLabel(
-  schema: JsonSchema202012,
+  schema: TSchema,
   value: JsonValue,
   index: number,
 ): string {
@@ -1036,7 +1036,7 @@ function getArrayObjectItemLabel(
   return `${title} ${index + 1}`;
 }
 
-function getArrayMutationRules(schema: JsonSchema202012, arrayLength: number): ArrayMutationRules {
+function getArrayMutationRules(schema: TSchema, arrayLength: number): ArrayMutationRules {
   const nextIndex = arrayLength;
   const prefixItemsLength = schema.prefixItems?.length ?? 0;
   const withinMaxItems = schema.maxItems === undefined || nextIndex < schema.maxItems;
@@ -1146,7 +1146,7 @@ function renderInlineSimpleField(
   label: string,
   options: FieldRenderOptions,
   inputId: string,
-  schema: JsonSchema202012,
+  schema: TSchema,
   control: TemplateResult,
   afterControl: TemplateResult | typeof nothing = nothing,
   path: JsonPointerPath = [],
@@ -1171,3 +1171,4 @@ function renderInlineSimpleField(
       : renderValidationMessages(ctx, path, schema, getValueAtPath(ctx.value, path))}
   `;
 }
+

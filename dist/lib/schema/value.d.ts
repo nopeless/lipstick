@@ -1,4 +1,4 @@
-import type { JsonSchema202012, JsonValue } from "../types.js";
-export declare function buildInitialValue(schema: JsonSchema202012, root: JsonSchema202012): JsonValue;
-export declare function sanitizeValueForSchema(value: JsonValue | undefined, schema: JsonSchema202012, root: JsonSchema202012): JsonValue;
+import type { TSchema, JsonValue } from "../types.js";
+export declare function buildInitialValue(schema: TSchema, root: TSchema): JsonValue;
+export declare function sanitizeValueForSchema(value: JsonValue | undefined, schema: TSchema, root: TSchema): JsonValue;
 //# sourceMappingURL=value.d.ts.map

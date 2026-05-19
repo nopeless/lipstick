@@ -19,10 +19,10 @@ import {
   getStringInputType,
   normalizeDateTimeFromInput,
 } from "../src/lib/input.js";
-import type { JsonSchema202012 } from "../src/lib/types.js";
+import type { TSchema } from "../src/lib/types.js";
 
 test("resolves refs and required properties", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     $defs: {
       label: { type: "string", minLength: 1 },
     },
@@ -46,7 +46,7 @@ test("resolves refs and required properties", () => {
 });
 
 test("builds and sanitizes values by schema", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     type: "object",
     properties: {
       mode: { enum: ["draft", "final"] },
@@ -78,7 +78,7 @@ test("maps string formats to input types", () => {
 test("normalizes datetime-local values into RFC3339 date-time strings", () => {
   const localInput = "2026-05-17T09:30";
   const normalized = normalizeDateTimeFromInput(localInput);
-  const dateTimeSchema: JsonSchema202012 = {
+  const dateTimeSchema: TSchema = {
     type: "string",
     format: "date-time",
   };
@@ -90,7 +90,7 @@ test("normalizes datetime-local values into RFC3339 date-time strings", () => {
 });
 
 test("detects union presentation and discriminators", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     oneOf: [
       {
         title: "Alpha",
@@ -123,7 +123,7 @@ test("detects union presentation and discriminators", () => {
 });
 
 test("handles array item schemas and path encoding", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     type: "array",
     prefixItems: [{ type: "string" }],
   };
@@ -134,7 +134,7 @@ test("handles array item schemas and path encoding", () => {
 });
 
 test("validates values with TypeBox and maps field errors", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     $schema: DRAFT_2020_12_SCHEMA_URI,
     type: "object",
     required: ["name"],
@@ -158,7 +158,7 @@ test("validates values with TypeBox and maps field errors", () => {
 });
 
 test("keeps additionalProperties errors on the object path", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     $schema: DRAFT_2020_12_SCHEMA_URI,
     type: "object",
     properties: {
@@ -178,11 +178,11 @@ test("keeps additionalProperties errors on the object path", () => {
 });
 
 test("supports draft 2020-12 and legacy dialect declarations at compile time", () => {
-  const supportedSchema: JsonSchema202012 = {
+  const supportedSchema: TSchema = {
     $schema: DRAFT_2020_12_SCHEMA_URI,
     type: "string",
   };
-  const unsupportedSchema: JsonSchema202012 = {
+  const unsupportedSchema: TSchema = {
     $schema: "http://json-schema.org/draft-07/schema#",
     type: "string",
   };
@@ -190,3 +190,4 @@ test("supports draft 2020-12 and legacy dialect declarations at compile time", (
   assert.equal(validateValueAgainstSchema(supportedSchema, "ok").schemaError, undefined);
   assert.equal(validateValueAgainstSchema(unsupportedSchema, "ok").schemaError, undefined);
 });
+

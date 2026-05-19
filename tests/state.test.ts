@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { JsonSchemaFormContext } from "../src/json-schema-form/shared.js";
-import type { JsonPointerPath, JsonSchema202012, JsonValue } from "../src/lib/types.js";
+import type { JsonPointerPath, TSchema, JsonValue } from "../src/lib/types.js";
 import {
   addAdditionalProperty,
   addArrayItem,
@@ -18,7 +18,7 @@ import {
 } from "../src/json-schema-form/state.js";
 
 test("emits cloned events for path updates", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     type: "object",
     properties: {
       name: { type: "string" },
@@ -37,7 +37,7 @@ test("emits cloned events for path updates", () => {
 });
 
 test("mutates object and array paths through helpers", () => {
-  const objectSchema: JsonSchema202012 = {
+  const objectSchema: TSchema = {
     type: "object",
     properties: {
       name: { type: "string", default: "Ada" },
@@ -99,7 +99,7 @@ test("mutates object and array paths through helpers", () => {
 });
 
 test("switches nested union branches by emitting the full root value", () => {
-  const schema: JsonSchema202012 = {
+  const schema: TSchema = {
     type: "object",
     properties: {
       config: {
@@ -164,7 +164,7 @@ test("tracks collapsed sections and generated metadata", () => {
 });
 
 function createContext(
-  rootSchema: JsonSchema202012,
+  rootSchema: TSchema,
   value?: JsonValue,
 ): JsonSchemaFormContext & {
   events: Array<{
@@ -172,7 +172,7 @@ function createContext(
     detail: {
       value: JsonValue;
       path: JsonPointerPath;
-      schema: JsonSchema202012;
+      schema: TSchema;
     };
   }>;
 } {
@@ -181,7 +181,7 @@ function createContext(
     detail: {
       value: JsonValue;
       path: JsonPointerPath;
-      schema: JsonSchema202012;
+      schema: TSchema;
     };
   }> = [];
   return Object.assign(new EventTarget(), {
@@ -205,7 +205,7 @@ function createContext(
         event as CustomEvent<{
           value: JsonValue;
           path: JsonPointerPath;
-          schema: JsonSchema202012;
+          schema: TSchema;
         }>
       ).detail;
       events.push({ type: event.type, detail });
@@ -214,3 +214,4 @@ function createContext(
     events,
   });
 }
+
