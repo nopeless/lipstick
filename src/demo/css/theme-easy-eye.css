@@ -92,7 +92,6 @@ lipstick-form {
 
   & fieldset>div {
     display: grid;
-    gap: 0.5rem;
   }
 
   & section {
