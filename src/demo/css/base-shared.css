@@ -1,6 +1,5 @@
 lipstick-form {
   display: block;
-  color: inherit;
 
   & input[readonly] {
     background: transparent;
@@ -24,6 +23,7 @@ lipstick-form {
 
   & select {
     margin-right: auto;
+    width: 100%;
     text-overflow: ellipsis;
   }
 
