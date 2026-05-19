@@ -2,7 +2,8 @@
   "name": "lipstick",
   "version": "0.1.0",
   "files": [
-    "dist"
+    "dist",
+    "src/base-shared.css"
   ],
   "type": "module",
   "exports": {
@@ -13,13 +14,17 @@
     "./define": {
       "types": "./dist/define.d.ts",
       "import": "./dist/define.js"
-    }
+    },
+    "./base-shared.css": "./src/base-shared.css"
   },
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build-lib.mjs",
+    "build": "tsc -p tsconfig.build.json",
     "build:demo": "vite build",
-    "test": "node scripts/test.mjs",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/**/*.test.js",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "oxlint .",

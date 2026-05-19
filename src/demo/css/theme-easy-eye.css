@@ -1,4 +1,4 @@
-@import "./base-shared.css";
+@import "../../base-shared.css";
 
 :root {
   --bg-1: #f4f8fc;
@@ -216,3 +216,4 @@ lipstick-form {
     color: #b42338;
   }
 }
+
