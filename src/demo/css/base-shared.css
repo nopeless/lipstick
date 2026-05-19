@@ -23,7 +23,7 @@ lipstick-form {
   }
 
   & select {
-    max-width: 50em;
+    margin-right: auto;
     text-overflow: ellipsis;
   }
 
