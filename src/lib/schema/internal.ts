@@ -29,6 +29,9 @@ export function matchesType(
 ): boolean {
   const expected = Array.isArray(type) ? type : [type];
   const actual = getJsonValueType(value);
+  if (actual === "integer" && expected.includes("number")) {
+    return true;
+  }
   return expected.includes(actual);
 }
 

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   getArrayItemSchema,
   pathToKey,
+  sanitizeValueForSchema,
 } from "../src/lib/schema.js";
 import { DRAFT_2020_12_SCHEMA_URI, validateValueAgainstSchema } from "../src/lib/validation.js";
 import {
@@ -97,5 +98,21 @@ test("supports draft 2020-12 and legacy dialect declarations at compile time", (
 
   assert.equal(validateValueAgainstSchema(supportedSchema, "ok").schemaError, undefined);
   assert.equal(validateValueAgainstSchema(unsupportedSchema, "ok").schemaError, undefined);
+});
+
+test("sanitizes integer values for number schemas without resetting to defaults", () => {
+  const schema: TSchema = {
+    type: "object",
+    properties: {
+      optionalRange: {
+        anyOf: [{ type: "number", minimum: 0, maximum: 10, multipleOf: 1 }, { type: "null" }],
+      },
+    },
+  };
+
+  const sanitized = sanitizeValueForSchema({ optionalRange: 7 }, schema, schema) as {
+    optionalRange?: number | null;
+  };
+  assert.equal(sanitized.optionalRange, 7);
 });
 

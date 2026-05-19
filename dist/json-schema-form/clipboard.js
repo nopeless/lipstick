@@ -25,6 +25,9 @@ export async function pasteRootValueFromClipboard(ctx, event) {
         const nextText = await clipboard.readText();
         const parsedValue = JSON.parse(nextText);
         const sanitizedValue = sanitizeValueForSchema(parsedValue, ctx.rootSchema, ctx.rootSchema);
+        // Pasted payloads can change which union branch is valid at a path.
+        // Clear cached branch picks so rendering re-selects from the new value.
+        ctx.branchSelections = new Map();
         emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
     }
     catch {
