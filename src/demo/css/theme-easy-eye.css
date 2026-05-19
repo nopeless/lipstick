@@ -53,6 +53,7 @@ lipstick-form {
     font-weight: 600;
     cursor: pointer;
     transition: color 120ms ease;
+    align-self: left;
   }
 
   & button:hover:enabled {
