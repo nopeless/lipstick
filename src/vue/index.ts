@@ -1,6 +1,5 @@
 import { defineComponent, h } from "vue";
 import "../define.js";
-export { FrameworkVueSampleApp, mountFrameworkVueSample } from "../../framework/vue/index.js";
 import type { JsonSchemaFormEventDetail, JsonValue, TSchema } from "../lib/types.js";
 
 export const Lipstick = defineComponent({
@@ -21,7 +20,10 @@ export const Lipstick = defineComponent({
   setup(props, { emit }) {
     const isFormEvent = (
       event: Event,
-    ): event is CustomEvent<JsonSchemaFormEventDetail> & { currentTarget: Element; target: Element } => {
+    ): event is CustomEvent<JsonSchemaFormEventDetail> & {
+      currentTarget: Element;
+      target: Element;
+    } => {
       if (!(event instanceof CustomEvent)) {
         return false;
       }
