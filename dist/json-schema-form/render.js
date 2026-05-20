@@ -4,8 +4,8 @@ import { acceptsType, describeUnion, getArrayItemSchema, getRequiredProperties, 
 import { formatDateTimeForInput, formatNumericValue, getNumericInputStep, getStringInputType, normalizeDateTimeFromInput, parseNumericInputValue, } from "../lib/input.js";
 import { getValueAtPath, isJsonObject } from "../lib/value.js";
 import { getFieldMessagesForSchema } from "../lib/validation.js";
-import { addAdditionalProperty, addArrayItem, addKnownProperty, canAddAdditionalProperty, canCollapseSchema, createInputId, getAdditionalPropertySchema, isCollapsed, isSimpleArrayItemSchema, parseLiteralOption, reorderArrayItem, removeArrayItem, removeProperty, switchUnionBranch, toggleCollapsed, updatePathValue, } from "./state.js";
-import { copyRootValueToClipboard, pasteRootValueFromClipboard } from "./clipboard.js";
+import { addAdditionalProperty, addArrayItem, addKnownProperty, canAddAdditionalProperty, canCollapseSchema, createInputId, getAdditionalPropertySchema, isCollapsed, isSimpleArrayItemSchema, parseLiteralOption, reorderArrayItem, resetRootValue, removeArrayItem, removeProperty, switchUnionBranch, toggleCollapsed, updatePathValue, } from "./state.js";
+import { copyRootValueToClipboard, pasteRootValueFromClipboard, } from "./clipboard.js";
 export function renderForm(ctx) {
     if (!ctx.schema) {
         return nothing;
@@ -501,7 +501,6 @@ function renderFieldsetHeader(ctx, schema, options, path, collapsed) {
             @click=${(event) => copyRootValueToClipboard(ctx, event)}
             title="Copy"
             aria-label="Copy form value"
-            style="font-size: 1.2em;"
           >
             ◰
           </button>
@@ -512,9 +511,22 @@ function renderFieldsetHeader(ctx, schema, options, path, collapsed) {
             @click=${(event) => pasteRootValueFromClipboard(ctx, event)}
             title="Paste"
             aria-label="Paste form value"
-            style="font-size: 0.9em; transform: translateY(-0.08em);"
           >
             ▞
+          </button>
+          <button
+            type="button"
+            class="lipstick-reset"
+            ?disabled=${ctx.formDisabled}
+            @click=${(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            resetRootValue(ctx);
+        }}
+            title="Reset"
+            aria-label="Reset form value"
+          >
+            ↺
           </button>
         </nav>`
         : nothing;

@@ -6,6 +6,7 @@ import type { JsonPointerPath, JsonPrimitive, TSchema, JsonValue } from "../lib/
 export declare function updatePathValue(ctx: JsonSchemaFormContext, path: JsonPointerPath, nextValue: JsonValue, schema: TSchema, commit: boolean): void;
 /** Emits `nextValue` as the full form value without applying a path patch. */
 export declare function emitWholeValue(ctx: JsonSchemaFormContext, path: JsonPointerPath, nextValue: JsonValue, schema: TSchema): void;
+export declare function resetRootValue(ctx: JsonSchemaFormContext): void;
 /**
  * Selects a union branch, sanitizes the current value for that branch, and
  * emits the path update from one shared place.

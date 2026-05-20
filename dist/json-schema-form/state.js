@@ -1,5 +1,6 @@
 import { buildInitialValue, describeUnion, getArrayItemSchema, isArraySchema, isObjectSchema, pathToKey, resolveSchema, sanitizeValueForSchema, } from "../lib/schema.js";
 import { cloneJsonValue, deleteValueAtPath, getValueAtPath, moveArrayItem, setValueAtPath, } from "../lib/value.js";
+import { Repair } from "typebox/value";
 /**
  * Emits a path-scoped value update by patching `ctx.value` at `path`.
  */
@@ -14,6 +15,19 @@ export function updatePathValue(ctx, path, nextValue, schema, commit) {
 export function emitWholeValue(ctx, path, nextValue, schema) {
     emitValue(ctx, "input", path, nextValue, schema);
     emitValue(ctx, "change", path, nextValue, schema);
+}
+export function resetRootValue(ctx) {
+    const emptyValueSeed = ctx.rootSchema.type === "array" ? [] : ctx.rootSchema.type === "object" ? {} : null;
+    let sanitizedValue;
+    try {
+        const repairedValue = Repair(ctx.rootSchema, emptyValueSeed);
+        sanitizedValue = sanitizeValueForSchema(repairedValue, ctx.rootSchema, ctx.rootSchema);
+    }
+    catch {
+        sanitizedValue = sanitizeValueForSchema(emptyValueSeed, ctx.rootSchema, ctx.rootSchema);
+    }
+    ctx.branchSelections = new Map();
+    emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
 }
 /**
  * Selects a union branch, sanitizes the current value for that branch, and

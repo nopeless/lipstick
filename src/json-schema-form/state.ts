@@ -23,6 +23,7 @@ import {
   moveArrayItem,
   setValueAtPath,
 } from "../lib/value.js";
+import { Repair } from "typebox/value";
 
 /**
  * Emits a path-scoped value update by patching `ctx.value` at `path`.
@@ -51,6 +52,22 @@ export function emitWholeValue(
 ) {
   emitValue(ctx, "input", path, nextValue, schema);
   emitValue(ctx, "change", path, nextValue, schema);
+}
+
+export function resetRootValue(ctx: JsonSchemaFormContext) {
+  const emptyValueSeed: JsonValue =
+    ctx.rootSchema.type === "array" ? [] : ctx.rootSchema.type === "object" ? {} : null;
+  let sanitizedValue: JsonValue;
+
+  try {
+    const repairedValue = Repair(ctx.rootSchema, emptyValueSeed) as JsonValue;
+    sanitizedValue = sanitizeValueForSchema(repairedValue, ctx.rootSchema, ctx.rootSchema);
+  } catch {
+    sanitizedValue = sanitizeValueForSchema(emptyValueSeed, ctx.rootSchema, ctx.rootSchema);
+  }
+
+  ctx.branchSelections = new Map<string, number>();
+  emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
 }
 
 /**

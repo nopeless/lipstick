@@ -35,13 +35,17 @@ import {
   isSimpleArrayItemSchema,
   parseLiteralOption,
   reorderArrayItem,
+  resetRootValue,
   removeArrayItem,
   removeProperty,
   switchUnionBranch,
   toggleCollapsed,
   updatePathValue,
 } from "./state.js";
-import { copyRootValueToClipboard, pasteRootValueFromClipboard } from "./clipboard.js";
+import {
+  copyRootValueToClipboard,
+  pasteRootValueFromClipboard,
+} from "./clipboard.js";
 
 interface ScalarControlOptions {
   inputId: string;
@@ -861,6 +865,20 @@ function renderFieldsetHeader(
             aria-label="Paste form value"
           >
             ▞
+          </button>
+          <button
+            type="button"
+            class="lipstick-reset"
+            ?disabled=${ctx.formDisabled}
+            @click=${(event: Event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              resetRootValue(ctx);
+            }}
+            title="Reset"
+            aria-label="Reset form value"
+          >
+            ↺
           </button>
         </nav>`
       : nothing;
