@@ -9,16 +9,28 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import Lipstick from "../../../src/vue/index.ts";
+import { Lipstick } from "../../../src/vue/index.ts";
 
 const schema = {
   type: "object",
+  title: "Form",
   properties: {
-    name: { type: "string", title: "Name" },
+    name: { type: "string", title: "Name", default: "Taylor" },
+    images: {
+      type: "array",
+      title: "Images",
+      items: {
+        type: "object",
+        properties: {
+          url: { type: "string", title: "URL" },
+          caption: { type: "string", title: "Caption" },
+        },
+      },
+    },
   },
 } as const;
 
-const value = ref({ name: "Taylor" });
+const value = ref({});
 </script>
 
 <style>
