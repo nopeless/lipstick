@@ -36,7 +36,10 @@ export async function pasteRootValueFromClipboard(ctx: JsonSchemaFormContext, ev
     // Clear cached branch picks so rendering re-selects from the new value.
     ctx.branchSelections = new Map<string, number>();
     emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
-  } catch {
-    // Ignore invalid JSON or denied clipboard access.
+  } catch (e) {
+    console.error(e);
+    if (e instanceof DOMException) {
+      alert("Failed to read from clipboard. Please check your browser permissions.");
+    }
   }
 }
