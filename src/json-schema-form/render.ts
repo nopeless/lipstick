@@ -849,7 +849,6 @@ function renderFieldsetHeader(
             @click=${(event: Event) => copyRootValueToClipboard(ctx, event)}
             title="Copy"
             aria-label="Copy form value"
-            style="font-size: 1.2em;"
           >
             ◰
           </button>
@@ -860,7 +859,6 @@ function renderFieldsetHeader(
             @click=${(event: Event) => pasteRootValueFromClipboard(ctx, event)}
             title="Paste"
             aria-label="Paste form value"
-            style="font-size: 0.9em; transform: translateY(-0.08em);"
           >
             ▞
           </button>
