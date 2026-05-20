@@ -21,7 +21,9 @@ const schema = {
 const value = ref({ name: "Taylor" });
 </script>
 
-<style scoped>
+<style>
+@import "../../../src/base-shared.css";
+
 .app {
   font-family:
     ui-sans-serif,
