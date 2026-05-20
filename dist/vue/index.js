@@ -1,6 +1,5 @@
 import { defineComponent, h } from "vue";
 import "../define.js";
-export { FrameworkVueSampleApp, mountFrameworkVueSample } from "../../framework/vue/index.js";
 export const Lipstick = defineComponent({
     name: "Lipstick",
     props: {
@@ -50,4 +49,3 @@ export const Lipstick = defineComponent({
         });
     },
 });
-export default Lipstick;

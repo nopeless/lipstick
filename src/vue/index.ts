@@ -60,5 +60,3 @@ export const Lipstick = defineComponent({
       });
   },
 });
-
-export default Lipstick;

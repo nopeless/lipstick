@@ -1,5 +1,4 @@
 import "../define.js";
-export { FrameworkVueSampleApp, mountFrameworkVueSample } from "../../framework/vue/index.js";
 import type { JsonSchemaFormEventDetail, JsonValue, TSchema } from "../lib/types.js";
 export declare const Lipstick: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
     schema: {
@@ -69,5 +68,4 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     readonly: boolean;
     modelValue: JsonValue | undefined;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
-export default Lipstick;
 //# sourceMappingURL=index.d.ts.map
