@@ -30,7 +30,10 @@ export async function pasteRootValueFromClipboard(ctx, event) {
         ctx.branchSelections = new Map();
         emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
     }
-    catch {
-        // Ignore invalid JSON or denied clipboard access.
+    catch (e) {
+        console.error(e);
+        if (e instanceof DOMException) {
+            alert("Failed to read from clipboard. Please check your browser permissions.");
+        }
     }
 }

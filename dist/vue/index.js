@@ -1,0 +1,53 @@
+import { defineComponent, h } from "vue";
+import "../define.js";
+export { FrameworkVueSampleApp, mountFrameworkVueSample } from "../../framework/vue/index.js";
+export const Lipstick = defineComponent({
+    name: "Lipstick",
+    props: {
+        schema: { type: Object, default: undefined },
+        value: { type: null, default: undefined },
+        modelValue: { type: null, default: undefined },
+        name: { type: String, default: undefined },
+        disabled: { type: Boolean, default: false },
+        readonly: { type: Boolean, default: false },
+    },
+    emits: {
+        input: (_event) => true,
+        change: (_event) => true,
+        "update:modelValue": (_value) => true,
+    },
+    setup(props, { emit }) {
+        const isFormEvent = (event) => {
+            if (!(event instanceof CustomEvent)) {
+                return false;
+            }
+            if (!event.detail || typeof event.detail !== "object" || !("value" in event.detail)) {
+                return false;
+            }
+            return event.target === event.currentTarget;
+        };
+        return () => h("lipstick-form", {
+            schema: props.schema,
+            value: props.modelValue ?? props.value,
+            name: props.name,
+            disabled: props.disabled,
+            readonly: props.readonly,
+            onInput: (event) => {
+                if (!isFormEvent(event)) {
+                    return;
+                }
+                const customEvent = event;
+                emit("input", customEvent);
+                emit("update:modelValue", customEvent.detail.value);
+            },
+            onChange: (event) => {
+                if (!isFormEvent(event)) {
+                    return;
+                }
+                const customEvent = event;
+                emit("change", customEvent);
+            },
+        });
+    },
+});
+export default Lipstick;
