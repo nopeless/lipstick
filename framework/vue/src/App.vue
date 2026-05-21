@@ -2,7 +2,7 @@
   <main class="app">
     <h1>Vue SFC Sample</h1>
     <p>Using local import from this repo via relative path.</p>
-    <Lipstick v-model="value" :schema="schema" name="demo-form" />
+    <Lipstick v-model="value" :schema="schema" />
     <pre class="output">{{ value }}</pre>
   </main>
 </template>

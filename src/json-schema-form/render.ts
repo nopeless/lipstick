@@ -77,9 +77,7 @@ export function renderForm(ctx: JsonSchemaFormContext) {
       framed: true,
       collapsible: false,
     })}
-    ${ctx.name
-      ? html`<input type="hidden" name=${ctx.name} .value=${JSON.stringify(ctx.value ?? null)} />`
-      : nothing}
+    <input type="hidden" name="json" .value=${JSON.stringify(ctx.value ?? null)} />
   `;
 }
 

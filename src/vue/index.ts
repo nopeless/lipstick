@@ -9,7 +9,6 @@ export const Lipstick = defineComponent({
     repair: { type: Boolean, default: false },
     value: { type: null as unknown as () => JsonValue | undefined, default: undefined },
     modelValue: { type: null as unknown as () => JsonValue | undefined, default: undefined },
-    name: { type: String, default: undefined },
     disabled: { type: Boolean, default: false },
     readonly: { type: Boolean, default: false },
   },
@@ -41,7 +40,6 @@ export const Lipstick = defineComponent({
         schema: props.schema,
         repair: props.repair,
         value: props.modelValue ?? props.value,
-        name: props.name,
         disabled: props.disabled,
         readonly: props.readonly,
         onInput: (event: Event) => {

@@ -16,9 +16,6 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
   @property({ attribute: false })
   _value?: JsonValue;
 
-  @property()
-  name?: string;
-
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
