@@ -609,13 +609,19 @@ function renderAdditionalPropertyComposer(
   schema: TSchema,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
-  const pathKey = pathToKey(path);
-  const draft = ctx.additionalPropertyDrafts.get(pathKey) ?? "";
   const canAdd = canAddAdditionalProperty(schema);
 
   if (!canAdd) {
     return nothing;
   }
+
+  const commitFromInput = (input: HTMLInputElement) => {
+    const key = input.value.trim();
+    addAdditionalProperty(ctx, path, key, schema);
+    if (key) {
+      input.value = "";
+    }
+  };
 
   return html`
     <p data-lipstick-composer>
@@ -623,8 +629,15 @@ function renderAdditionalPropertyComposer(
         <button
           type="button"
           class="lipstick-add"
-          ?disabled=${ctx.formDisabled || !canAdd || !draft.trim()}
-          @click=${() => addAdditionalProperty(ctx, path, draft.trim(), schema)}
+          ?disabled=${ctx.formDisabled || !canAdd}
+          @click=${(event: Event) => {
+            const input = (event.currentTarget as HTMLButtonElement).closest(
+              "[data-lipstick-composer]",
+            )?.querySelector("input");
+            if (input instanceof HTMLInputElement) {
+              commitFromInput(input);
+            }
+          }}
           aria-label="Add new property"
         >
           <span aria-hidden="true">+</span>
@@ -633,21 +646,13 @@ function renderAdditionalPropertyComposer(
         type="text"
         placeholder="add new property"
         .disabled=${ctx.formDisabled || !canAdd}
-        .value=${draft}
-        @input=${(event: Event) => {
-          const nextValue = (event.target as HTMLInputElement).value;
-          ctx.additionalPropertyDrafts = new Map(ctx.additionalPropertyDrafts).set(
-            pathKey,
-            nextValue,
-          );
-        }}
         @keydown=${(event: KeyboardEvent) => {
           if (event.key !== "Enter") {
             return;
           }
 
           event.preventDefault();
-          addAdditionalProperty(ctx, path, draft.trim(), schema);
+          commitFromInput(event.currentTarget as HTMLInputElement);
         }}
       />
     </p>

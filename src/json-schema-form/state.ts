@@ -87,18 +87,8 @@ function reconcileUiStateWithValue(ctx: JsonSchemaFormContext, nextRootValue: Js
     }
   }
 
-  const nextDrafts = new Map<string, string>();
-  for (const [pathKey, draft] of ctx.additionalPropertyDrafts) {
-    const path = parsePathKey(pathKey);
-    const nodeValue = path.length === 0 ? nextRootValue : getValueAtPath(nextRootValue, path);
-    if (isPlainObject(nodeValue)) {
-      nextDrafts.set(pathKey, draft);
-    }
-  }
-
   ctx.branchSelections = nextBranchSelections;
   ctx.collapsedSections = nextCollapsedSections;
-  ctx.additionalPropertyDrafts = nextDrafts;
 }
 
 function parsePathKey(pathKey: string): JsonPointerPath {
@@ -143,10 +133,6 @@ function resolveSchemaForPath(
   }
 
   return resolveSchema(currentSchema, ctx.rootSchema, getValueAtPath(rootValue, path));
-}
-
-function isPlainObject(value: JsonValue | undefined): value is Record<string, JsonValue> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -198,9 +184,6 @@ export function addAdditionalProperty(
     [...objectPath, key],
     Value.Repair(additionalSchema, undefined) as JsonValue,
   );
-  const nextDrafts = new Map(ctx.additionalPropertyDrafts);
-  nextDrafts.delete(pathToKey(objectPath));
-  ctx.additionalPropertyDrafts = nextDrafts;
   commitRootValue(ctx, [...objectPath, key], nextValue, additionalSchema, "both");
 }
 

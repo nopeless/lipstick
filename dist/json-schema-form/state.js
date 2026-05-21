@@ -8,10 +8,6 @@ export function updatePathValue(ctx, path, nextValue, schema, commit) {
     const nextRootValue = setValueAtPath(ctx.value, path, nextValue);
     ctx.applyFormValueUpdate(commit ? "both" : "input", path, nextRootValue, schema);
 }
-/** Emits `nextValue` as the full form value without applying a path patch. */
-export function emitWholeValue(ctx, path, nextValue, schema) {
-    commitRootValue(ctx, path, nextValue, schema, "both");
-}
 export function resetRootValue(ctx) {
     commitRootValue(ctx, [], Value.Repair(ctx.rootSchema, undefined), ctx.rootSchema, "both");
 }
@@ -22,7 +18,7 @@ export function commitRootValue(ctx, path, nextValue, schema, mode) {
 function reconcileUiStateWithValue(ctx, nextRootValue) {
     const nextBranchSelections = new Map();
     for (const [pathKey] of ctx.branchSelections) {
-        const path = pathKeyToPath(pathKey);
+        const path = parsePathKey(pathKey);
         const nodeValue = getValueAtPath(nextRootValue, path);
         if (nodeValue === undefined) {
             continue;
@@ -39,14 +35,14 @@ function reconcileUiStateWithValue(ctx, nextRootValue) {
     }
     const nextCollapsedSections = new Set();
     for (const pathKey of ctx.collapsedSections) {
-        const path = pathKeyToPath(pathKey);
+        const path = parsePathKey(pathKey);
         if (path.length === 0 || getValueAtPath(nextRootValue, path) !== undefined) {
             nextCollapsedSections.add(pathKey);
         }
     }
     const nextDrafts = new Map();
     for (const [pathKey, draft] of ctx.additionalPropertyDrafts) {
-        const path = pathKeyToPath(pathKey);
+        const path = parsePathKey(pathKey);
         const nodeValue = path.length === 0 ? nextRootValue : getValueAtPath(nextRootValue, path);
         if (isPlainObject(nodeValue)) {
             nextDrafts.set(pathKey, draft);
@@ -56,7 +52,7 @@ function reconcileUiStateWithValue(ctx, nextRootValue) {
     ctx.collapsedSections = nextCollapsedSections;
     ctx.additionalPropertyDrafts = nextDrafts;
 }
-function pathKeyToPath(pathKey) {
+function parsePathKey(pathKey) {
     if (pathKey === "#" || pathKey === "") {
         return [];
     }
@@ -107,7 +103,7 @@ export function switchUnionBranch(ctx, path, value, branches, index) {
 }
 export function addKnownProperty(ctx, objectPath, key, schema) {
     const nextValue = setValueAtPath(ctx.value, [...objectPath, key], Value.Repair(schema, undefined));
-    emitWholeValue(ctx, [...objectPath, key], nextValue, schema);
+    commitRootValue(ctx, [...objectPath, key], nextValue, schema, "both");
 }
 export function addAdditionalProperty(ctx, objectPath, key, schema) {
     if (!key) {
@@ -118,11 +114,11 @@ export function addAdditionalProperty(ctx, objectPath, key, schema) {
     const nextDrafts = new Map(ctx.additionalPropertyDrafts);
     nextDrafts.delete(pathToKey(objectPath));
     ctx.additionalPropertyDrafts = nextDrafts;
-    emitWholeValue(ctx, [...objectPath, key], nextValue, additionalSchema);
+    commitRootValue(ctx, [...objectPath, key], nextValue, additionalSchema, "both");
 }
 export function removeProperty(ctx, path) {
     const nextValue = deleteValueAtPath(ctx.value, path);
-    emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
+    commitRootValue(ctx, path, nextValue, ctx.rootSchema, "both");
 }
 export function addArrayItem(ctx, path, schema, index) {
     const itemSchema = getArrayItemSchema(schema, index) ?? {};
@@ -134,18 +130,18 @@ export function addArrayItem(ctx, path, schema, index) {
     ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
         ? createInputId(ctx, [...path, index])
         : undefined;
-    emitWholeValue(ctx, [...path, index], nextValue, itemSchema);
+    commitRootValue(ctx, [...path, index], nextValue, itemSchema, "both");
 }
 export function removeArrayItem(ctx, path) {
     const nextValue = deleteValueAtPath(ctx.value, path);
-    emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
+    commitRootValue(ctx, path, nextValue, ctx.rootSchema, "both");
 }
 export function reorderArrayItem(ctx, path, fromIndex, toIndex, prefixItemsLength = 0) {
     if (fromIndex < prefixItemsLength || toIndex < prefixItemsLength || fromIndex === toIndex) {
         return;
     }
     const nextValue = moveArrayItem(ctx.value, path, fromIndex, toIndex);
-    emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
+    commitRootValue(ctx, path, nextValue, ctx.rootSchema, "both");
 }
 export function getAdditionalPropertySchema(schema) {
     return typeof schema.additionalProperties === "object" && schema.additionalProperties !== null

@@ -31,9 +31,6 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
   branchSelections = new Map<string, number>();
 
   @state()
-  additionalPropertyDrafts = new Map<string, string>();
-
-  @state()
   collapsedSections = new Set<string>();
 
   pendingFocusId?: string;

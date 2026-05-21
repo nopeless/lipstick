@@ -68,6 +68,11 @@ test("mutates object and array paths through helpers", () => {
     bonus: 0,
   });
 
+  const blankAdditionalPropertyCtx = createTestContext(objectSchema, { extra: 1 });
+  addAdditionalProperty(blankAdditionalPropertyCtx, [], "", objectSchema);
+  assert.equal(blankAdditionalPropertyCtx.events.length, 0);
+  assert.deepEqual(blankAdditionalPropertyCtx.value, { extra: 1 });
+
   const reorderCtx = createTestContext(objectSchema, { tags: ["a", "b", "c"] });
   reorderArrayItem(reorderCtx, ["tags"], 0, 2);
   assert.deepEqual(reorderCtx.events.at(-1)?.detail.value, {
@@ -99,7 +104,7 @@ test("tracks collapsed sections and generated metadata", () => {
   assert.equal(createInputId(ctx, ["section", 1]), "lipstick-lipstick-section-1");
 });
 
-test("root commit prunes stale collapsed sections and additional drafts", () => {
+test("root commit prunes stale collapsed sections", () => {
   const schema: TSchema = {
     type: "object",
     properties: {
@@ -113,15 +118,10 @@ test("root commit prunes stale collapsed sections and additional drafts", () => 
   };
   const ctx = createTestContext(schema, { keep: { value: "a" }, stale: { value: "b" } });
   ctx.collapsedSections = new Set<string>(["#/keep", "#/stale", "#"]);
-  ctx.additionalPropertyDrafts = new Map<string, string>([
-    ["#/keep", "next"],
-    ["#/stale", "gone"],
-  ]);
 
   commitRootValue(ctx, [], { keep: { value: "x" } }, schema, "both");
 
   assert.deepEqual([...ctx.collapsedSections].sort(), ["#", "#/keep"]);
-  assert.deepEqual([...ctx.additionalPropertyDrafts.entries()], [["#/keep", "next"]]);
 });
 
 test("root commit resets invalid union branch selection", () => {

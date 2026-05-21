@@ -4,8 +4,6 @@ import type { JsonPointerPath, JsonPrimitive, TSchema, JsonValue } from "../lib/
  * Emits a path-scoped value update by patching `ctx.value` at `path`.
  */
 export declare function updatePathValue(ctx: JsonSchemaFormContext, path: JsonPointerPath, nextValue: JsonValue, schema: TSchema, commit: boolean): void;
-/** Emits `nextValue` as the full form value without applying a path patch. */
-export declare function emitWholeValue(ctx: JsonSchemaFormContext, path: JsonPointerPath, nextValue: JsonValue, schema: TSchema): void;
 export declare function resetRootValue(ctx: JsonSchemaFormContext): void;
 export declare function commitRootValue(ctx: JsonSchemaFormContext, path: JsonPointerPath, nextValue: JsonValue, schema: TSchema, mode: "input" | "change" | "both"): void;
 /**

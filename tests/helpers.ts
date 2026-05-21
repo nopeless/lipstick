@@ -23,7 +23,6 @@ export function createTestContext(
     disabled: false,
     readonly: false,
     branchSelections,
-    additionalPropertyDrafts: new Map<string, string>(),
     collapsedSections: new Set<string>(),
     validation: {
       valid: true,

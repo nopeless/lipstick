@@ -1,4 +1,4 @@
-import { emitWholeValue } from "./state.js";
+import { commitRootValue } from "./state.js";
 import { Value } from "typebox/value";
 export async function copyRootValueToClipboard(ctx, event) {
     event.preventDefault();
@@ -25,7 +25,7 @@ export async function pasteRootValueFromClipboard(ctx, event) {
         const nextText = await clipboard.readText();
         const parsedValue = JSON.parse(nextText);
         const sanitizedValue = Value.Repair(ctx.rootSchema, parsedValue);
-        emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
+        commitRootValue(ctx, [], sanitizedValue, ctx.rootSchema, "both");
     }
     catch (e) {
         console.error(e);
