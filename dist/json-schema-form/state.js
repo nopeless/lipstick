@@ -10,11 +10,89 @@ export function updatePathValue(ctx, path, nextValue, schema, commit) {
 }
 /** Emits `nextValue` as the full form value without applying a path patch. */
 export function emitWholeValue(ctx, path, nextValue, schema) {
-    ctx.applyFormValueUpdate("both", path, nextValue, schema);
+    commitRootValue(ctx, path, nextValue, schema, "both");
 }
 export function resetRootValue(ctx) {
-    ctx.branchSelections = new Map();
-    emitWholeValue(ctx, [], Value.Repair(ctx.rootSchema, undefined), ctx.rootSchema);
+    commitRootValue(ctx, [], Value.Repair(ctx.rootSchema, undefined), ctx.rootSchema, "both");
+}
+export function commitRootValue(ctx, path, nextValue, schema, mode) {
+    reconcileUiStateWithValue(ctx, nextValue);
+    ctx.applyFormValueUpdate(mode, path, nextValue, schema);
+}
+function reconcileUiStateWithValue(ctx, nextRootValue) {
+    const nextBranchSelections = new Map();
+    for (const [pathKey] of ctx.branchSelections) {
+        const path = pathKeyToPath(pathKey);
+        const nodeValue = getValueAtPath(nextRootValue, path);
+        if (nodeValue === undefined) {
+            continue;
+        }
+        const nodeSchema = resolveSchemaForPath(ctx, path, nextRootValue);
+        if (!nodeSchema) {
+            continue;
+        }
+        const union = describeUnion(nodeSchema, nodeValue, ctx.rootSchema);
+        if (!union) {
+            continue;
+        }
+        nextBranchSelections.set(pathKey, union.selectedIndex);
+    }
+    const nextCollapsedSections = new Set();
+    for (const pathKey of ctx.collapsedSections) {
+        const path = pathKeyToPath(pathKey);
+        if (path.length === 0 || getValueAtPath(nextRootValue, path) !== undefined) {
+            nextCollapsedSections.add(pathKey);
+        }
+    }
+    const nextDrafts = new Map();
+    for (const [pathKey, draft] of ctx.additionalPropertyDrafts) {
+        const path = pathKeyToPath(pathKey);
+        const nodeValue = path.length === 0 ? nextRootValue : getValueAtPath(nextRootValue, path);
+        if (isPlainObject(nodeValue)) {
+            nextDrafts.set(pathKey, draft);
+        }
+    }
+    ctx.branchSelections = nextBranchSelections;
+    ctx.collapsedSections = nextCollapsedSections;
+    ctx.additionalPropertyDrafts = nextDrafts;
+}
+function pathKeyToPath(pathKey) {
+    if (pathKey === "#" || pathKey === "") {
+        return [];
+    }
+    const rawSegments = pathKey.replace(/^#\//, "").split("/");
+    return rawSegments.map((segment) => {
+        const decoded = segment.replaceAll("~1", "/").replaceAll("~0", "~");
+        const asIndex = Number(decoded);
+        return Number.isInteger(asIndex) && String(asIndex) === decoded ? asIndex : decoded;
+    });
+}
+function resolveSchemaForPath(ctx, path, rootValue) {
+    let currentSchema = ctx.rootSchema;
+    let currentPath = [];
+    for (const segment of path) {
+        const currentValue = getValueAtPath(rootValue, currentPath);
+        const resolved = resolveSchema(currentSchema, ctx.rootSchema, currentValue);
+        if (typeof segment === "number") {
+            if (!isArraySchema(resolved)) {
+                return undefined;
+            }
+            currentSchema = getArrayItemSchema(resolved, segment) ?? {};
+            currentPath = [...currentPath, segment];
+            continue;
+        }
+        if (!isObjectSchema(resolved)) {
+            return undefined;
+        }
+        currentSchema =
+            resolved.properties?.[segment] ??
+                (typeof resolved.additionalProperties === "object" ? resolved.additionalProperties : {});
+        currentPath = [...currentPath, segment];
+    }
+    return resolveSchema(currentSchema, ctx.rootSchema, getValueAtPath(rootValue, path));
+}
+function isPlainObject(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 /**
  * Selects a union branch, sanitizes the current value for that branch, and

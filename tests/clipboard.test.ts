@@ -41,7 +41,7 @@ test("paste clears stale branch selections before emitting", async () => {
   }
 
   assert.deepEqual(ctx.events.at(-1)?.detail.value, { optionalRange: 7 });
-  assert.equal(ctx.branchSelections.size, 0);
+  assert.equal(ctx.branchSelections.get("#/optionalRange"), 0);
 });
 
 function createContext(

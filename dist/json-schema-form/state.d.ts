@@ -7,6 +7,7 @@ export declare function updatePathValue(ctx: JsonSchemaFormContext, path: JsonPo
 /** Emits `nextValue` as the full form value without applying a path patch. */
 export declare function emitWholeValue(ctx: JsonSchemaFormContext, path: JsonPointerPath, nextValue: JsonValue, schema: TSchema): void;
 export declare function resetRootValue(ctx: JsonSchemaFormContext): void;
+export declare function commitRootValue(ctx: JsonSchemaFormContext, path: JsonPointerPath, nextValue: JsonValue, schema: TSchema, mode: "input" | "change" | "both"): void;
 /**
  * Selects a union branch, sanitizes the current value for that branch, and
  * emits the path update from one shared place.

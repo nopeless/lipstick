@@ -5,8 +5,10 @@ import type { JsonPointerPath, TSchema, JsonValue } from "../src/lib/types.js";
 import {
   addAdditionalProperty,
   addKnownProperty,
+  commitRootValue,
   createInputId,
   canAddAdditionalProperty,
+  emitWholeValue,
   isCollapsed,
   removeArrayItem,
   removeProperty,
@@ -96,6 +98,87 @@ test("tracks collapsed sections and generated metadata", () => {
   toggleCollapsed(ctx, ["section"]);
   assert.equal(isCollapsed(ctx, ["section"]), true);
   assert.equal(createInputId(ctx, ["section", 1]), "lipstick-lipstick-section-1");
+});
+
+test("root commit prunes stale collapsed sections and additional drafts", () => {
+  const schema: TSchema = {
+    type: "object",
+    properties: {
+      keep: {
+        type: "object",
+        properties: {
+          value: { type: "string" },
+        },
+      },
+    },
+  };
+  const ctx = createContext(schema, { keep: { value: "a" }, stale: { value: "b" } });
+  ctx.collapsedSections = new Set<string>(["#/keep", "#/stale", "#"]);
+  ctx.additionalPropertyDrafts = new Map<string, string>([
+    ["#/keep", "next"],
+    ["#/stale", "gone"],
+  ]);
+
+  commitRootValue(ctx, [], { keep: { value: "x" } }, schema, "both");
+
+  assert.deepEqual([...ctx.collapsedSections].sort(), ["#", "#/keep"]);
+  assert.deepEqual([...ctx.additionalPropertyDrafts.entries()], [["#/keep", "next"]]);
+});
+
+test("root commit resets invalid union branch selection", () => {
+  const schema: TSchema = {
+    type: "object",
+    properties: {
+      optionalRange: {
+        anyOf: [
+          { type: "number", minimum: 0, maximum: 10, multipleOf: 1 },
+          { type: "null" },
+        ],
+      },
+    },
+  };
+  const ctx = createContext(schema, { optionalRange: 4 });
+  ctx.branchSelections = new Map<string, number>([["#/optionalRange", 1]]);
+
+  commitRootValue(ctx, [], { optionalRange: 7 }, schema, "both");
+
+  assert.equal(ctx.branchSelections.get("#/optionalRange"), 0);
+});
+
+test("emitWholeValue and commitRootValue share reconciled root update behavior", () => {
+  const schema: TSchema = {
+    type: "object",
+    properties: {
+      keep: { type: "object", properties: { value: { type: "string" } } },
+    },
+  };
+  const seed = { keep: { value: "a" }, stale: { value: "b" } } as JsonValue;
+  const setup = (ctx: ReturnType<typeof createContext>) => {
+    ctx.collapsedSections = new Set<string>(["#/keep", "#/stale"]);
+    ctx.additionalPropertyDrafts = new Map<string, string>([
+      ["#/keep", "next"],
+      ["#/stale", "gone"],
+    ]);
+    ctx.branchSelections = new Map<string, number>([["#/stale", 0]]);
+  };
+
+  const viaEmit = createContext(schema, seed);
+  setup(viaEmit);
+  emitWholeValue(viaEmit, [], { keep: { value: "z" } }, schema);
+
+  const viaCommit = createContext(schema, seed);
+  setup(viaCommit);
+  commitRootValue(viaCommit, [], { keep: { value: "z" } }, schema, "both");
+
+  assert.deepEqual([...viaEmit.collapsedSections], [...viaCommit.collapsedSections]);
+  assert.deepEqual(
+    [...viaEmit.additionalPropertyDrafts.entries()],
+    [...viaCommit.additionalPropertyDrafts.entries()],
+  );
+  assert.deepEqual(
+    [...viaEmit.branchSelections.entries()],
+    [...viaCommit.branchSelections.entries()],
+  );
 });
 
 function createContext(
