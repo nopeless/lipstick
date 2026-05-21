@@ -4,13 +4,17 @@ import { renderForm } from "./json-schema-form/render.js";
 import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
 import type { TSchema, JsonValue } from "./lib/types.js";
 import { validateValueAgainstSchema, type ValidationSnapshot } from "./lib/validation.js";
+import { Value } from "typebox/value";
 
 export class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
   @property({ attribute: false })
   schema?: TSchema;
 
+  @property({ type: Boolean })
+  repair = false;
+
   @property({ attribute: false })
-  value?: JsonValue;
+  _value?: JsonValue;
 
   @property()
   name?: string;
@@ -53,6 +57,16 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     return this.disabled || this.readonly;
   }
 
+  get value(): JsonValue | undefined {
+    return this._value;
+  }
+
+  set value(next: JsonValue | undefined) {
+    const previous = this._value;
+    this._value = this.repair && this.schema ? (Value.Repair(this.schema, next) as JsonValue) : next;
+    this.requestUpdate("value", previous);
+  }
+
   render() {
     if (this.schema) {
       this.validation = validateValueAgainstSchema(this.schema, this.value);
@@ -85,4 +99,3 @@ declare global {
     "lipstick-form": LipstickFormElement;
   }
 }
-

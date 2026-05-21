@@ -1,10 +1,10 @@
 import "../define.js";
 import "./css/demo.css";
-import { buildInitialValue } from "../lib/schema.js";
 import type { JsonSchemaFormEventDetail, JsonValue } from "../index.js";
 import { getDemoRefs } from "./dom.js";
 import { getErrorMessage, loadDemoFixture, assertSchema, type DemoFixtureName } from "./data.js";
 import type { TSchema } from "../index.js";
+import { Value } from "typebox/value";
 
 let value: JsonValue = null;
 
@@ -95,7 +95,7 @@ async function loadSelectedDemo(fixture: DemoFixtureName) {
 }
 
 function applySchema(nextSchema: TSchema, nextValue?: JsonValue) {
-  value = nextValue !== undefined ? nextValue : buildInitialValue(nextSchema, nextSchema);
+  value = nextValue !== undefined ? nextValue : (Value.Repair(nextSchema, undefined) as JsonValue);
   refs.form.schema = nextSchema;
   refs.form.value = value;
   refs.schemaJson.value = JSON.stringify(nextSchema, null, 2);

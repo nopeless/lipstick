@@ -1,7 +1,7 @@
-import { sanitizeValueForSchema } from "../lib/schema.js";
 import type { JsonValue } from "../lib/types.js";
 import { emitWholeValue } from "./state.js";
 import type { JsonSchemaFormContext } from "./shared.js";
+import { Value } from "typebox/value";
 
 export async function copyRootValueToClipboard(ctx: JsonSchemaFormContext, event: Event) {
   event.preventDefault();
@@ -31,7 +31,7 @@ export async function pasteRootValueFromClipboard(ctx: JsonSchemaFormContext, ev
   try {
     const nextText = await clipboard.readText();
     const parsedValue = JSON.parse(nextText) as JsonValue;
-    const sanitizedValue = sanitizeValueForSchema(parsedValue, ctx.rootSchema, ctx.rootSchema);
+    const sanitizedValue = Value.Repair(ctx.rootSchema, parsedValue) as JsonValue;
     // Pasted payloads can change which union branch is valid at a path.
     // Clear cached branch picks so rendering re-selects from the new value.
     ctx.branchSelections = new Map<string, number>();

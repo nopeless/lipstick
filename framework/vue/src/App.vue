@@ -13,21 +13,10 @@ import { Lipstick } from "../../../src/vue/index.ts";
 
 const schema = {
   type: "object",
-  title: "Form",
-  properties: {
-    name: { type: "string", title: "Name", default: "Taylor" },
-    images: {
-      type: "array",
-      title: "Images",
-      items: {
-        type: "object",
-        properties: {
-          url: { type: "string", title: "URL" },
-          caption: { type: "string", title: "Caption" },
-        },
-      },
-    },
-  },
+  title: "Point",
+  required: ["x", "y"],
+  properties: { x: { type: "number" }, y: { type: "number" } },
+  additionalProperties: false,
 } as const;
 
 const value = ref({});

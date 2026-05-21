@@ -42,10 +42,7 @@ import {
   toggleCollapsed,
   updatePathValue,
 } from "./state.js";
-import {
-  copyRootValueToClipboard,
-  pasteRootValueFromClipboard,
-} from "./clipboard.js";
+import { copyRootValueToClipboard, pasteRootValueFromClipboard } from "./clipboard.js";
 
 interface ScalarControlOptions {
   inputId: string;
@@ -155,7 +152,7 @@ function renderUnionField(
   const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
 
   const changeBranch = (index: number) => {
-    switchUnionBranch(ctx, path, value, branches, rootSchema, index);
+    switchUnionBranch(ctx, path, value, branches, index);
   };
 
   return renderFramedFieldset(
@@ -211,14 +208,7 @@ function renderPrimitiveUnionField(
           class="lipstick-cycle"
           ?disabled=${ctx.formDisabled}
           @click=${() =>
-            switchUnionBranch(
-              ctx,
-              path,
-              value,
-              branches,
-              rootSchema,
-              (union.selectedIndex + 1) % branches.length,
-            )}
+            switchUnionBranch(ctx, path, value, branches, (union.selectedIndex + 1) % branches.length)}
           aria-label="Cycle variant"
         >
           ⇄

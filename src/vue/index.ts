@@ -6,6 +6,7 @@ export const Lipstick = defineComponent({
   name: "Lipstick",
   props: {
     schema: { type: Object as () => TSchema | undefined, default: undefined },
+    repair: { type: Boolean, default: false },
     value: { type: null as unknown as () => JsonValue | undefined, default: undefined },
     modelValue: { type: null as unknown as () => JsonValue | undefined, default: undefined },
     name: { type: String, default: undefined },
@@ -38,6 +39,7 @@ export const Lipstick = defineComponent({
     return () =>
       h("lipstick-form", {
         schema: props.schema,
+        repair: props.repair,
         value: props.modelValue ?? props.value,
         name: props.name,
         disabled: props.disabled,
