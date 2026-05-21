@@ -12,6 +12,7 @@ demo-dist
 .test-dist
 dist-ssr
 *.local
+framework/**/dist
 
 # Editor directories and files
 .vscode/*
