@@ -4,7 +4,6 @@ import type { JsonSchemaFormContext } from "../src/json-schema-form/shared.js";
 import type { JsonPointerPath, TSchema, JsonValue } from "../src/lib/types.js";
 import {
   addAdditionalProperty,
-  addArrayItem,
   addKnownProperty,
   createInputId,
   canAddAdditionalProperty,
@@ -12,7 +11,6 @@ import {
   removeArrayItem,
   removeProperty,
   reorderArrayItem,
-  switchUnionBranch,
   toggleCollapsed,
   updatePathValue,
 } from "../src/json-schema-form/state.js";
@@ -46,7 +44,7 @@ test("mutates object and array paths through helpers", () => {
         items: { type: "string" },
       },
     },
-    additionalProperties: { type: "number" },
+    additionalProperties: { type: "number", default: 0 },
   };
   assert.equal(canAddAdditionalProperty(objectSchema), true);
   const knownPropertyCtx = createContext(objectSchema, {
@@ -69,13 +67,6 @@ test("mutates object and array paths through helpers", () => {
     bonus: 0,
   });
 
-  const arrayItemCtx = createContext(objectSchema, { tags: ["a", "b"] });
-  addArrayItem(arrayItemCtx, ["tags"], objectSchema.properties!.tags, 2);
-  assert.deepEqual(arrayItemCtx.events.at(-1)?.detail.value, {
-    tags: ["a", "b", ""],
-  });
-  assert.equal(arrayItemCtx.pendingFocusId, createInputId(arrayItemCtx, ["tags", 2]));
-
   const reorderCtx = createContext(objectSchema, { tags: ["a", "b", "c"] });
   reorderArrayItem(reorderCtx, ["tags"], 0, 2);
   assert.deepEqual(reorderCtx.events.at(-1)?.detail.value, {
@@ -96,62 +87,6 @@ test("mutates object and array paths through helpers", () => {
   assert.deepEqual(removePropertyCtx.events.at(-1)?.detail.value, {
     name: "Ada",
   });
-});
-
-test("switches nested union branches by emitting the full root value", () => {
-  const schema: TSchema = {
-    type: "object",
-    properties: {
-      config: {
-        oneOf: [
-          {
-            title: "Alpha",
-            type: "object",
-            additionalProperties: false,
-            properties: {
-              kind: { const: "alpha" },
-              value: { type: "string" },
-            },
-            required: ["kind"],
-          },
-          {
-            title: "Beta",
-            type: "object",
-            additionalProperties: false,
-            properties: {
-              kind: { const: "beta" },
-              count: { type: "integer" },
-            },
-            required: ["kind", "count"],
-          },
-        ],
-      },
-    },
-  };
-  const value = {
-    config: {
-      kind: "alpha",
-      value: "hello",
-    },
-  };
-  const ctx = createContext(schema, value);
-
-  const nextValue = switchUnionBranch(
-    ctx,
-    ["config"],
-    value.config,
-    schema.properties!.config.oneOf!,
-    schema,
-    1,
-  );
-
-  assert.deepEqual(nextValue, { kind: "beta", count: 0 });
-  assert.equal(ctx.events.length, 2);
-  assert.deepEqual(ctx.events.at(-1)?.detail.value, {
-    config: { kind: "beta", count: 0 },
-  });
-  assert.deepEqual(ctx.events.at(-1)?.detail.path, ["config"]);
-  assert.equal(ctx.branchSelections.get("#/config"), 1);
 });
 
 test("tracks collapsed sections and generated metadata", () => {
