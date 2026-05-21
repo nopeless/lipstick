@@ -40,17 +40,8 @@ function reconcileUiStateWithValue(ctx, nextRootValue) {
             nextCollapsedSections.add(pathKey);
         }
     }
-    const nextDrafts = new Map();
-    for (const [pathKey, draft] of ctx.additionalPropertyDrafts) {
-        const path = parsePathKey(pathKey);
-        const nodeValue = path.length === 0 ? nextRootValue : getValueAtPath(nextRootValue, path);
-        if (isPlainObject(nodeValue)) {
-            nextDrafts.set(pathKey, draft);
-        }
-    }
     ctx.branchSelections = nextBranchSelections;
     ctx.collapsedSections = nextCollapsedSections;
-    ctx.additionalPropertyDrafts = nextDrafts;
 }
 function parsePathKey(pathKey) {
     if (pathKey === "#" || pathKey === "") {
@@ -87,9 +78,6 @@ function resolveSchemaForPath(ctx, path, rootValue) {
     }
     return resolveSchema(currentSchema, ctx.rootSchema, getValueAtPath(rootValue, path));
 }
-function isPlainObject(value) {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 /**
  * Selects a union branch, sanitizes the current value for that branch, and
  * emits the path update from one shared place.
@@ -111,9 +99,6 @@ export function addAdditionalProperty(ctx, objectPath, key, schema) {
     }
     const additionalSchema = getAdditionalPropertySchema(schema);
     const nextValue = setValueAtPath(ctx.value, [...objectPath, key], Value.Repair(additionalSchema, undefined));
-    const nextDrafts = new Map(ctx.additionalPropertyDrafts);
-    nextDrafts.delete(pathToKey(objectPath));
-    ctx.additionalPropertyDrafts = nextDrafts;
     commitRootValue(ctx, [...objectPath, key], nextValue, additionalSchema, "both");
 }
 export function removeProperty(ctx, path) {

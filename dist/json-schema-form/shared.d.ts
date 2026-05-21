@@ -22,7 +22,6 @@ export interface JsonSchemaFormContext extends EventTarget {
     disabled: boolean;
     readonly: boolean;
     branchSelections: Map<string, number>;
-    additionalPropertyDrafts: Map<string, string>;
     collapsedSections: Set<string>;
     pendingFocusId?: string;
     rootSchema: TSchema;

@@ -10,7 +10,6 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     readonly: boolean;
     persist: boolean;
     branchSelections: Map<string, number>;
-    additionalPropertyDrafts: Map<string, string>;
     collapsedSections: Set<string>;
     pendingFocusId?: string;
     validation: ValidationSnapshot;

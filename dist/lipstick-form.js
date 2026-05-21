@@ -19,7 +19,6 @@ export class LipstickFormElement extends LitElement {
         this.readonly = false;
         this.persist = false;
         this.branchSelections = new Map();
-        this.additionalPropertyDrafts = new Map();
         this.collapsedSections = new Set();
         this.validation = {
             valid: true,
@@ -184,9 +183,6 @@ __decorate([
 __decorate([
     state()
 ], LipstickFormElement.prototype, "branchSelections", void 0);
-__decorate([
-    state()
-], LipstickFormElement.prototype, "additionalPropertyDrafts", void 0);
 __decorate([
     state()
 ], LipstickFormElement.prototype, "collapsedSections", void 0);

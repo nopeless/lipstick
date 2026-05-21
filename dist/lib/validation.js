@@ -1,5 +1,4 @@
 import Schema from "typebox/schema";
-export const DRAFT_2020_12_SCHEMA_URI = "https://json-schema.org/draft/2020-12/schema";
 const validatorCache = new WeakMap();
 const validatorErrorCache = new WeakMap();
 export function validateValueAgainstSchema(schema, value) {
