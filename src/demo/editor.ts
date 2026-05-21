@@ -1,5 +1,4 @@
 import { Type } from "typebox";
-import type { TSchema } from "../index.js";
 
 export const schema = Type.Object(
   {
@@ -815,4 +814,4 @@ export const schema = Type.Object(
       },
     },
   },
-) as unknown as TSchema;
+);

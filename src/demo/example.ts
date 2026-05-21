@@ -56,6 +56,36 @@ export const schema = Type.Object(
       },
       {
         title: "Product",
+        default: {
+          name: "Velvet Serum",
+          slug: "velvet-serum",
+          brand: "Northstar Beauty",
+          category: "beauty",
+          shortDescription: "A lightweight daily serum with hydration and glow.",
+          longDescription:
+            "This serum layers under moisturizer and makeup, with a fast-absorbing finish and a fragrance-free formula.",
+          tags: ["hydrating", "fragrance-free", "daily-care"],
+          primaryImage: {
+            url: "https://example.com/images/velvet-serum-hero.jpg",
+            alt: "Bottle of Velvet Serum on a stone surface",
+            caption: "Hero image",
+          },
+          gallery: [
+            {
+              url: "https://example.com/images/velvet-serum-1.jpg",
+              alt: "Velvet Serum front view",
+            },
+            {
+              url: "https://example.com/images/velvet-serum-2.jpg",
+              alt: "Velvet Serum texture swatch",
+            },
+            {
+              url: "https://example.com/images/velvet-serum-3.jpg",
+              alt: "Velvet Serum in packaging",
+            },
+          ],
+          features: ["Fast absorbing", "Fragrance free", "Suitable for daily use"],
+        },
       },
     ),
     pricing: Type.Union(
@@ -125,6 +155,21 @@ export const schema = Type.Object(
       ],
       {
         title: "Pricing strategy",
+        default: {
+          mode: "fixed",
+          listPrice: {
+            currency: "USD",
+            amount: 34,
+          },
+          salePrice: {
+            currency: "USD",
+            amount: 28,
+          },
+          compareAt: {
+            currency: "USD",
+            amount: 36,
+          },
+        },
       },
     ),
     inventory: Type.Object(
@@ -181,6 +226,51 @@ export const schema = Type.Object(
       },
       {
         title: "Inventory",
+        default: {
+          sku: "VLS-001",
+          trackStock: true,
+          safetyStock: 24,
+          backorderPolicy: "notify",
+          allowOversell: false,
+          warehouses: [
+            {
+              name: "Chicago Fulfillment",
+              location: {
+                name: "Northstar Beauty",
+                line1: "1200 W Lake St",
+                city: "Chicago",
+                region: "IL",
+                postalCode: "60607",
+                country: "US",
+              },
+              priority: 1,
+              active: true,
+            },
+            {
+              name: "Dallas Overflow",
+              location: {
+                name: "Northstar Beauty",
+                line1: "800 S Pearl Expy",
+                city: "Dallas",
+                region: "TX",
+                postalCode: "75201",
+                country: "US",
+              },
+              priority: 2,
+              active: true,
+            },
+          ],
+          bundleComponents: [
+            {
+              sku: "VLS-001-BASE",
+              quantity: 1,
+            },
+            {
+              sku: "VLS-001-BOX",
+              quantity: 1,
+            },
+          ],
+        },
       },
     ),
     fulfillment: Type.Object(
@@ -295,6 +385,29 @@ export const schema = Type.Object(
       },
       {
         title: "Fulfillment",
+        default: {
+          shippingRequired: true,
+          packageWeight: 0.42,
+          packageDimensions: {
+            width: 4.2,
+            height: 12.1,
+            depth: 4.2,
+          },
+          originAddress: {
+            name: "Northstar Beauty",
+            line1: "1200 W Lake St",
+            city: "Chicago",
+            region: "IL",
+            postalCode: "60607",
+            country: "US",
+          },
+          carriers: ["ups", "usps"],
+          international: {
+            enabled: true,
+            regions: ["north-america", "europe"],
+            customsDeclaration: "Cosmetic serum, non-hazardous, retail packaging.",
+          },
+        },
       },
     ),
     marketing: Type.Object(
@@ -351,6 +464,48 @@ export const schema = Type.Object(
       },
       {
         title: "Marketing",
+        default: {
+          seo: {
+            slug: "velvet-serum",
+            title: "Velvet Serum | Hydrating Daily Glow",
+            description: "A fragrance-free hydrating serum designed for daily use.",
+            keywords: ["serum", "hydration", "skincare", "fragrance-free"],
+          },
+          launchDate: "2026-06-01",
+          campaignBudget: {
+            currency: "USD",
+            amount: 15000,
+          },
+          channels: [
+            {
+              channelType: "email",
+              active: true,
+              notes: "Launch announcement and abandoned cart sequence.",
+            },
+            {
+              channelType: "social",
+              active: true,
+              notes: "Short-form product demo clips.",
+            },
+            {
+              channelType: "search",
+              active: true,
+              notes: "Brand and competitor conquest terms.",
+            },
+          ],
+          testimonials: [
+            {
+              quote: "It leaves my skin looking fresh without feeling heavy.",
+              author: "Maya",
+              role: "Customer",
+            },
+            {
+              quote: "Easy to merchandize and simple for the team to explain.",
+              author: "Jordan",
+              role: "Retail buyer",
+            },
+          ],
+        },
       },
     ),
     compliance: Type.Object(
@@ -406,6 +561,11 @@ export const schema = Type.Object(
         then: {
           required: ["hazardClass", "contact"],
         },
+        default: {
+          ageRestricted: false,
+          certifications: ["organic", "ce"],
+          regulatedGoods: false,
+        },
       },
     ),
     analytics: Type.Optional(
@@ -448,6 +608,27 @@ export const schema = Type.Object(
         },
         {
           title: "Analytics",
+          default: {
+            enabled: true,
+            pixelIds: ["PIX-12345", "PIX-67890"],
+            events: [
+              {
+                name: "view_item",
+                enabled: true,
+                sampleRate: 1,
+              },
+              {
+                name: "add_to_cart",
+                enabled: true,
+                sampleRate: 0.85,
+              },
+              {
+                name: "purchase",
+                enabled: true,
+                sampleRate: 1,
+              },
+            ],
+          },
         },
       ),
     ),
@@ -477,6 +658,20 @@ export const schema = Type.Object(
         },
         {
           title: "Support",
+          default: {
+            contactEmail: "support@example.com",
+            phone: "+1-800-555-0182",
+            faq: [
+              {
+                question: "How often should the serum be used?",
+                answer: "Use once or twice daily after cleansing.",
+              },
+              {
+                question: "Is it fragrance free?",
+                answer: "Yes, the formula is fragrance free.",
+              },
+            ],
+          },
         },
       ),
     ),
@@ -484,6 +679,11 @@ export const schema = Type.Object(
       Type.Record(Type.String(), Type.String(), {
         title: "Metadata",
         description: "Additional keys stay editable with local schema only.",
+        default: {
+          season: "spring",
+          launchOwner: "marketing",
+          region: "NA",
+        },
       }),
     ),
   },
@@ -682,208 +882,6 @@ export const schema = Type.Object(
             title: "Answer",
           },
         },
-      },
-    },
-    default: {
-      product: {
-        name: "Velvet Serum",
-        slug: "velvet-serum",
-        brand: "Northstar Beauty",
-        category: "beauty",
-        shortDescription: "A lightweight daily serum with hydration and glow.",
-        longDescription:
-          "This serum layers under moisturizer and makeup, with a fast-absorbing finish and a fragrance-free formula.",
-        tags: ["hydrating", "fragrance-free", "daily-care"],
-        primaryImage: {
-          url: "https://example.com/images/velvet-serum-hero.jpg",
-          alt: "Bottle of Velvet Serum on a stone surface",
-          caption: "Hero image",
-        },
-        gallery: [
-          {
-            url: "https://example.com/images/velvet-serum-1.jpg",
-            alt: "Velvet Serum front view",
-          },
-          {
-            url: "https://example.com/images/velvet-serum-2.jpg",
-            alt: "Velvet Serum texture swatch",
-          },
-          {
-            url: "https://example.com/images/velvet-serum-3.jpg",
-            alt: "Velvet Serum in packaging",
-          },
-        ],
-        features: ["Fast absorbing", "Fragrance free", "Suitable for daily use"],
-      },
-      pricing: {
-        mode: "fixed",
-        listPrice: {
-          currency: "USD",
-          amount: 34,
-        },
-        salePrice: {
-          currency: "USD",
-          amount: 28,
-        },
-        compareAt: {
-          currency: "USD",
-          amount: 36,
-        },
-      },
-      inventory: {
-        sku: "VLS-001",
-        trackStock: true,
-        safetyStock: 24,
-        backorderPolicy: "notify",
-        allowOversell: false,
-        warehouses: [
-          {
-            name: "Chicago Fulfillment",
-            location: {
-              name: "Northstar Beauty",
-              line1: "1200 W Lake St",
-              city: "Chicago",
-              region: "IL",
-              postalCode: "60607",
-              country: "US",
-            },
-            priority: 1,
-            active: true,
-          },
-          {
-            name: "Dallas Overflow",
-            location: {
-              name: "Northstar Beauty",
-              line1: "800 S Pearl Expy",
-              city: "Dallas",
-              region: "TX",
-              postalCode: "75201",
-              country: "US",
-            },
-            priority: 2,
-            active: true,
-          },
-        ],
-        bundleComponents: [
-          {
-            sku: "VLS-001-BASE",
-            quantity: 1,
-          },
-          {
-            sku: "VLS-001-BOX",
-            quantity: 1,
-          },
-        ],
-      },
-      fulfillment: {
-        shippingRequired: true,
-        packageWeight: 0.42,
-        packageDimensions: {
-          width: 4.2,
-          height: 12.1,
-          depth: 4.2,
-        },
-        originAddress: {
-          name: "Northstar Beauty",
-          line1: "1200 W Lake St",
-          city: "Chicago",
-          region: "IL",
-          postalCode: "60607",
-          country: "US",
-        },
-        carriers: ["ups", "usps"],
-        international: {
-          enabled: true,
-          regions: ["north-america", "europe"],
-          customsDeclaration: "Cosmetic serum, non-hazardous, retail packaging.",
-        },
-      },
-      marketing: {
-        seo: {
-          slug: "velvet-serum",
-          title: "Velvet Serum | Hydrating Daily Glow",
-          description: "A fragrance-free hydrating serum designed for daily use.",
-          keywords: ["serum", "hydration", "skincare", "fragrance-free"],
-        },
-        launchDate: "2026-06-01",
-        campaignBudget: {
-          currency: "USD",
-          amount: 15000,
-        },
-        channels: [
-          {
-            type: "email",
-            active: true,
-            notes: "Launch announcement and abandoned cart sequence.",
-          },
-          {
-            type: "social",
-            active: true,
-            notes: "Short-form product demo clips.",
-          },
-          {
-            type: "search",
-            active: true,
-            notes: "Brand and competitor conquest terms.",
-          },
-        ],
-        testimonials: [
-          {
-            quote: "It leaves my skin looking fresh without feeling heavy.",
-            author: "Maya",
-            role: "Customer",
-          },
-          {
-            quote: "Easy to merchandize and simple for the team to explain.",
-            author: "Jordan",
-            role: "Retail buyer",
-          },
-        ],
-      },
-      compliance: {
-        ageRestricted: false,
-        certifications: ["organic", "ce"],
-        regulatedGoods: false,
-      },
-      analytics: {
-        enabled: true,
-        pixelIds: ["PIX-12345", "PIX-67890"],
-        events: [
-          {
-            name: "view_item",
-            enabled: true,
-            sampleRate: 1,
-          },
-          {
-            name: "add_to_cart",
-            enabled: true,
-            sampleRate: 0.85,
-          },
-          {
-            name: "purchase",
-            enabled: true,
-            sampleRate: 1,
-          },
-        ],
-      },
-      support: {
-        contactEmail: "support@example.com",
-        phone: "+1-800-555-0182",
-        faq: [
-          {
-            question: "How often should the serum be used?",
-            answer: "Use once or twice daily after cleansing.",
-          },
-          {
-            question: "Is it fragrance free?",
-            answer: "Yes, the formula is fragrance free.",
-          },
-        ],
-      },
-      metadata: {
-        season: "spring",
-        launchOwner: "marketing",
-        region: "NA",
       },
     },
   },
