@@ -206,7 +206,13 @@ function renderPrimitiveUnionField(
           class="lipstick-cycle"
           ?disabled=${ctx.formDisabled}
           @click=${() =>
-            switchUnionBranch(ctx, path, value, branches, (union.selectedIndex + 1) % branches.length)}
+            switchUnionBranch(
+              ctx,
+              path,
+              value,
+              branches,
+              (union.selectedIndex + 1) % branches.length,
+            )}
           aria-label="Cycle variant"
         >
           ⇄
@@ -852,7 +858,7 @@ function renderFieldsetHeader(
             title="Paste"
             aria-label="Paste form value"
           >
-            ▞
+            ↴
           </button>
           <button
             type="button"
