@@ -6,7 +6,6 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     schema?: TSchema;
     repair: boolean;
     _value?: JsonValue;
-    name?: string;
     disabled: boolean;
     readonly: boolean;
     branchSelections: Map<string, number>;

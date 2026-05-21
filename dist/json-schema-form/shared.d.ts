@@ -19,7 +19,6 @@ export interface JsonSchemaFormContext extends EventTarget {
     id?: string;
     schema?: TSchema;
     value?: JsonValue;
-    name?: string;
     disabled: boolean;
     readonly: boolean;
     branchSelections: Map<string, number>;

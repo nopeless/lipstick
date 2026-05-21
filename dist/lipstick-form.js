@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { renderForm } from "./json-schema-form/render.js";
+import { emitValue } from "./json-schema-form/state.js";
 import { validateValueAgainstSchema } from "./lib/validation.js";
 import { Value } from "typebox/value";
 export class LipstickFormElement extends LitElement {
@@ -41,8 +42,12 @@ export class LipstickFormElement extends LitElement {
     }
     set value(next) {
         const previous = this._value;
-        this._value = this.repair && this.schema ? Value.Repair(this.schema, next) : next;
+        const repaired = this.repair && this.schema ? Value.Repair(this.schema, next) : next;
+        this._value = repaired;
         this.requestUpdate("value", previous);
+        if (this.repair && this.schema && !Value.Equal(next, repaired)) {
+            emitValue(this, "input", [], repaired, this.schema);
+        }
     }
     render() {
         if (this.schema) {
@@ -75,9 +80,6 @@ __decorate([
 __decorate([
     property({ attribute: false })
 ], LipstickFormElement.prototype, "_value", void 0);
-__decorate([
-    property()
-], LipstickFormElement.prototype, "name", void 0);
 __decorate([
     property({ type: Boolean, reflect: true })
 ], LipstickFormElement.prototype, "disabled", void 0);

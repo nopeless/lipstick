@@ -1,6 +1,7 @@
 import { LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { renderForm } from "./json-schema-form/render.js";
+import { emitValue } from "./json-schema-form/state.js";
 import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
 import type { TSchema, JsonValue } from "./lib/types.js";
 import { validateValueAgainstSchema, type ValidationSnapshot } from "./lib/validation.js";
@@ -60,8 +61,14 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
 
   set value(next: JsonValue | undefined) {
     const previous = this._value;
-    this._value = this.repair && this.schema ? (Value.Repair(this.schema, next) as JsonValue) : next;
+    const repaired =
+      this.repair && this.schema ? (Value.Repair(this.schema, next) as JsonValue) : next;
+    this._value = repaired;
     this.requestUpdate("value", previous);
+
+    if (this.repair && this.schema && !Value.Equal(next, repaired)) {
+      emitValue(this, "input", [], repaired as JsonValue, this.schema);
+    }
   }
 
   render() {

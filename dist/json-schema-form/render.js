@@ -21,9 +21,7 @@ export function renderForm(ctx) {
         framed: true,
         collapsible: false,
     })}
-    ${ctx.name
-        ? html `<input type="hidden" name=${ctx.name} .value=${JSON.stringify(ctx.value ?? null)} />`
-        : nothing}
+    <input type="hidden" name="json" .value=${JSON.stringify(ctx.value ?? null)} />
   `;
 }
 function renderNode(ctx, schema, value, path, options) {
@@ -512,7 +510,7 @@ function renderFieldsetHeader(ctx, schema, options, path, collapsed) {
             title="Paste"
             aria-label="Paste form value"
           >
-            ▞
+            ↴
           </button>
           <button
             type="button"

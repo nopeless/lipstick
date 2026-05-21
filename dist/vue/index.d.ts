@@ -17,10 +17,6 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
         type: () => JsonValue | undefined;
         default: undefined;
     };
-    name: {
-        type: StringConstructor;
-        default: undefined;
-    };
     disabled: {
         type: BooleanConstructor;
         default: boolean;
@@ -52,10 +48,6 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
         type: () => JsonValue | undefined;
         default: undefined;
     };
-    name: {
-        type: StringConstructor;
-        default: undefined;
-    };
     disabled: {
         type: BooleanConstructor;
         default: boolean;
@@ -71,7 +63,6 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
 }>, {
     schema: TSchema | undefined;
     value: JsonValue | undefined;
-    name: string;
     disabled: boolean;
     readonly: boolean;
     repair: boolean;
