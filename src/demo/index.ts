@@ -24,74 +24,22 @@ initializeThemePicker();
 setStatus("Loading editor demo...");
 void bootstrap();
 
-refs.form.addEventListener("input", (event: Event) => {
-  const detail = (event as CustomEvent<JsonSchemaFormEventDetail>).detail;
-  if (!detail) {
-    return;
-  }
-
-  value = detail.value;
-  refs.form.value = value;
-  updateOutput();
-});
-
-refs.schemaUrlInput.addEventListener("paste", (event: ClipboardEvent) => {
-  const rawUrl = event.clipboardData?.getData("text/plain").trim();
-  if (rawUrl) {
-    void loadSchemaFromUrl(rawUrl);
-  }
-});
-
-refs.schemaUrlInput.addEventListener("change", () => {
-  void loadSchemaFromUrl();
-});
-
-refs.schemaJson.addEventListener("paste", (event: ClipboardEvent) => {
-  const schemaText = event.clipboardData?.getData("text/plain");
-  if (schemaText) {
-    applyPastedSchema(schemaText);
-  }
-});
-
-refs.schemaJson.addEventListener("change", () => {
-  applyPastedSchema();
-});
-refs.schemaJson.addEventListener("input", autoSizeSchemaJson);
-
-refs.schemaSourcePicker.addEventListener("change", (event: Event) => {
-  void loadSelectedDemo((event.target as HTMLSelectElement).value as DemoFixtureName);
-});
-
-refs.themePicker.addEventListener("change", (event: Event) => {
-  const nextTheme = coerceTheme((event.target as HTMLSelectElement).value);
-  refs.themePicker.value = nextTheme;
-  applyTheme(nextTheme);
-  persistTheme(nextTheme);
-});
-
-document.querySelector<HTMLButtonElement>('[data-role="scroll-top"]')?.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
+wireEvents();
 
 async function bootstrap() {
-  try {
-    await loadSelectedDemo(refs.schemaSourcePicker.value as DemoFixtureName);
-    setStatus("Loaded editor demo.");
-  } catch (error) {
-    setStatus(getErrorMessage(error), true);
-  }
+  await runWithStatus(
+    () => loadSelectedDemo(refs.schemaSourcePicker.value as DemoFixtureName),
+    "Loaded editor demo.",
+  );
 }
 
 async function loadSelectedDemo(fixture: DemoFixtureName) {
-  try {
+  await runWithStatus(async () => {
     setStatus(`Loading ${fixture} demo...`);
     const example = await loadDemoFixture(fixture);
     applySchema(example.schema, example.value);
     refs.schemaSourcePicker.value = fixture;
-    setStatus(`Loaded ${fixture} demo.`);
-  } catch (error) {
-    setStatus(getErrorMessage(error), true);
-  }
+  }, `Loaded ${fixture} demo.`);
 }
 
 function applySchema(nextSchema: TSchema, nextValue?: JsonValue) {
@@ -118,7 +66,7 @@ async function loadSchemaFromUrl(rawUrl = refs.schemaUrlInput.value.trim()) {
     return;
   }
 
-  try {
+  await runWithStatus(async () => {
     setStatus("Loading schema...");
     const response = await fetch(rawUrl);
 
@@ -129,21 +77,15 @@ async function loadSchemaFromUrl(rawUrl = refs.schemaUrlInput.value.trim()) {
     const payload = (await response.json()) as unknown;
     assertSchema(payload);
     applySchema(payload);
-    setStatus("Loaded schema from URL.");
-  } catch (error) {
-    setStatus(getErrorMessage(error), true);
-  }
+  }, "Loaded schema from URL.");
 }
 
 function applyPastedSchema(schemaText = refs.schemaJson.value) {
-  try {
+  runWithStatus(() => {
     const payload = JSON.parse(schemaText) as unknown;
     assertSchema(payload);
     applySchema(payload);
-    setStatus("Applied pasted schema.");
-  } catch (error) {
-    setStatus(getErrorMessage(error), true);
-  }
+  }, "Applied pasted schema.");
 }
 
 function autoSizeSchemaJson() {
@@ -214,5 +156,68 @@ function coerceTheme(value: string | null | undefined): DemoTheme {
   }
 
   return "none";
+}
+
+function wireEvents() {
+  refs.form.addEventListener("input", onFormInput);
+  refs.schemaUrlInput.addEventListener("paste", onSchemaUrlPaste);
+  refs.schemaUrlInput.addEventListener("change", () => {
+    void loadSchemaFromUrl();
+  });
+  refs.schemaJson.addEventListener("paste", onSchemaJsonPaste);
+  refs.schemaJson.addEventListener("change", () => {
+    applyPastedSchema();
+  });
+  refs.schemaJson.addEventListener("input", autoSizeSchemaJson);
+  refs.schemaSourcePicker.addEventListener("change", onSchemaSourceChange);
+  refs.themePicker.addEventListener("change", onThemeChange);
+  document.querySelector<HTMLButtonElement>('[data-role="scroll-top"]')?.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+function onFormInput(event: Event) {
+  const detail = (event as CustomEvent<JsonSchemaFormEventDetail>).detail;
+  if (!detail) {
+    return;
+  }
+
+  value = detail.value;
+  refs.form.value = value;
+  updateOutput();
+}
+
+function onSchemaUrlPaste(event: ClipboardEvent) {
+  const rawUrl = event.clipboardData?.getData("text/plain").trim();
+  if (rawUrl) {
+    void loadSchemaFromUrl(rawUrl);
+  }
+}
+
+function onSchemaJsonPaste(event: ClipboardEvent) {
+  const schemaText = event.clipboardData?.getData("text/plain");
+  if (schemaText) {
+    applyPastedSchema(schemaText);
+  }
+}
+
+function onSchemaSourceChange(event: Event) {
+  void loadSelectedDemo((event.target as HTMLSelectElement).value as DemoFixtureName);
+}
+
+function onThemeChange(event: Event) {
+  const nextTheme = coerceTheme((event.target as HTMLSelectElement).value);
+  refs.themePicker.value = nextTheme;
+  applyTheme(nextTheme);
+  persistTheme(nextTheme);
+}
+
+async function runWithStatus(operation: () => void | Promise<void>, successMessage: string) {
+  try {
+    await operation();
+    setStatus(successMessage);
+  } catch (error) {
+    setStatus(getErrorMessage(error), true);
+  }
 }
 
