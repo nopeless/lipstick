@@ -59,21 +59,9 @@ export function commitRootValue(
 }
 
 function reconcileUiStateWithValue(ctx: JsonSchemaFormContext, nextRootValue: JsonValue) {
-  const pathKeyToPath = (pathKey: string): JsonPointerPath => {
-    if (pathKey === "#" || pathKey === "") {
-      return [];
-    }
-    const rawSegments = pathKey.replace(/^#\//, "").split("/");
-    return rawSegments.map((segment) => {
-      const decoded = segment.replaceAll("~1", "/").replaceAll("~0", "~");
-      const asIndex = Number(decoded);
-      return Number.isInteger(asIndex) && String(asIndex) === decoded ? asIndex : decoded;
-    });
-  };
-
   const nextBranchSelections = new Map<string, number>();
   for (const [pathKey] of ctx.branchSelections) {
-    const path = pathKeyToPath(pathKey);
+    const path = parsePathKey(pathKey);
     const nodeValue = getValueAtPath(nextRootValue, path);
     if (nodeValue === undefined) {
       continue;
@@ -93,7 +81,7 @@ function reconcileUiStateWithValue(ctx: JsonSchemaFormContext, nextRootValue: Js
 
   const nextCollapsedSections = new Set<string>();
   for (const pathKey of ctx.collapsedSections) {
-    const path = pathKeyToPath(pathKey);
+    const path = parsePathKey(pathKey);
     if (path.length === 0 || getValueAtPath(nextRootValue, path) !== undefined) {
       nextCollapsedSections.add(pathKey);
     }
@@ -101,7 +89,7 @@ function reconcileUiStateWithValue(ctx: JsonSchemaFormContext, nextRootValue: Js
 
   const nextDrafts = new Map<string, string>();
   for (const [pathKey, draft] of ctx.additionalPropertyDrafts) {
-    const path = pathKeyToPath(pathKey);
+    const path = parsePathKey(pathKey);
     const nodeValue = path.length === 0 ? nextRootValue : getValueAtPath(nextRootValue, path);
     if (isPlainObject(nodeValue)) {
       nextDrafts.set(pathKey, draft);
@@ -111,6 +99,18 @@ function reconcileUiStateWithValue(ctx: JsonSchemaFormContext, nextRootValue: Js
   ctx.branchSelections = nextBranchSelections;
   ctx.collapsedSections = nextCollapsedSections;
   ctx.additionalPropertyDrafts = nextDrafts;
+}
+
+function parsePathKey(pathKey: string): JsonPointerPath {
+  if (pathKey === "#" || pathKey === "") {
+    return [];
+  }
+  const rawSegments = pathKey.replace(/^#\//, "").split("/");
+  return rawSegments.map((segment) => {
+    const decoded = segment.replaceAll("~1", "/").replaceAll("~0", "~");
+    const asIndex = Number(decoded);
+    return Number.isInteger(asIndex) && String(asIndex) === decoded ? asIndex : decoded;
+  });
 }
 function resolveSchemaForPath(
   ctx: JsonSchemaFormContext,

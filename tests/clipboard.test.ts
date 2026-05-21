@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { pasteRootValueFromClipboard } from "../src/json-schema-form/clipboard.js";
-import type { JsonSchemaFormContext } from "../src/json-schema-form/shared.js";
-import type { JsonPointerPath, JsonValue, TSchema } from "../src/lib/types.js";
+import type { TSchema } from "../src/lib/types.js";
+import { createTestContext } from "./helpers.js";
 
 test("paste clears stale branch selections before emitting", async () => {
   const rootSchema: TSchema = {
@@ -17,7 +17,7 @@ test("paste clears stale branch selections before emitting", async () => {
     },
   };
 
-  const ctx = createContext(rootSchema, { optionalRange: 4 }, new Map([["#/optionalRange", 1]]));
+  const ctx = createTestContext(rootSchema, { optionalRange: 4 }, new Map([["#/optionalRange", 1]]));
   const originalNavigator = globalThis.navigator;
 
   Object.defineProperty(globalThis, "navigator", {
@@ -43,82 +43,3 @@ test("paste clears stale branch selections before emitting", async () => {
   assert.deepEqual(ctx.events.at(-1)?.detail.value, { optionalRange: 7 });
   assert.equal(ctx.branchSelections.get("#/optionalRange"), 0);
 });
-
-function createContext(
-  rootSchema: TSchema,
-  value: JsonValue | undefined,
-  branchSelections: Map<string, number>,
-): JsonSchemaFormContext & {
-  events: Array<{
-    type: string;
-    detail: {
-      value: JsonValue;
-      path: JsonPointerPath;
-      schema: TSchema;
-    };
-  }>;
-} {
-  const events: Array<{
-    type: string;
-    detail: {
-      value: JsonValue;
-      path: JsonPointerPath;
-      schema: TSchema;
-    };
-  }> = [];
-
-  return Object.assign(new EventTarget(), {
-    schema: rootSchema,
-    value,
-    name: undefined,
-    disabled: false,
-    readonly: false,
-    branchSelections,
-    additionalPropertyDrafts: new Map<string, string>(),
-    collapsedSections: new Set<string>(),
-    validation: {
-      valid: true,
-      issues: [],
-      fieldMessages: new Map<string, string[]>(),
-    },
-    rootSchema,
-    formDisabled: false,
-    applyFormValueUpdate(
-      type: "input" | "change" | "both",
-      path: JsonPointerPath,
-      nextValue: JsonValue,
-      schema: TSchema,
-    ) {
-      this.value = nextValue;
-      if (type === "input" || type === "both") {
-        emit(path, nextValue, schema, "input");
-      }
-      if (type === "change" || type === "both") {
-        emit(path, nextValue, schema, "change");
-      }
-    },
-    dispatchEvent(event: Event) {
-      const detail = (
-        event as CustomEvent<{
-          value: JsonValue;
-          path: JsonPointerPath;
-          schema: TSchema;
-        }>
-      ).detail;
-      events.push({ type: event.type, detail });
-      return true;
-    },
-    events,
-  });
-
-  function emit(path: JsonPointerPath, nextValue: JsonValue, schema: TSchema, type: string) {
-    events.push({
-      type,
-      detail: {
-        value: structuredClone(nextValue),
-        path,
-        schema,
-      },
-    });
-  }
-}

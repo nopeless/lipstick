@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { JsonSchemaFormContext } from "../src/json-schema-form/shared.js";
-import type { JsonPointerPath, TSchema, JsonValue } from "../src/lib/types.js";
+import type { TSchema } from "../src/lib/types.js";
+import { createTestContext } from "./helpers.js";
 import {
   addAdditionalProperty,
   addKnownProperty,
@@ -23,7 +23,7 @@ test("emits cloned events for path updates", () => {
       name: { type: "string" },
     },
   };
-  const ctx = createContext(schema, { name: "Ada" });
+  const ctx = createTestContext(schema, { name: "Ada" });
 
   updatePathValue(ctx, ["name"], "Grace", schema.properties!.name, true);
 
@@ -48,7 +48,7 @@ test("mutates object and array paths through helpers", () => {
     additionalProperties: { type: "number", default: 0 },
   };
   assert.equal(canAddAdditionalProperty(objectSchema), true);
-  const knownPropertyCtx = createContext(objectSchema, {
+  const knownPropertyCtx = createTestContext(objectSchema, {
     tags: ["a", "b"],
     extra: 1,
   });
@@ -60,7 +60,7 @@ test("mutates object and array paths through helpers", () => {
     name: "Ada",
   });
 
-  const additionalPropertyCtx = createContext(objectSchema, { extra: 1 });
+  const additionalPropertyCtx = createTestContext(objectSchema, { extra: 1 });
   addAdditionalProperty(additionalPropertyCtx, [], "bonus", objectSchema);
   assert.equal(additionalPropertyCtx.events.length, 2);
   assert.deepEqual(additionalPropertyCtx.events.at(-1)?.detail.value, {
@@ -68,19 +68,19 @@ test("mutates object and array paths through helpers", () => {
     bonus: 0,
   });
 
-  const reorderCtx = createContext(objectSchema, { tags: ["a", "b", "c"] });
+  const reorderCtx = createTestContext(objectSchema, { tags: ["a", "b", "c"] });
   reorderArrayItem(reorderCtx, ["tags"], 0, 2);
   assert.deepEqual(reorderCtx.events.at(-1)?.detail.value, {
     tags: ["b", "c", "a"],
   });
 
-  const removeArrayCtx = createContext(objectSchema, { tags: ["a", "b", "c"] });
+  const removeArrayCtx = createTestContext(objectSchema, { tags: ["a", "b", "c"] });
   removeArrayItem(removeArrayCtx, ["tags", 1]);
   assert.deepEqual(removeArrayCtx.events.at(-1)?.detail.value, {
     tags: ["a", "c"],
   });
 
-  const removePropertyCtx = createContext(objectSchema, {
+  const removePropertyCtx = createTestContext(objectSchema, {
     extra: 1,
     name: "Ada",
   });
@@ -91,7 +91,7 @@ test("mutates object and array paths through helpers", () => {
 });
 
 test("tracks collapsed sections and generated metadata", () => {
-  const ctx = createContext({ type: "string" });
+  const ctx = createTestContext({ type: "string" });
 
   assert.equal(isCollapsed(ctx, ["section"]), false);
   toggleCollapsed(ctx, ["section"]);
@@ -111,7 +111,7 @@ test("root commit prunes stale collapsed sections and additional drafts", () => 
       },
     },
   };
-  const ctx = createContext(schema, { keep: { value: "a" }, stale: { value: "b" } });
+  const ctx = createTestContext(schema, { keep: { value: "a" }, stale: { value: "b" } });
   ctx.collapsedSections = new Set<string>(["#/keep", "#/stale", "#"]);
   ctx.additionalPropertyDrafts = new Map<string, string>([
     ["#/keep", "next"],
@@ -136,7 +136,7 @@ test("root commit resets invalid union branch selection", () => {
       },
     },
   };
-  const ctx = createContext(schema, { optionalRange: 4 });
+  const ctx = createTestContext(schema, { optionalRange: 4 });
   ctx.branchSelections = new Map<string, number>([["#/optionalRange", 1]]);
 
   commitRootValue(ctx, [], { optionalRange: 7 }, schema, "both");
@@ -144,80 +144,4 @@ test("root commit resets invalid union branch selection", () => {
   assert.equal(ctx.branchSelections.get("#/optionalRange"), 0);
 });
 
-function createContext(
-  rootSchema: TSchema,
-  value?: JsonValue,
-): JsonSchemaFormContext & {
-  events: Array<{
-    type: string;
-    detail: {
-      value: JsonValue;
-      path: JsonPointerPath;
-      schema: TSchema;
-    };
-  }>;
-} {
-  const events: Array<{
-    type: string;
-    detail: {
-      value: JsonValue;
-      path: JsonPointerPath;
-      schema: TSchema;
-    };
-  }> = [];
-  return Object.assign(new EventTarget(), {
-    schema: rootSchema,
-    value,
-    name: undefined,
-    disabled: false,
-    readonly: false,
-    branchSelections: new Map<string, number>(),
-    additionalPropertyDrafts: new Map<string, string>(),
-    collapsedSections: new Set<string>(),
-    validation: {
-      valid: true,
-      issues: [],
-      fieldMessages: new Map<string, string[]>(),
-    },
-    rootSchema,
-    formDisabled: false,
-    applyFormValueUpdate(
-      type: "input" | "change" | "both",
-      path: JsonPointerPath,
-      nextValue: JsonValue,
-      schema: TSchema,
-    ) {
-      this.value = nextValue;
-      if (type === "input" || type === "both") {
-        emit(path, nextValue, schema, "input");
-      }
-      if (type === "change" || type === "both") {
-        emit(path, nextValue, schema, "change");
-      }
-    },
-    dispatchEvent(event: Event) {
-      const detail = (
-        event as CustomEvent<{
-          value: JsonValue;
-          path: JsonPointerPath;
-          schema: TSchema;
-        }>
-      ).detail;
-      events.push({ type: event.type, detail });
-      return true;
-    },
-    events,
-  });
-
-  function emit(path: JsonPointerPath, nextValue: JsonValue, schema: TSchema, type: string) {
-    events.push({
-      type,
-      detail: {
-        value: structuredClone(nextValue),
-        path,
-        schema,
-      },
-    });
-  }
-}
 
