@@ -1,5 +1,5 @@
 import { createApp, type Component } from "vue";
-import FrameworkVueSampleApp from "./app.js";
+import FrameworkVueSampleApp from "./src/App.vue";
 
 export { FrameworkVueSampleApp };
 
