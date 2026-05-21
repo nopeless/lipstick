@@ -1,5 +1,5 @@
 import type { JsonValue } from "../lib/types.js";
-import { emitWholeValue } from "./state.js";
+import { commitRootValue } from "./state.js";
 import type { JsonSchemaFormContext } from "./shared.js";
 import { Value } from "typebox/value";
 
@@ -32,7 +32,7 @@ export async function pasteRootValueFromClipboard(ctx: JsonSchemaFormContext, ev
     const nextText = await clipboard.readText();
     const parsedValue = JSON.parse(nextText) as JsonValue;
     const sanitizedValue = Value.Repair(ctx.rootSchema, parsedValue) as JsonValue;
-    emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
+    commitRootValue(ctx, [], sanitizedValue, ctx.rootSchema, "both");
   } catch (e) {
     console.error(e);
     if (e instanceof DOMException) {

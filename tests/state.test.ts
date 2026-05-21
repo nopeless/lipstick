@@ -8,7 +8,6 @@ import {
   commitRootValue,
   createInputId,
   canAddAdditionalProperty,
-  emitWholeValue,
   isCollapsed,
   removeArrayItem,
   removeProperty,
@@ -143,42 +142,6 @@ test("root commit resets invalid union branch selection", () => {
   commitRootValue(ctx, [], { optionalRange: 7 }, schema, "both");
 
   assert.equal(ctx.branchSelections.get("#/optionalRange"), 0);
-});
-
-test("emitWholeValue and commitRootValue share reconciled root update behavior", () => {
-  const schema: TSchema = {
-    type: "object",
-    properties: {
-      keep: { type: "object", properties: { value: { type: "string" } } },
-    },
-  };
-  const seed = { keep: { value: "a" }, stale: { value: "b" } } as JsonValue;
-  const setup = (ctx: ReturnType<typeof createContext>) => {
-    ctx.collapsedSections = new Set<string>(["#/keep", "#/stale"]);
-    ctx.additionalPropertyDrafts = new Map<string, string>([
-      ["#/keep", "next"],
-      ["#/stale", "gone"],
-    ]);
-    ctx.branchSelections = new Map<string, number>([["#/stale", 0]]);
-  };
-
-  const viaEmit = createContext(schema, seed);
-  setup(viaEmit);
-  emitWholeValue(viaEmit, [], { keep: { value: "z" } }, schema);
-
-  const viaCommit = createContext(schema, seed);
-  setup(viaCommit);
-  commitRootValue(viaCommit, [], { keep: { value: "z" } }, schema, "both");
-
-  assert.deepEqual([...viaEmit.collapsedSections], [...viaCommit.collapsedSections]);
-  assert.deepEqual(
-    [...viaEmit.additionalPropertyDrafts.entries()],
-    [...viaCommit.additionalPropertyDrafts.entries()],
-  );
-  assert.deepEqual(
-    [...viaEmit.branchSelections.entries()],
-    [...viaCommit.branchSelections.entries()],
-  );
 });
 
 function createContext(

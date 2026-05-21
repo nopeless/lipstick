@@ -37,16 +37,6 @@ export function updatePathValue(
   ctx.applyFormValueUpdate(commit ? "both" : "input", path, nextRootValue, schema);
 }
 
-/** Emits `nextValue` as the full form value without applying a path patch. */
-export function emitWholeValue(
-  ctx: JsonSchemaFormContext,
-  path: JsonPointerPath,
-  nextValue: JsonValue,
-  schema: TSchema,
-) {
-  commitRootValue(ctx, path, nextValue, schema, "both");
-}
-
 export function resetRootValue(ctx: JsonSchemaFormContext) {
   commitRootValue(
     ctx,
@@ -69,6 +59,18 @@ export function commitRootValue(
 }
 
 function reconcileUiStateWithValue(ctx: JsonSchemaFormContext, nextRootValue: JsonValue) {
+  const pathKeyToPath = (pathKey: string): JsonPointerPath => {
+    if (pathKey === "#" || pathKey === "") {
+      return [];
+    }
+    const rawSegments = pathKey.replace(/^#\//, "").split("/");
+    return rawSegments.map((segment) => {
+      const decoded = segment.replaceAll("~1", "/").replaceAll("~0", "~");
+      const asIndex = Number(decoded);
+      return Number.isInteger(asIndex) && String(asIndex) === decoded ? asIndex : decoded;
+    });
+  };
+
   const nextBranchSelections = new Map<string, number>();
   for (const [pathKey] of ctx.branchSelections) {
     const path = pathKeyToPath(pathKey);
@@ -110,19 +112,6 @@ function reconcileUiStateWithValue(ctx: JsonSchemaFormContext, nextRootValue: Js
   ctx.collapsedSections = nextCollapsedSections;
   ctx.additionalPropertyDrafts = nextDrafts;
 }
-
-function pathKeyToPath(pathKey: string): JsonPointerPath {
-  if (pathKey === "#" || pathKey === "") {
-    return [];
-  }
-  const rawSegments = pathKey.replace(/^#\//, "").split("/");
-  return rawSegments.map((segment) => {
-    const decoded = segment.replaceAll("~1", "/").replaceAll("~0", "~");
-    const asIndex = Number(decoded);
-    return Number.isInteger(asIndex) && String(asIndex) === decoded ? asIndex : decoded;
-  });
-}
-
 function resolveSchemaForPath(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
@@ -190,7 +179,7 @@ export function addKnownProperty(
     [...objectPath, key],
     Value.Repair(schema, undefined) as JsonValue,
   );
-  emitWholeValue(ctx, [...objectPath, key], nextValue, schema);
+  commitRootValue(ctx, [...objectPath, key], nextValue, schema, "both");
 }
 
 export function addAdditionalProperty(
@@ -212,12 +201,12 @@ export function addAdditionalProperty(
   const nextDrafts = new Map(ctx.additionalPropertyDrafts);
   nextDrafts.delete(pathToKey(objectPath));
   ctx.additionalPropertyDrafts = nextDrafts;
-  emitWholeValue(ctx, [...objectPath, key], nextValue, additionalSchema);
+  commitRootValue(ctx, [...objectPath, key], nextValue, additionalSchema, "both");
 }
 
 export function removeProperty(ctx: JsonSchemaFormContext, path: JsonPointerPath) {
   const nextValue = deleteValueAtPath(ctx.value, path);
-  emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
+  commitRootValue(ctx, path, nextValue, ctx.rootSchema, "both");
 }
 
 export function addArrayItem(
@@ -235,12 +224,12 @@ export function addArrayItem(
   ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
     ? createInputId(ctx, [...path, index])
     : undefined;
-  emitWholeValue(ctx, [...path, index], nextValue, itemSchema);
+  commitRootValue(ctx, [...path, index], nextValue, itemSchema, "both");
 }
 
 export function removeArrayItem(ctx: JsonSchemaFormContext, path: JsonPointerPath) {
   const nextValue = deleteValueAtPath(ctx.value, path);
-  emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
+  commitRootValue(ctx, path, nextValue, ctx.rootSchema, "both");
 }
 
 export function reorderArrayItem(
@@ -255,7 +244,7 @@ export function reorderArrayItem(
   }
 
   const nextValue = moveArrayItem(ctx.value, path, fromIndex, toIndex);
-  emitWholeValue(ctx, path, nextValue, ctx.rootSchema);
+  commitRootValue(ctx, path, nextValue, ctx.rootSchema, "both");
 }
 
 export function getAdditionalPropertySchema(schema: TSchema): TSchema {
