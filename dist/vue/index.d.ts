@@ -9,6 +9,10 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
         type: BooleanConstructor;
         default: boolean;
     };
+    persist: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
     value: {
         type: () => JsonValue | undefined;
         default: undefined;
@@ -40,6 +44,10 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
         type: BooleanConstructor;
         default: boolean;
     };
+    persist: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
     value: {
         type: () => JsonValue | undefined;
         default: undefined;
@@ -66,6 +74,7 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     disabled: boolean;
     readonly: boolean;
     repair: boolean;
+    persist: boolean;
     modelValue: JsonValue | undefined;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
 //# sourceMappingURL=index.d.ts.map

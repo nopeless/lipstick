@@ -8,18 +8,28 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     _value?: JsonValue;
     disabled: boolean;
     readonly: boolean;
+    persist: boolean;
     branchSelections: Map<string, number>;
     additionalPropertyDrafts: Map<string, string>;
     collapsedSections: Set<string>;
     pendingFocusId?: string;
     validation: ValidationSnapshot;
+    private isBeforeUnloadRegistered;
+    private beforeUnloadHandler;
     protected createRenderRoot(): HTMLElement | DocumentFragment;
     get rootSchema(): TSchema;
     get formDisabled(): boolean;
     get value(): JsonValue | undefined;
     set value(next: JsonValue | undefined);
     render(): typeof import("lit").nothing | import("lit").TemplateResult<1>;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
     protected updated(): void;
+    private getPersistStorageKey;
+    private loadPersistedValue;
+    private persistValueToStorage;
+    private registerBeforeUnload;
+    private unregisterBeforeUnload;
 }
 declare global {
     interface HTMLElementTagNameMap {

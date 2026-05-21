@@ -10,12 +10,14 @@ import { renderForm } from "./json-schema-form/render.js";
 import { emitValue } from "./json-schema-form/state.js";
 import { validateValueAgainstSchema } from "./lib/validation.js";
 import { Value } from "typebox/value";
+import { config } from "./config.js";
 export class LipstickFormElement extends LitElement {
     constructor() {
         super(...arguments);
         this.repair = false;
         this.disabled = false;
         this.readonly = false;
+        this.persist = false;
         this.branchSelections = new Map();
         this.additionalPropertyDrafts = new Map();
         this.collapsedSections = new Set();
@@ -23,6 +25,13 @@ export class LipstickFormElement extends LitElement {
             valid: true,
             issues: [],
             fieldMessages: new Map(),
+        };
+        this.isBeforeUnloadRegistered = false;
+        this.beforeUnloadHandler = () => {
+            if (!this.persist) {
+                return;
+            }
+            this.persistValueToStorage();
         };
     }
     createRenderRoot() {
@@ -62,6 +71,20 @@ export class LipstickFormElement extends LitElement {
         }
         return renderForm(this);
     }
+    connectedCallback() {
+        super.connectedCallback();
+        if (this.persist) {
+            this.loadPersistedValue();
+            this.registerBeforeUnload();
+        }
+    }
+    disconnectedCallback() {
+        if (this.persist) {
+            this.persistValueToStorage();
+        }
+        this.unregisterBeforeUnload();
+        super.disconnectedCallback();
+    }
     updated() {
         if (!this.pendingFocusId) {
             return;
@@ -69,6 +92,66 @@ export class LipstickFormElement extends LitElement {
         const targetId = this.pendingFocusId;
         this.pendingFocusId = undefined;
         this.querySelector(`#${targetId}`)?.focus();
+    }
+    getPersistStorageKey() {
+        const formId = this.id?.trim();
+        const schemaTitle = this.schema?.title?.trim();
+        const source = formId || schemaTitle;
+        if (!source) {
+            console.error("[lipstick] persist requires either a form id or schema.title to derive a storage key.");
+            return undefined;
+        }
+        return `${config.prefix}${source}`;
+    }
+    loadPersistedValue() {
+        const storageKey = this.getPersistStorageKey();
+        if (!storageKey) {
+            return;
+        }
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (raw !== null) {
+                const hydrated = JSON.parse(raw);
+                this.value = hydrated;
+                if (this.schema) {
+                    emitValue(this, "input", [], hydrated, this.schema);
+                }
+            }
+        }
+        catch {
+            // Ignore storage and parse failures.
+        }
+    }
+    persistValueToStorage() {
+        const storageKey = this.getPersistStorageKey();
+        if (!storageKey) {
+            return;
+        }
+        try {
+            if (this.value === undefined) {
+                localStorage.removeItem(storageKey);
+            }
+            else {
+                localStorage.setItem(storageKey, JSON.stringify(this.value));
+            }
+        }
+        catch {
+            // Ignore storage write failures.
+        }
+    }
+    registerBeforeUnload() {
+        if (this.isBeforeUnloadRegistered) {
+            return;
+        }
+        window.addEventListener("beforeunload", this.beforeUnloadHandler);
+        this.isBeforeUnloadRegistered = true;
+    }
+    unregisterBeforeUnload() {
+        if (!this.isBeforeUnloadRegistered) {
+            return;
+        }
+        window.removeEventListener("beforeunload", this.beforeUnloadHandler);
+        this.isBeforeUnloadRegistered = false;
     }
 }
 __decorate([
@@ -86,6 +169,9 @@ __decorate([
 __decorate([
     property({ type: Boolean, reflect: true })
 ], LipstickFormElement.prototype, "readonly", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], LipstickFormElement.prototype, "persist", void 0);
 __decorate([
     state()
 ], LipstickFormElement.prototype, "branchSelections", void 0);

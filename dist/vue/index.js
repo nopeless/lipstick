@@ -5,6 +5,7 @@ export const Lipstick = defineComponent({
     props: {
         schema: { type: Object, default: undefined },
         repair: { type: Boolean, default: false },
+        persist: { type: Boolean, default: false },
         value: { type: null, default: undefined },
         modelValue: { type: null, default: undefined },
         disabled: { type: Boolean, default: false },
@@ -28,6 +29,7 @@ export const Lipstick = defineComponent({
         return () => h("lipstick-form", {
             schema: props.schema,
             repair: props.repair,
+            persist: props.persist,
             value: props.modelValue ?? props.value,
             disabled: props.disabled,
             readonly: props.readonly,

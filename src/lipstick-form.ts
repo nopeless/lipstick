@@ -6,6 +6,7 @@ import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
 import type { TSchema, JsonValue } from "./lib/types.js";
 import { validateValueAgainstSchema, type ValidationSnapshot } from "./lib/validation.js";
 import { Value } from "typebox/value";
+import { config } from "./config.js";
 
 export class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
   @property({ attribute: false })
@@ -23,6 +24,9 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
   @property({ type: Boolean, reflect: true })
   readonly = false;
 
+  @property({ type: Boolean, reflect: true })
+  persist = false;
+
   @state()
   branchSelections = new Map<string, number>();
 
@@ -37,6 +41,13 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     valid: true,
     issues: [],
     fieldMessages: new Map<string, string[]>(),
+  };
+  private isBeforeUnloadRegistered = false;
+  private beforeUnloadHandler = () => {
+    if (!this.persist) {
+      return;
+    }
+    this.persistValueToStorage();
   };
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {
@@ -85,6 +96,22 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     return renderForm(this);
   }
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    if (this.persist) {
+      this.loadPersistedValue();
+      this.registerBeforeUnload();
+    }
+  }
+
+  disconnectedCallback(): void {
+    if (this.persist) {
+      this.persistValueToStorage();
+    }
+    this.unregisterBeforeUnload();
+    super.disconnectedCallback();
+  }
+
   protected updated() {
     if (!this.pendingFocusId) {
       return;
@@ -95,6 +122,72 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     this.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
       `#${targetId}`,
     )?.focus();
+  }
+
+  private getPersistStorageKey(): string | undefined {
+    const formId = this.id?.trim();
+    const schemaTitle = this.schema?.title?.trim();
+    const source = formId || schemaTitle;
+    if (!source) {
+      console.error(
+        "[lipstick] persist requires either a form id or schema.title to derive a storage key.",
+      );
+      return undefined;
+    }
+    return `${config.prefix}${source}`;
+  }
+
+  private loadPersistedValue(): void {
+    const storageKey = this.getPersistStorageKey();
+    if (!storageKey) {
+      return;
+    }
+
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw !== null) {
+        const hydrated = JSON.parse(raw) as JsonValue;
+        this.value = hydrated;
+        if (this.schema) {
+          emitValue(this, "input", [], hydrated, this.schema);
+        }
+      }
+    } catch {
+      // Ignore storage and parse failures.
+    }
+  }
+
+  private persistValueToStorage(): void {
+    const storageKey = this.getPersistStorageKey();
+    if (!storageKey) {
+      return;
+    }
+
+    try {
+      if (this.value === undefined) {
+        localStorage.removeItem(storageKey);
+      } else {
+        localStorage.setItem(storageKey, JSON.stringify(this.value));
+      }
+    } catch {
+      // Ignore storage write failures.
+    }
+  }
+
+  private registerBeforeUnload(): void {
+    if (this.isBeforeUnloadRegistered) {
+      return;
+    }
+    window.addEventListener("beforeunload", this.beforeUnloadHandler);
+    this.isBeforeUnloadRegistered = true;
+  }
+
+  private unregisterBeforeUnload(): void {
+    if (!this.isBeforeUnloadRegistered) {
+      return;
+    }
+    window.removeEventListener("beforeunload", this.beforeUnloadHandler);
+    this.isBeforeUnloadRegistered = false;
   }
 }
 
