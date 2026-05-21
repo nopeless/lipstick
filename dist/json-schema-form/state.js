@@ -6,15 +6,11 @@ import { Value } from "typebox/value";
  */
 export function updatePathValue(ctx, path, nextValue, schema, commit) {
     const nextRootValue = setValueAtPath(ctx.value, path, nextValue);
-    emitValue(ctx, "input", path, nextRootValue, schema);
-    if (commit) {
-        emitValue(ctx, "change", path, nextRootValue, schema);
-    }
+    ctx.applyFormValueUpdate(commit ? "both" : "input", path, nextRootValue, schema);
 }
 /** Emits `nextValue` as the full form value without applying a path patch. */
 export function emitWholeValue(ctx, path, nextValue, schema) {
-    emitValue(ctx, "input", path, nextValue, schema);
-    emitValue(ctx, "change", path, nextValue, schema);
+    ctx.applyFormValueUpdate("both", path, nextValue, schema);
 }
 export function resetRootValue(ctx) {
     ctx.branchSelections = new Map();

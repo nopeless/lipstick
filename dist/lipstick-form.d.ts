@@ -25,6 +25,7 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     connectedCallback(): void;
     disconnectedCallback(): void;
     protected updated(): void;
+    applyFormValueUpdate(type: "input" | "change" | "both", path: Array<string | number>, nextValue: JsonValue, schema: TSchema): void;
     private getPersistStorageKey;
     private loadPersistedValue;
     private persistValueToStorage;

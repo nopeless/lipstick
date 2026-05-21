@@ -93,6 +93,15 @@ export class LipstickFormElement extends LitElement {
         this.pendingFocusId = undefined;
         this.querySelector(`#${targetId}`)?.focus();
     }
+    applyFormValueUpdate(type, path, nextValue, schema) {
+        this.value = nextValue;
+        if (type === "input" || type === "both") {
+            emitValue(this, "input", path, nextValue, schema);
+        }
+        if (type === "change" || type === "both") {
+            emitValue(this, "change", path, nextValue, schema);
+        }
+    }
     getPersistStorageKey() {
         const formId = this.id?.trim();
         const schemaTitle = this.schema?.title?.trim();

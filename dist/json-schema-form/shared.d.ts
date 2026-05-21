@@ -28,6 +28,7 @@ export interface JsonSchemaFormContext extends EventTarget {
     rootSchema: TSchema;
     formDisabled: boolean;
     validation: ValidationSnapshot;
+    applyFormValueUpdate(type: "input" | "change" | "both", path: JsonPointerPath, nextValue: JsonValue, schema: TSchema): void;
     dispatchEvent(event: Event): boolean;
 }
 export type { JsonPointerPath, TSchema, JsonValue };

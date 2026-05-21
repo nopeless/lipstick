@@ -124,6 +124,21 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     )?.focus();
   }
 
+  applyFormValueUpdate(
+    type: "input" | "change" | "both",
+    path: Array<string | number>,
+    nextValue: JsonValue,
+    schema: TSchema,
+  ): void {
+    this.value = nextValue;
+    if (type === "input" || type === "both") {
+      emitValue(this, "input", path, nextValue, schema);
+    }
+    if (type === "change" || type === "both") {
+      emitValue(this, "change", path, nextValue, schema);
+    }
+  }
+
   private getPersistStorageKey(): string | undefined {
     const formId = this.id?.trim();
     const schemaTitle = this.schema?.title?.trim();

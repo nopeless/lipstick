@@ -83,6 +83,20 @@ function createContext(
     },
     rootSchema,
     formDisabled: false,
+    applyFormValueUpdate(
+      type: "input" | "change" | "both",
+      path: JsonPointerPath,
+      nextValue: JsonValue,
+      schema: TSchema,
+    ) {
+      this.value = nextValue;
+      if (type === "input" || type === "both") {
+        emit(path, nextValue, schema, "input");
+      }
+      if (type === "change" || type === "both") {
+        emit(path, nextValue, schema, "change");
+      }
+    },
     dispatchEvent(event: Event) {
       const detail = (
         event as CustomEvent<{
@@ -96,4 +110,15 @@ function createContext(
     },
     events,
   });
+
+  function emit(path: JsonPointerPath, nextValue: JsonValue, schema: TSchema, type: string) {
+    events.push({
+      type,
+      detail: {
+        value: structuredClone(nextValue),
+        path,
+        schema,
+      },
+    });
+  }
 }

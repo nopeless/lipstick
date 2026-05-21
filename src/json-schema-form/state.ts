@@ -34,11 +34,7 @@ export function updatePathValue(
   commit: boolean,
 ) {
   const nextRootValue = setValueAtPath(ctx.value, path, nextValue);
-  emitValue(ctx, "input", path, nextRootValue, schema);
-
-  if (commit) {
-    emitValue(ctx, "change", path, nextRootValue, schema);
-  }
+  ctx.applyFormValueUpdate(commit ? "both" : "input", path, nextRootValue, schema);
 }
 
 /** Emits `nextValue` as the full form value without applying a path patch. */
@@ -48,8 +44,7 @@ export function emitWholeValue(
   nextValue: JsonValue,
   schema: TSchema,
 ) {
-  emitValue(ctx, "input", path, nextValue, schema);
-  emitValue(ctx, "change", path, nextValue, schema);
+  ctx.applyFormValueUpdate("both", path, nextValue, schema);
 }
 
 export function resetRootValue(ctx: JsonSchemaFormContext) {
