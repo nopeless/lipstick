@@ -535,7 +535,6 @@ export const schema = Type.Object(
     ),
   },
   {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
     title: "Editor Testing Matrix",
     description:
       "Low-level JSON Schema 2020-12 fixture for testing primitives, enums, arrays, objects, refs, composition, conditionals, maps, and secrets. Each top-level property is a feature bucket, not a product section.",

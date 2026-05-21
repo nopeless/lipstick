@@ -15,8 +15,6 @@ export interface ValidationSnapshot {
   schemaError?: string;
 }
 
-export const DRAFT_2020_12_SCHEMA_URI = "https://json-schema.org/draft/2020-12/schema";
-
 const validatorCache = new WeakMap<TSchema, ReturnType<typeof Schema.Compile>>();
 const validatorErrorCache = new WeakMap<TSchema, string>();
 

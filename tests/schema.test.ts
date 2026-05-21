@@ -4,7 +4,7 @@ import {
   getArrayItemSchema,
   pathToKey,
 } from "../src/lib/schema.js";
-import { DRAFT_2020_12_SCHEMA_URI, validateValueAgainstSchema } from "../src/lib/validation.js";
+import { validateValueAgainstSchema } from "../src/lib/validation.js";
 import {
   formatDateTimeForInput,
   getStringInputType,
@@ -43,7 +43,6 @@ test("handles array item schemas and path encoding", () => {
 
 test("validates values with TypeBox and maps field errors", () => {
   const schema: TSchema = {
-    $schema: DRAFT_2020_12_SCHEMA_URI,
     type: "object",
     required: ["name"],
     properties: {
@@ -67,7 +66,6 @@ test("validates values with TypeBox and maps field errors", () => {
 
 test("keeps additionalProperties errors on the object path", () => {
   const schema: TSchema = {
-    $schema: DRAFT_2020_12_SCHEMA_URI,
     type: "object",
     properties: {
       name: { type: "string" },
@@ -85,9 +83,8 @@ test("keeps additionalProperties errors on the object path", () => {
   assert.equal(result.fieldMessages.has("#/email"), false);
 });
 
-test("supports draft 2020-12 and legacy dialect declarations at compile time", () => {
+test("supports legacy dialect declarations at compile time", () => {
   const supportedSchema: TSchema = {
-    $schema: DRAFT_2020_12_SCHEMA_URI,
     type: "string",
   };
   const unsupportedSchema: TSchema = {

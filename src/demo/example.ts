@@ -488,7 +488,6 @@ export const schema = Type.Object(
     ),
   },
   {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
     title: "Marketplace Listing Builder",
     description:
       "A larger JSON Schema 2020-12 demo with refs, nested objects, arrays, unions, conditionals, and additional properties.",
