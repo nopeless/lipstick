@@ -36,23 +36,6 @@ export function getJsonValueType(value) {
             return "undefined";
     }
 }
-export function resolvePointer(root, ref) {
-    if (ref === "#") {
-        return root;
-    }
-    const parts = ref
-        .slice(2)
-        .split("/")
-        .map((part) => part.replaceAll("~1", "/").replaceAll("~0", "~"));
-    let cursor = root;
-    for (const part of parts) {
-        if (typeof cursor !== "object" || cursor === null || !(part in cursor)) {
-            return undefined;
-        }
-        cursor = cursor[part];
-    }
-    return cursor;
-}
 export function omitSchemaKeys(schema, keys) {
     const next = { ...schema };
     keys.forEach((key) => {
@@ -97,23 +80,9 @@ export function mergeSchemas(base, overlay) {
     }
     return merged;
 }
-export function resolveLocalRefs(schema, root, seen, resolveSchema) {
-    if (!schema.$ref) {
-        return schema;
-    }
-    if (!schema.$ref.startsWith("#")) {
-        return omitSchemaKeys(schema, ["$ref"]);
-    }
-    if (seen.has(schema.$ref)) {
-        return omitSchemaKeys(schema, ["$ref"]);
-    }
-    const target = resolvePointer(root, schema.$ref);
-    if (!isSchemaObject(target)) {
-        return omitSchemaKeys(schema, ["$ref"]);
-    }
-    const nextSeen = new Set(seen);
-    nextSeen.add(schema.$ref);
-    return mergeSchemas(resolveLocalRefs(target, root, nextSeen, resolveSchema), omitSchemaKeys(schema, ["$ref"]));
+export function resolveLocalRefs(schema, _root, _seen, resolveSchema) {
+    void resolveSchema;
+    return schema;
 }
 export function isSchemaObject(candidate) {
     return typeof candidate === "object" && candidate !== null;

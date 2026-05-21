@@ -11,7 +11,7 @@ export declare function resetRootValue(ctx: JsonSchemaFormContext): void;
  * Selects a union branch, sanitizes the current value for that branch, and
  * emits the path update from one shared place.
  */
-export declare function switchUnionBranch(ctx: JsonSchemaFormContext, path: JsonPointerPath, value: JsonValue | undefined, branches: readonly TSchema[], rootSchema: TSchema, index: number): JsonValue;
+export declare function switchUnionBranch(ctx: JsonSchemaFormContext, path: JsonPointerPath, value: JsonValue | undefined, branches: readonly TSchema[], index: number): JsonValue;
 export declare function addKnownProperty(ctx: JsonSchemaFormContext, objectPath: JsonPointerPath, key: string, schema: TSchema): void;
 export declare function addAdditionalProperty(ctx: JsonSchemaFormContext, objectPath: JsonPointerPath, key: string, schema: TSchema): void;
 export declare function removeProperty(ctx: JsonSchemaFormContext, path: JsonPointerPath): void;

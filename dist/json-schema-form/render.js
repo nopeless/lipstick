@@ -5,7 +5,7 @@ import { formatDateTimeForInput, formatNumericValue, getNumericInputStep, getStr
 import { getValueAtPath, isJsonObject } from "../lib/value.js";
 import { getFieldMessagesForSchema } from "../lib/validation.js";
 import { addAdditionalProperty, addArrayItem, addKnownProperty, canAddAdditionalProperty, canCollapseSchema, createInputId, getAdditionalPropertySchema, isCollapsed, isSimpleArrayItemSchema, parseLiteralOption, reorderArrayItem, resetRootValue, removeArrayItem, removeProperty, switchUnionBranch, toggleCollapsed, updatePathValue, } from "./state.js";
-import { copyRootValueToClipboard, pasteRootValueFromClipboard, } from "./clipboard.js";
+import { copyRootValueToClipboard, pasteRootValueFromClipboard } from "./clipboard.js";
 export function renderForm(ctx) {
     if (!ctx.schema) {
         return nothing;
@@ -61,7 +61,7 @@ function renderUnionField(ctx, schema, value, path, options, union) {
     const branches = schema.oneOf ?? schema.anyOf ?? [];
     const branchSchema = resolveSchema(branches[union.selectedIndex], rootSchema, value);
     const changeBranch = (index) => {
-        switchUnionBranch(ctx, path, value, branches, rootSchema, index);
+        switchUnionBranch(ctx, path, value, branches, index);
     };
     return renderFramedFieldset(ctx, schema, options, path, value, html `
       ${renderUnionSelector(ctx, union, changeBranch)}
@@ -94,7 +94,7 @@ function renderPrimitiveUnionField(ctx, schema, value, path, options, union) {
           type="button"
           class="lipstick-cycle"
           ?disabled=${ctx.formDisabled}
-          @click=${() => switchUnionBranch(ctx, path, value, branches, rootSchema, (union.selectedIndex + 1) % branches.length)}
+          @click=${() => switchUnionBranch(ctx, path, value, branches, (union.selectedIndex + 1) % branches.length)}
           aria-label="Cycle variant"
         >
           ⇄

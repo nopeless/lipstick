@@ -5,6 +5,10 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
         type: () => TSchema | undefined;
         default: undefined;
     };
+    repair: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
     value: {
         type: () => JsonValue | undefined;
         default: undefined;
@@ -36,6 +40,10 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
         type: () => TSchema | undefined;
         default: undefined;
     };
+    repair: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
     value: {
         type: () => JsonValue | undefined;
         default: undefined;
@@ -66,6 +74,7 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     name: string;
     disabled: boolean;
     readonly: boolean;
+    repair: boolean;
     modelValue: JsonValue | undefined;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
 //# sourceMappingURL=index.d.ts.map

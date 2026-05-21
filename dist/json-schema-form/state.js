@@ -1,6 +1,6 @@
-import { buildInitialValue, describeUnion, getArrayItemSchema, isArraySchema, isObjectSchema, pathToKey, resolveSchema, sanitizeValueForSchema, } from "../lib/schema.js";
+import { describeUnion, getArrayItemSchema, isArraySchema, isObjectSchema, pathToKey, resolveSchema, } from "../lib/schema.js";
 import { cloneJsonValue, deleteValueAtPath, getValueAtPath, moveArrayItem, setValueAtPath, } from "../lib/value.js";
-import { Repair } from "typebox/value";
+import { Value } from "typebox/value";
 /**
  * Emits a path-scoped value update by patching `ctx.value` at `path`.
  */
@@ -17,31 +17,22 @@ export function emitWholeValue(ctx, path, nextValue, schema) {
     emitValue(ctx, "change", path, nextValue, schema);
 }
 export function resetRootValue(ctx) {
-    const emptyValueSeed = ctx.rootSchema.type === "array" ? [] : ctx.rootSchema.type === "object" ? {} : null;
-    let sanitizedValue;
-    try {
-        const repairedValue = Repair(ctx.rootSchema, emptyValueSeed);
-        sanitizedValue = sanitizeValueForSchema(repairedValue, ctx.rootSchema, ctx.rootSchema);
-    }
-    catch {
-        sanitizedValue = sanitizeValueForSchema(emptyValueSeed, ctx.rootSchema, ctx.rootSchema);
-    }
     ctx.branchSelections = new Map();
-    emitWholeValue(ctx, [], sanitizedValue, ctx.rootSchema);
+    emitWholeValue(ctx, [], Value.Repair(ctx.rootSchema, undefined), ctx.rootSchema);
 }
 /**
  * Selects a union branch, sanitizes the current value for that branch, and
  * emits the path update from one shared place.
  */
-export function switchUnionBranch(ctx, path, value, branches, rootSchema, index) {
+export function switchUnionBranch(ctx, path, value, branches, index) {
     const pathKey = pathToKey(path);
     ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
-    const nextValue = sanitizeValueForSchema(value, branches[index], rootSchema);
+    const nextValue = Value.Repair(branches[index], value);
     updatePathValue(ctx, path, nextValue, branches[index], true);
     return nextValue;
 }
 export function addKnownProperty(ctx, objectPath, key, schema) {
-    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], buildInitialValue(schema, ctx.rootSchema));
+    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], Value.Repair(schema, undefined));
     emitWholeValue(ctx, [...objectPath, key], nextValue, schema);
 }
 export function addAdditionalProperty(ctx, objectPath, key, schema) {
@@ -49,7 +40,7 @@ export function addAdditionalProperty(ctx, objectPath, key, schema) {
         return;
     }
     const additionalSchema = getAdditionalPropertySchema(schema);
-    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], buildInitialValue(additionalSchema, ctx.rootSchema));
+    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], Value.Repair(additionalSchema, undefined));
     const nextDrafts = new Map(ctx.additionalPropertyDrafts);
     nextDrafts.delete(pathToKey(objectPath));
     ctx.additionalPropertyDrafts = nextDrafts;
@@ -63,8 +54,8 @@ export function addArrayItem(ctx, path, schema, index) {
     const itemSchema = getArrayItemSchema(schema, index) ?? {};
     const currentArray = getValueAtPath(ctx.value, path);
     const nextArray = Array.isArray(currentArray)
-        ? [...currentArray, buildInitialValue(itemSchema, ctx.rootSchema)]
-        : [buildInitialValue(itemSchema, ctx.rootSchema)];
+        ? [...currentArray, Value.Repair(itemSchema, undefined)]
+        : [Value.Repair(itemSchema, undefined)];
     const nextValue = setValueAtPath(ctx.value, path, nextArray);
     ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
         ? createInputId(ctx, [...path, index])

@@ -4,7 +4,8 @@ import type { TSchema, JsonValue } from "./lib/types.js";
 import { type ValidationSnapshot } from "./lib/validation.js";
 export declare class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
     schema?: TSchema;
-    value?: JsonValue;
+    repair: boolean;
+    _value?: JsonValue;
     name?: string;
     disabled: boolean;
     readonly: boolean;
@@ -16,6 +17,8 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     protected createRenderRoot(): HTMLElement | DocumentFragment;
     get rootSchema(): TSchema;
     get formDisabled(): boolean;
+    get value(): JsonValue | undefined;
+    set value(next: JsonValue | undefined);
     render(): typeof import("lit").nothing | import("lit").TemplateResult<1>;
     protected updated(): void;
 }

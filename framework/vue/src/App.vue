@@ -10,14 +10,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Lipstick } from "../../../src/vue/index.ts";
+import { Type } from "typebox";
 
-const schema = {
-  type: "object",
-  title: "Point",
-  required: ["x", "y"],
-  properties: { x: { type: "number" }, y: { type: "number" } },
-  additionalProperties: false,
-} as const;
+const schema = Type.Object(
+  {
+    name: Type.String(),
+    age: Type.Number(),
+  },
+  {
+    title: "Person",
+  },
+);
 
 const value = ref({});
 </script>
