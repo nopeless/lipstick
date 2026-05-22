@@ -177,12 +177,13 @@ function renderScalarControl(ctx, schema, value, path, options) {
         type="number"
         .disabled=${options.disabled}
         .step=${String(step)}
-        .value=${typeof value === "number" ? formattedValue : ""}
+        .value=${getNumericDisplayValue(options.inputId, typeof value === "number" ? formattedValue : "")}
         ?required=${options.required}
         aria-invalid=${options.invalid ? "true" : "false"}
         aria-describedby=${ifDefined(options.describedBy)}
-        @input=${(event) => updatePathValue(ctx, path, parseNumericInputValue(event.target), schema, false)}
-        @change=${(event) => updatePathValue(ctx, path, parseNumericInputValue(event.target), schema, true)}
+        @input=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "input")}
+        @change=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "commit")}
+        @blur=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "commit")}
       />
     `;
     }
@@ -224,11 +225,12 @@ function renderScalarControlRange(ctx, schema, path, options, step, numericValue
           .min=${String(schema.minimum)}
           .max=${String(schema.maximum)}
           .step=${String(step)}
-          .value=${String(numericValue)}
+          .value=${getNumericDisplayValue(options.inputId, String(numericValue))}
           aria-invalid=${options.invalid ? "true" : "false"}
           aria-describedby=${ifDefined(options.describedBy)}
-          @input=${(event) => updatePathValue(ctx, path, parseNumericInputValue(event.target), schema, false)}
-          @change=${(event) => updatePathValue(ctx, path, parseNumericInputValue(event.target), schema, true)}
+          @input=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "input")}
+          @change=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "commit")}
+          @blur=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "commit")}
         />
         <div class="lipstick-range-meta">
           <span>${schema.minimum}</span>
@@ -243,15 +245,53 @@ function renderScalarControlRange(ctx, schema, path, options, step, numericValue
         .min=${String(schema.minimum)}
         .max=${String(schema.maximum)}
         .step=${String(step)}
-        .value=${formattedValue}
+        .value=${getNumericDisplayValue(`${options.inputId}-manual`, formattedValue)}
         ?required=${options.required}
         aria-invalid=${options.invalid ? "true" : "false"}
         aria-describedby=${ifDefined(options.describedBy)}
-        @input=${(event) => updatePathValue(ctx, path, parseNumericInputValue(event.target), schema, false)}
-        @change=${(event) => updatePathValue(ctx, path, parseNumericInputValue(event.target), schema, true)}
+        @input=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "input")}
+        @change=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "commit")}
+        @blur=${(event) => handleNumericFieldEvent(ctx, path, schema, event.target, "commit")}
       />
     </div>
   `;
+}
+function handleNumericFieldEvent(ctx, path, schema, input, mode) {
+    const parsed = tryParseNumericInput(input);
+    if (parsed === undefined) {
+        setNumericLocalParseError(ctx, input, true);
+        return;
+    }
+    setNumericLocalParseError(ctx, input, false);
+    updatePathValue(ctx, path, parsed, schema, mode === "commit");
+}
+function tryParseNumericInput(input) {
+    const raw = input.value.trim();
+    if (raw.length === 0 || input.validity.badInput) {
+        return undefined;
+    }
+    const parsed = parseNumericInputValue(input);
+    return Number.isFinite(parsed) ? parsed : undefined;
+}
+function setNumericLocalParseError(ctx, input, hasError) {
+    const current = input.dataset.parseError === "true";
+    if (current === hasError) {
+        return;
+    }
+    if (hasError) {
+        input.dataset.parseError = "true";
+    }
+    else {
+        delete input.dataset.parseError;
+    }
+    ctx.requestUpdate?.();
+}
+function getNumericDisplayValue(inputId, fallbackValue) {
+    const active = globalThis.document?.activeElement;
+    if (active instanceof HTMLInputElement && active.id === inputId) {
+        return active.value;
+    }
+    return fallbackValue;
 }
 function renderUnionBranch(ctx, branchSchema, value, path) {
     return renderNode(ctx, branchSchema, value, path, {
@@ -593,6 +633,10 @@ function renderDescription(ctx, schema, path) {
     return schema.description ? html `<p>${schema.description}</p>` : nothing;
 }
 function renderValidationMessages(ctx, path, schema, value) {
+    const localNumericError = getLocalNumericParseError(ctx, path);
+    if (localNumericError) {
+        return html ` <p role="alert">${localNumericError}</p> `;
+    }
     const messages = getFieldMessages(ctx, path, schema, value);
     if (messages.length === 0) {
         return nothing;
@@ -630,6 +674,17 @@ function getFieldMessages(ctx, path, schema, value) {
         return getFieldMessagesForSchema(resolved, value).get("#") ?? [];
     }
     return ctx.validation.fieldMessages.get(pathToKey(path)) ?? [];
+}
+function getLocalNumericParseError(ctx, path) {
+    const baseId = createInputId(ctx, path);
+    const candidateIds = [baseId, `${baseId}-manual`];
+    for (const id of candidateIds) {
+        const input = globalThis.document?.getElementById(id);
+        if (input instanceof HTMLInputElement && input.dataset.parseError === "true") {
+            return "Enter a valid number.";
+        }
+    }
+    return undefined;
 }
 function getControlDescribedBy(ctx, schema, path, value) {
     const describedByIds = [];
