@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { pasteRootValueFromClipboard } from "../src/json-schema-form/clipboard.js";
-import type { TSchema } from "../src/lib/types.js";
+import type { JsonSchema } from "../src/lib/types.js";
 import { createTestContext } from "./helpers.js";
 
 test("paste clears stale branch selections before emitting", async () => {
-  const rootSchema: TSchema = {
+  const rootSchema: JsonSchema = {
     type: "object",
     properties: {
       optionalRange: {

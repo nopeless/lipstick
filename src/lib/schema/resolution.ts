@@ -1,16 +1,24 @@
-import type { JsonPointerPath, TSchema, JsonValue } from "../types.js";
-import { Check } from "typebox/value";
+import type { JsonPointerPath, JsonSchema, JsonValue, JsonSchemaTypeName } from "../types.js";
 import { isJsonObject } from "../value.js";
-import { mergeSchemas, resolveLocalRefs, isSchemaObject } from "./internal.js";
+import {
+  acceptsType as acceptsSchemaType,
+  isArraySchema as isArraySchemaInternal,
+  isObjectSchema as isObjectSchemaInternal,
+  isSchemaObject,
+  mergeSchemas,
+  omitSchemaKeys,
+} from "./internal.js";
+import { isValueValidAgainstSchema } from "./evaluate.js";
 
 export * from "./internal.js";
+export * from "./evaluate.js";
 
 export function resolveSchema(
-  schema: TSchema,
-  root: TSchema,
+  schema: JsonSchema,
+  root: JsonSchema,
   value: JsonValue | undefined,
-): TSchema {
-  let resolved = resolveLocalRefs(schema, root, new Set(), resolveSchema);
+): JsonSchema {
+  let resolved = schema;
 
   if (resolved.allOf?.length) {
     const base = omitSchemaKeys(resolved, ["allOf"]);
@@ -43,7 +51,7 @@ export function resolveSchema(
 }
 
 export function getRequiredProperties(
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
 ): Set<string> {
   const required = new Set(schema.required ?? []);
@@ -65,17 +73,16 @@ export function getRequiredProperties(
 
 export function matchesSchema(
   value: JsonValue | undefined,
-  schema: TSchema,
-  root: TSchema,
+  schema: JsonSchema,
+  root: JsonSchema,
 ): boolean {
-  const resolved = resolveLocalRefs(schema, root, new Set(), resolveSchema);
-  return Check(resolved, value);
+  return isValueValidAgainstSchema(schema, value, root);
 }
 
 export function getArrayItemSchema(
-  schema: TSchema,
+  schema: JsonSchema,
   index: number,
-): TSchema | undefined {
+): JsonSchema | undefined {
   if (schema.prefixItems?.[index]) {
     return schema.prefixItems[index];
   }
@@ -87,24 +94,16 @@ export function getArrayItemSchema(
   return isSchemaObject(schema.items) ? schema.items : {};
 }
 
-export function isObjectSchema(schema: TSchema): boolean {
-  return (
-    acceptsType(schema, "object") ||
-    !!schema.properties ||
-    schema.additionalProperties !== undefined
-  );
+export function isObjectSchema(schema: JsonSchema): boolean {
+  return isObjectSchemaInternal(schema);
 }
 
-export function isArraySchema(schema: TSchema): boolean {
-  return acceptsType(schema, "array") || !!schema.prefixItems || schema.items !== undefined;
+export function isArraySchema(schema: JsonSchema): boolean {
+  return isArraySchemaInternal(schema);
 }
 
-export function acceptsType(schema: TSchema, expected: string): boolean {
-  if (!schema.type) {
-    return false;
-  }
-
-  return Array.isArray(schema.type) ? schema.type.includes(expected) : schema.type === expected;
+export function acceptsType(schema: JsonSchema, expected: JsonSchemaTypeName): boolean {
+  return acceptsSchemaType(schema, expected);
 }
 
 export function humanizeLabel(value: string): string {
@@ -126,12 +125,3 @@ export function pathToKey(path: JsonPointerPath): string {
     path.map((segment) => String(segment).replaceAll("~", "~0").replaceAll("/", "~1")).join("/")
   );
 }
-
-function omitSchemaKeys(schema: TSchema, keys: string[]): TSchema {
-  const next = { ...schema };
-  keys.forEach((key) => {
-    delete next[key];
-  });
-  return next;
-}
-

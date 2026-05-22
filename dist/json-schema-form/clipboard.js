@@ -1,5 +1,5 @@
+import { repairValueForSchema } from "../lib/schema.js";
 import { commitRootValue } from "./state.js";
-import { Value } from "typebox/value";
 export async function copyRootValueToClipboard(ctx, event) {
     event.preventDefault();
     event.stopPropagation();
@@ -24,8 +24,10 @@ export async function pasteRootValueFromClipboard(ctx, event) {
     try {
         const nextText = await clipboard.readText();
         const parsedValue = JSON.parse(nextText);
-        const sanitizedValue = Value.Repair(ctx.rootSchema, parsedValue);
-        commitRootValue(ctx, [], sanitizedValue, ctx.rootSchema, "both");
+        const nextValue = ctx.repair
+            ? repairValueForSchema(ctx.rootSchema, parsedValue)
+            : parsedValue;
+        commitRootValue(ctx, [], nextValue, ctx.rootSchema, "both");
     }
     catch (e) {
         console.error(e);

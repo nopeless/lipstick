@@ -3,8 +3,8 @@ import "./css/demo.css";
 import type { JsonSchemaFormEventDetail, JsonValue } from "../index.js";
 import { getDemoRefs } from "./dom.js";
 import { getErrorMessage, loadDemoFixture, assertSchema, type DemoFixtureName } from "./data.js";
-import type { TSchema } from "../index.js";
-import { Value } from "typebox/value";
+import type { JsonSchema } from "../index.js";
+import { createInitialValue } from "../lib/schema.js";
 
 let value: JsonValue = null;
 
@@ -42,10 +42,11 @@ async function loadSelectedDemo(fixture: DemoFixtureName) {
   }, `Loaded ${fixture} demo.`);
 }
 
-function applySchema(nextSchema: TSchema, nextValue?: JsonValue) {
-  value = nextValue !== undefined ? nextValue : (Value.Repair(nextSchema, undefined) as JsonValue);
+function applySchema(nextSchema: JsonSchema, nextValue?: JsonValue) {
+  value = nextValue !== undefined ? nextValue : createInitialValue(nextSchema);
   refs.form.schema = nextSchema;
   refs.form.value = value;
+  refs.form.repair = true;
   refs.schemaJson.value = JSON.stringify(nextSchema, null, 2);
   autoSizeSchemaJson();
   updateOutput();

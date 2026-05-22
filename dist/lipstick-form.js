@@ -9,11 +9,12 @@ import { property, state } from "lit/decorators.js";
 import { renderForm } from "./json-schema-form/render.js";
 import { emitValue } from "./json-schema-form/state.js";
 import { validateValueAgainstSchema } from "./lib/validation.js";
-import { Value } from "typebox/value";
+import { jsonValueEquals, repairValueForSchema } from "./lib/schema.js";
 import { config } from "./config.js";
 export class LipstickFormElement extends LitElement {
     constructor() {
         super(...arguments);
+        this.name = "";
         this.repair = false;
         this.disabled = false;
         this.readonly = false;
@@ -25,6 +26,7 @@ export class LipstickFormElement extends LitElement {
             issues: [],
             fieldMessages: new Map(),
         };
+        this.isApplyingFormUpdate = false;
         this.isBeforeUnloadRegistered = false;
         this.beforeUnloadHandler = () => {
             if (!this.persist) {
@@ -50,10 +52,15 @@ export class LipstickFormElement extends LitElement {
     }
     set value(next) {
         const previous = this._value;
-        const repaired = this.repair && this.schema ? Value.Repair(this.schema, next) : next;
+        const repaired = this.repair && this.schema ? repairValueForSchema(this.schema, next) : next;
         this._value = repaired;
         this.requestUpdate("value", previous);
-        if (this.repair && this.schema && !Value.Equal(next, repaired)) {
+        if (this.repair &&
+            this.schema &&
+            next !== undefined &&
+            repaired !== undefined &&
+            !this.isApplyingFormUpdate &&
+            !jsonValueEquals(next, repaired)) {
             emitValue(this, "input", [], repaired, this.schema);
         }
     }
@@ -93,12 +100,15 @@ export class LipstickFormElement extends LitElement {
         this.querySelector(`#${targetId}`)?.focus();
     }
     applyFormValueUpdate(type, path, nextValue, schema) {
+        this.isApplyingFormUpdate = true;
         this.value = nextValue;
+        this.isApplyingFormUpdate = false;
+        const emittedValue = this.value ?? null;
         if (type === "input" || type === "both") {
-            emitValue(this, "input", path, nextValue, schema);
+            emitValue(this, "input", path, emittedValue, schema);
         }
         if (type === "change" || type === "both") {
-            emitValue(this, "change", path, nextValue, schema);
+            emitValue(this, "change", path, emittedValue, schema);
         }
     }
     getPersistStorageKey() {
@@ -165,6 +175,9 @@ export class LipstickFormElement extends LitElement {
 __decorate([
     property({ attribute: false })
 ], LipstickFormElement.prototype, "schema", void 0);
+__decorate([
+    property({ reflect: true })
+], LipstickFormElement.prototype, "name", void 0);
 __decorate([
     property({ type: Boolean })
 ], LipstickFormElement.prototype, "repair", void 0);

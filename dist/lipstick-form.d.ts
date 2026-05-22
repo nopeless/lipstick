@@ -1,9 +1,10 @@
 import { LitElement } from "lit";
 import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
-import type { TSchema, JsonValue } from "./lib/types.js";
+import type { JsonSchema, JsonValue } from "./lib/types.js";
 import { type ValidationSnapshot } from "./lib/validation.js";
 export declare class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
-    schema?: TSchema;
+    schema?: JsonSchema;
+    name: string;
     repair: boolean;
     _value?: JsonValue;
     disabled: boolean;
@@ -13,10 +14,11 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     collapsedSections: Set<string>;
     pendingFocusId?: string;
     validation: ValidationSnapshot;
+    private isApplyingFormUpdate;
     private isBeforeUnloadRegistered;
     private beforeUnloadHandler;
     protected createRenderRoot(): HTMLElement | DocumentFragment;
-    get rootSchema(): TSchema;
+    get rootSchema(): JsonSchema;
     get formDisabled(): boolean;
     get value(): JsonValue | undefined;
     set value(next: JsonValue | undefined);
@@ -24,7 +26,7 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     connectedCallback(): void;
     disconnectedCallback(): void;
     protected updated(): void;
-    applyFormValueUpdate(type: "input" | "change" | "both", path: Array<string | number>, nextValue: JsonValue, schema: TSchema): void;
+    applyFormValueUpdate(type: "input" | "change" | "both", path: Array<string | number>, nextValue: JsonValue, schema: JsonSchema): void;
     private getPersistStorageKey;
     private loadPersistedValue;
     private persistValueToStorage;

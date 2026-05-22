@@ -1,9 +1,10 @@
-import { Check } from "typebox/value";
 import { isJsonObject } from "../value.js";
-import { mergeSchemas, resolveLocalRefs, isSchemaObject } from "./internal.js";
+import { acceptsType as acceptsSchemaType, isArraySchema as isArraySchemaInternal, isObjectSchema as isObjectSchemaInternal, isSchemaObject, mergeSchemas, omitSchemaKeys, } from "./internal.js";
+import { isValueValidAgainstSchema } from "./evaluate.js";
 export * from "./internal.js";
+export * from "./evaluate.js";
 export function resolveSchema(schema, root, value) {
-    let resolved = resolveLocalRefs(schema, root, new Set(), resolveSchema);
+    let resolved = schema;
     if (resolved.allOf?.length) {
         const base = omitSchemaKeys(resolved, ["allOf"]);
         resolved = resolved.allOf.reduce((merged, branch) => mergeSchemas(merged, resolveSchema(branch, root, value)), base);
@@ -38,8 +39,7 @@ export function getRequiredProperties(schema, value) {
     return required;
 }
 export function matchesSchema(value, schema, root) {
-    const resolved = resolveLocalRefs(schema, root, new Set(), resolveSchema);
-    return Check(resolved, value);
+    return isValueValidAgainstSchema(schema, value, root);
 }
 export function getArrayItemSchema(schema, index) {
     if (schema.prefixItems?.[index]) {
@@ -51,18 +51,13 @@ export function getArrayItemSchema(schema, index) {
     return isSchemaObject(schema.items) ? schema.items : {};
 }
 export function isObjectSchema(schema) {
-    return (acceptsType(schema, "object") ||
-        !!schema.properties ||
-        schema.additionalProperties !== undefined);
+    return isObjectSchemaInternal(schema);
 }
 export function isArraySchema(schema) {
-    return acceptsType(schema, "array") || !!schema.prefixItems || schema.items !== undefined;
+    return isArraySchemaInternal(schema);
 }
 export function acceptsType(schema, expected) {
-    if (!schema.type) {
-        return false;
-    }
-    return Array.isArray(schema.type) ? schema.type.includes(expected) : schema.type === expected;
+    return acceptsSchemaType(schema, expected);
 }
 export function humanizeLabel(value) {
     return value
@@ -78,11 +73,4 @@ export function pathToKey(path) {
     }
     return ("#/" +
         path.map((segment) => String(segment).replaceAll("~", "~0").replaceAll("/", "~1")).join("/"));
-}
-function omitSchemaKeys(schema, keys) {
-    const next = { ...schema };
-    keys.forEach((key) => {
-        delete next[key];
-    });
-    return next;
 }

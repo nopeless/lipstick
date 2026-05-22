@@ -1,6 +1,6 @@
 import { html, nothing } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { acceptsType, describeUnion, getArrayItemSchema, getRequiredProperties, humanizeLabel, isArraySchema, isObjectSchema, pathToKey, resolveSchema, } from "../lib/schema.js";
+import { acceptsType, describeUnion, getArrayItemSchema, getRequiredProperties, humanizeLabel, isArraySchema, isObjectSchema, jsonValueEquals, pathToKey, resolveSchema, } from "../lib/schema.js";
 import { formatDateTimeForInput, formatNumericValue, getNumericInputStep, getStringInputType, normalizeDateTimeFromInput, parseNumericInputValue, } from "../lib/input.js";
 import { getValueAtPath, isJsonObject } from "../lib/value.js";
 import { getFieldMessagesForSchema } from "../lib/validation.js";
@@ -21,14 +21,16 @@ export function renderForm(ctx) {
         framed: true,
         collapsible: false,
     })}
-    <input type="hidden" name="json" .value=${JSON.stringify(ctx.value ?? null)} />
+    ${ctx.name?.trim()
+        ? html `<input type="hidden" name=${ctx.name.trim()} .value=${JSON.stringify(ctx.value ?? null)} />`
+        : nothing}
   `;
 }
 function renderNode(ctx, schema, value, path, options) {
     const rootSchema = ctx.rootSchema;
     const resolved = resolveSchema(schema, rootSchema, value);
     const union = describeUnion(resolved, value, rootSchema, ctx.branchSelections.get(pathToKey(path)));
-    if (!options.present && !options.required) {
+    if (!options.present) {
         return renderCollapsedOptionalField(ctx, resolved, path, options);
     }
     if (union) {
@@ -120,7 +122,7 @@ function renderPrimitiveUnionField(ctx, schema, value, path, options, union) {
 }
 function renderScalarControl(ctx, schema, value, path, options) {
     const isNull = acceptsType(schema, "null");
-    if (isNull || schema.const) {
+    if (isNull || schema.const !== undefined) {
         return html `<input
       id=${options.inputId}
       type="text"
@@ -131,14 +133,13 @@ function renderScalarControl(ctx, schema, value, path, options) {
     }
     if (schema.enum?.length) {
         const optionsList = schema.enum ?? [];
-        const normalizedValue = value !== undefined && optionsList.includes(value)
-            ? String(value)
-            : String(optionsList[0] ?? "");
+        const optionLabels = getEnumOptionLabels(optionsList);
+        const selectedIndex = value === undefined ? 0 : Math.max(0, optionsList.findIndex((option) => jsonValueEquals(option, value)));
         return html `
       <select
         id=${options.inputId}
         .disabled=${options.disabled}
-        .value=${normalizedValue}
+        .value=${String(selectedIndex)}
         ?required=${options.required}
         aria-invalid=${options.invalid ? "true" : "false"}
         aria-describedby=${ifDefined(options.describedBy)}
@@ -147,7 +148,7 @@ function renderScalarControl(ctx, schema, value, path, options) {
             updatePathValue(ctx, path, nextValue, schema, true);
         }}
       >
-        ${optionsList.map((option) => html `<option value=${String(option)}>${String(option)}</option>`)}
+        ${optionsList.map((option, index) => html `<option value=${String(index)}>${optionLabels[index] ?? String(option)}</option>`)}
       </select>
     `;
     }
@@ -356,15 +357,15 @@ function renderObjectBody(ctx, schema, objectValue, path, propertyEntries, requi
     return html `
     ${propertyEntries.map(([key, childSchema]) => {
         const required = requiredSet.has(key);
-        const present = required || key in objectValue;
+        const present = key in objectValue;
         return renderNode(ctx, childSchema, objectValue[key], [...path, key], {
             label: childSchema.title ?? humanizeLabel(key),
             required,
             present,
             framed: true,
             collapsible: canCollapseSchema(ctx, childSchema),
-            onAdd: required ? undefined : () => addKnownProperty(ctx, path, key, childSchema),
-            onRemove: required ? undefined : () => removeProperty(ctx, [...path, key]),
+            onAdd: present ? undefined : () => addKnownProperty(ctx, path, key, childSchema),
+            onRemove: required || !present ? undefined : () => removeProperty(ctx, [...path, key]),
         });
     })}
     ${additionalKeys.map((key) => renderNode(ctx, getAdditionalPropertySchema(schema), objectValue[key], [...path, key], {
@@ -534,7 +535,9 @@ function renderFieldsetHeader(ctx, schema, options, path, collapsed) {
         return nothing;
     }
     if (!options.present && options.onAdd) {
-        return html ` <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend> `;
+        return html `
+      <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd, options.required)}</legend>
+    `;
     }
     const rootActions = path.length === 0
         ? html `<nav class="lipstick-actions" aria-label="Form controls">
@@ -598,7 +601,7 @@ function renderFieldsetHeader(ctx, schema, options, path, collapsed) {
 function renderLeafHeader(ctx, label, options, path) {
     const collapsed = isCollapsed(ctx, path);
     if (!options.present && options.onAdd) {
-        return renderOptionalAddTrigger(ctx, label, options.onAdd);
+        return renderOptionalAddTrigger(ctx, label, options.onAdd, options.required);
     }
     if (options.collapsible === false) {
         return html `
@@ -680,11 +683,40 @@ function getLocalNumericParseError(ctx, path) {
     const candidateIds = [baseId, `${baseId}-manual`];
     for (const id of candidateIds) {
         const input = globalThis.document?.getElementById(id);
-        if (input instanceof HTMLInputElement && input.dataset.parseError === "true") {
+        if (typeof HTMLInputElement !== "undefined" &&
+            input instanceof HTMLInputElement &&
+            input.dataset.parseError === "true") {
             return "Enter a valid number.";
         }
     }
     return undefined;
+}
+function getEnumOptionLabels(options) {
+    if (!options.every((option) => typeof option === "string")) {
+        return options.map((option) => String(option));
+    }
+    const prefix = getSharedEnumPrefix(options);
+    if (!prefix) {
+        return [...options];
+    }
+    return options.map((option) => option.slice(prefix.length) || option);
+}
+function getSharedEnumPrefix(options) {
+    if (options.length < 2) {
+        return undefined;
+    }
+    let common = options[0] ?? "";
+    for (const option of options.slice(1)) {
+        while (common && !option.startsWith(common)) {
+            common = common.slice(0, -1);
+        }
+    }
+    const separatorIndex = Math.max(common.lastIndexOf(":"), common.lastIndexOf("/"), common.lastIndexOf("."), common.lastIndexOf("_"), common.lastIndexOf("-"));
+    if (separatorIndex < 0) {
+        return undefined;
+    }
+    const prefix = common.slice(0, separatorIndex + 1);
+    return options.every((option) => option.length > prefix.length) ? prefix : undefined;
 }
 function getControlDescribedBy(ctx, schema, path, value) {
     const describedByIds = [];
@@ -772,7 +804,7 @@ function renderArrayItemRemoveAction(ctx, itemPath, canRemove) {
     ×
   </button> `;
 }
-function renderOptionalAddTrigger(ctx, label, onAdd) {
+function renderOptionalAddTrigger(ctx, label, onAdd, required = false) {
     return html `
     <button
       type="button"
@@ -787,6 +819,7 @@ function renderOptionalAddTrigger(ctx, label, onAdd) {
     >
       <span aria-hidden="true">+</span>
       <span>${label}</span>
+      ${required ? html `<span aria-hidden="true">*</span>` : nothing}
     </button>
   `;
 }

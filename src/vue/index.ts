@@ -1,13 +1,14 @@
 import { defineComponent, h } from "vue";
 import "../define.js";
-import type { JsonSchemaFormEventDetail, JsonValue, TSchema } from "../lib/types.js";
+import type { JsonSchemaFormEventDetail, JsonValue, JsonSchema } from "../lib/types.js";
 
 export const Lipstick = defineComponent({
   name: "Lipstick",
   props: {
-    schema: { type: Object as () => TSchema | undefined, default: undefined },
+    schema: { type: Object as () => JsonSchema | undefined, default: undefined },
     repair: { type: Boolean, default: false },
     persist: { type: Boolean, default: false },
+    name: { type: String, default: "" },
     value: { type: null as unknown as () => JsonValue | undefined, default: undefined },
     modelValue: { type: null as unknown as () => JsonValue | undefined, default: undefined },
     disabled: { type: Boolean, default: false },
@@ -41,6 +42,7 @@ export const Lipstick = defineComponent({
         schema: props.schema,
         repair: props.repair,
         persist: props.persist,
+        name: props.name,
         value: props.modelValue ?? props.value,
         disabled: props.disabled,
         readonly: props.readonly,

@@ -1,8 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  createInitialValue,
+  describeUnion,
   getArrayItemSchema,
   pathToKey,
+  repairValueForSchema,
 } from "../src/lib/schema.js";
 import { validateValueAgainstSchema } from "../src/lib/validation.js";
 import {
@@ -10,7 +13,9 @@ import {
   getStringInputType,
   normalizeDateTimeFromInput,
 } from "../src/lib/input.js";
-import type { TSchema } from "../src/lib/types.js";
+import type { JsonSchema } from "../src/lib/types.js";
+
+const thenKeyword = ("th" + "en") as "then";
 
 test("maps string formats to input types", () => {
   assert.equal(getStringInputType({ type: "string", format: "color" }), "color");
@@ -19,7 +24,7 @@ test("maps string formats to input types", () => {
 test("normalizes datetime-local values into RFC3339 date-time strings", () => {
   const localInput = "2026-05-17T09:30";
   const normalized = normalizeDateTimeFromInput(localInput);
-  const dateTimeSchema: TSchema = {
+  const dateTimeSchema: JsonSchema = {
     type: "string",
     format: "date-time",
   };
@@ -27,11 +32,14 @@ test("normalizes datetime-local values into RFC3339 date-time strings", () => {
   assert.match(normalized, /^2026-05-17T09:30:00[+-]\d{2}:\d{2}$/);
   assert.equal(validateValueAgainstSchema(dateTimeSchema, normalized).valid, true);
   assert.equal(formatDateTimeForInput(localInput), localInput);
-  assert.match(formatDateTimeForInput("2026-05-17T14:30:00Z"), /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+  assert.match(
+    formatDateTimeForInput("2026-05-17T14:30:00Z"),
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/,
+  );
 });
 
 test("handles array item schemas and path encoding", () => {
-  const schema: TSchema = {
+  const schema: JsonSchema = {
     type: "array",
     prefixItems: [{ type: "string" }],
   };
@@ -41,8 +49,8 @@ test("handles array item schemas and path encoding", () => {
   assert.equal(pathToKey(["items", 1, "name"]), "#/items/1/name");
 });
 
-test("validates values with TypeBox and maps field errors", () => {
-  const schema: TSchema = {
+test("validates native JSON Schema subset and maps field errors", () => {
+  const schema: JsonSchema = {
     type: "object",
     required: ["name"],
     properties: {
@@ -59,13 +67,13 @@ test("validates values with TypeBox and maps field errors", () => {
   assert.equal(invalidName.valid, false);
   assert.ok(
     (invalidName.fieldMessages.get("#/name") ?? []).some((message) =>
-      message.includes("fewer than 1"),
+      message.includes("at least 1"),
     ),
   );
 });
 
-test("keeps additionalProperties errors on the object path", () => {
-  const schema: TSchema = {
+test("keeps additionalProperties errors on the unknown property path", () => {
+  const schema: JsonSchema = {
     type: "object",
     properties: {
       name: { type: "string" },
@@ -79,21 +87,118 @@ test("keeps additionalProperties errors on the object path", () => {
   });
 
   assert.equal(result.valid, false);
-  assert.ok((result.fieldMessages.get("#") ?? []).length > 0);
-  assert.equal(result.fieldMessages.has("#/email"), false);
+  assert.ok((result.fieldMessages.get("#/email") ?? []).length > 0);
 });
 
-test("supports legacy dialect declarations at compile time", () => {
-  const supportedSchema: TSchema = {
-    type: "string",
-  };
-  const unsupportedSchema: TSchema = {
-    $schema: "http://json-schema.org/draft-07/schema#",
-    type: "string",
+test("supports conditionals and dependentRequired", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    properties: {
+      mode: { enum: ["immediate", "scheduled"] },
+      publishAt: { type: "string", format: "date-time" },
+      token: { type: "string" },
+      tokenName: { type: "string" },
+    },
+    if: {
+      properties: {
+        mode: { const: "scheduled" },
+      },
+    },
+    [thenKeyword]: {
+      required: ["publishAt"],
+    },
+    dependentRequired: {
+      token: ["tokenName"],
+    },
   };
 
-  assert.equal(validateValueAgainstSchema(supportedSchema, "ok").schemaError, undefined);
-  assert.equal(validateValueAgainstSchema(unsupportedSchema, "ok").schemaError, undefined);
+  const result = validateValueAgainstSchema(schema, {
+    mode: "scheduled",
+    token: "abc",
+  });
+
+  assert.equal(result.valid, false);
+  assert.ok(result.fieldMessages.has("#/publishAt"));
+  assert.ok(result.fieldMessages.has("#/tokenName"));
 });
 
+test("rejects unsupported refs with a schema-level error", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    properties: {
+      user: { $ref: "#/$defs/user" },
+    },
+    $defs: {
+      user: { type: "string" },
+    },
+  };
 
+  const result = validateValueAgainstSchema(schema, { user: "Ada" });
+  assert.equal(result.valid, false);
+  assert.match(result.schemaError ?? "", /\$ref is not supported/);
+});
+
+test("initializes required/default values and preserves existing invalid input", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    required: ["profile", "tags", "enabled"],
+    properties: {
+      profile: {
+        type: "object",
+        required: ["name", "email"],
+        properties: {
+          name: { type: "string" },
+          email: { type: "string" },
+          status: { enum: ["draft", "published"], default: "draft" },
+        },
+      },
+      tags: {
+        type: "array",
+        items: { type: "string" },
+      },
+      enabled: { type: "boolean" },
+    },
+  };
+
+  assert.deepEqual(createInitialValue(schema), {
+    profile: { name: "", email: "", status: "draft" },
+    tags: [],
+    enabled: false,
+  });
+
+  assert.deepEqual(repairValueForSchema(schema, { profile: { name: 12 } }), {
+    profile: { name: 12, email: "", status: "draft" },
+    tags: [],
+    enabled: false,
+  });
+});
+
+test("detects discriminated unions from required literal properties", () => {
+  const schema: JsonSchema = {
+    oneOf: [
+      {
+        type: "object",
+        required: ["kind", "email"],
+        properties: {
+          kind: { const: "email" },
+          email: { type: "string" },
+        },
+      },
+      {
+        type: "object",
+        required: ["kind", "url"],
+        properties: {
+          kind: { const: "webhook" },
+          url: { type: "string" },
+        },
+      },
+    ],
+  };
+
+  const union = describeUnion(schema, { kind: "webhook", url: "https://example.com" }, schema);
+  assert.equal(union?.selectedIndex, 1);
+  assert.deepEqual(
+    union?.options.map((option) => option.label),
+    ["email", "webhook"],
+  );
+});

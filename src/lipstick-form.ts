@@ -3,14 +3,17 @@ import { property, state } from "lit/decorators.js";
 import { renderForm } from "./json-schema-form/render.js";
 import { emitValue } from "./json-schema-form/state.js";
 import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
-import type { TSchema, JsonValue } from "./lib/types.js";
+import type { JsonSchema, JsonValue } from "./lib/types.js";
 import { validateValueAgainstSchema, type ValidationSnapshot } from "./lib/validation.js";
-import { Value } from "typebox/value";
+import { jsonValueEquals, repairValueForSchema } from "./lib/schema.js";
 import { config } from "./config.js";
 
 export class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
   @property({ attribute: false })
-  schema?: TSchema;
+  schema?: JsonSchema;
+
+  @property({ reflect: true })
+  name = "";
 
   @property({ type: Boolean })
   repair = false;
@@ -39,6 +42,7 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     issues: [],
     fieldMessages: new Map<string, string[]>(),
   };
+  private isApplyingFormUpdate = false;
   private isBeforeUnloadRegistered = false;
   private beforeUnloadHandler = () => {
     if (!this.persist) {
@@ -51,7 +55,7 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     return this;
   }
 
-  get rootSchema(): TSchema {
+  get rootSchema(): JsonSchema {
     if (!this.schema) {
       throw new Error("Cannot render without a schema.");
     }
@@ -70,12 +74,19 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
   set value(next: JsonValue | undefined) {
     const previous = this._value;
     const repaired =
-      this.repair && this.schema ? (Value.Repair(this.schema, next) as JsonValue) : next;
+      this.repair && this.schema ? repairValueForSchema(this.schema, next) : next;
     this._value = repaired;
     this.requestUpdate("value", previous);
 
-    if (this.repair && this.schema && !Value.Equal(next, repaired)) {
-      emitValue(this, "input", [], repaired as JsonValue, this.schema);
+    if (
+      this.repair &&
+      this.schema &&
+      next !== undefined &&
+      repaired !== undefined &&
+      !this.isApplyingFormUpdate &&
+      !jsonValueEquals(next, repaired)
+    ) {
+      emitValue(this, "input", [], repaired, this.schema);
     }
   }
 
@@ -125,14 +136,17 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     type: "input" | "change" | "both",
     path: Array<string | number>,
     nextValue: JsonValue,
-    schema: TSchema,
+    schema: JsonSchema,
   ): void {
+    this.isApplyingFormUpdate = true;
     this.value = nextValue;
+    this.isApplyingFormUpdate = false;
+    const emittedValue = this.value ?? null;
     if (type === "input" || type === "both") {
-      emitValue(this, "input", path, nextValue, schema);
+      emitValue(this, "input", path, emittedValue, schema);
     }
     if (type === "change" || type === "both") {
-      emitValue(this, "change", path, nextValue, schema);
+      emitValue(this, "change", path, emittedValue, schema);
     }
   }
 

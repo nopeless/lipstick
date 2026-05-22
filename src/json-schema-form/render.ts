@@ -8,6 +8,7 @@ import {
   humanizeLabel,
   isArraySchema,
   isObjectSchema,
+  jsonValueEquals,
   pathToKey,
   resolveSchema,
 } from "../lib/schema.js";
@@ -20,7 +21,7 @@ import {
   parseNumericInputValue,
 } from "../lib/input.js";
 import type { JsonSchemaFormContext, FieldRenderOptions } from "./shared.js";
-import type { JsonPointerPath, TSchema, JsonValue } from "../lib/types.js";
+import type { JsonPointerPath, JsonSchema, JsonValue } from "../lib/types.js";
 import { getValueAtPath, isJsonObject } from "../lib/value.js";
 import { getFieldMessagesForSchema } from "../lib/validation.js";
 import {
@@ -77,13 +78,15 @@ export function renderForm(ctx: JsonSchemaFormContext) {
       framed: true,
       collapsible: false,
     })}
-    <input type="hidden" name="json" .value=${JSON.stringify(ctx.value ?? null)} />
+    ${ctx.name?.trim()
+      ? html`<input type="hidden" name=${ctx.name.trim()} .value=${JSON.stringify(ctx.value ?? null)} />`
+      : nothing}
   `;
 }
 
 function renderNode(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -97,7 +100,7 @@ function renderNode(
     ctx.branchSelections.get(pathToKey(path)),
   );
 
-  if (!options.present && !options.required) {
+  if (!options.present) {
     return renderCollapsedOptionalField(ctx, resolved, path, options);
   }
 
@@ -126,7 +129,7 @@ function renderNode(
 
 function renderCollapsedOptionalField(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   path: JsonPointerPath,
   options: FieldRenderOptions,
 ): TemplateResult {
@@ -139,7 +142,7 @@ function renderCollapsedOptionalField(
 
 function renderUnionField(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -166,7 +169,7 @@ function renderUnionField(
   );
 }
 
-function isCycledPrimitiveUnion(schema: TSchema, rootSchema: TSchema): boolean {
+function isCycledPrimitiveUnion(schema: JsonSchema, rootSchema: JsonSchema): boolean {
   const branches = schema.anyOf ?? [];
 
   return (
@@ -180,7 +183,7 @@ function isCycledPrimitiveUnion(schema: TSchema, rootSchema: TSchema): boolean {
 
 function renderPrimitiveUnionField(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -253,13 +256,13 @@ function renderPrimitiveUnionField(
 
 function renderScalarControl(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: ScalarControlOptions,
 ): TemplateResult {
   const isNull = acceptsType(schema, "null");
-  if (isNull || schema.const) {
+  if (isNull || schema.const !== undefined) {
     return html`<input
       id=${options.inputId}
       type="text"
@@ -271,16 +274,15 @@ function renderScalarControl(
 
   if (schema.enum?.length) {
     const optionsList = schema.enum ?? [];
-    const normalizedValue =
-      value !== undefined && optionsList.includes(value as never)
-        ? String(value)
-        : String(optionsList[0] ?? "");
+    const optionLabels = getEnumOptionLabels(optionsList);
+    const selectedIndex =
+      value === undefined ? 0 : Math.max(0, optionsList.findIndex((option) => jsonValueEquals(option, value)));
 
     return html`
       <select
         id=${options.inputId}
         .disabled=${options.disabled}
-        .value=${normalizedValue}
+        .value=${String(selectedIndex)}
         ?required=${options.required}
         aria-invalid=${options.invalid ? "true" : "false"}
         aria-describedby=${ifDefined(options.describedBy)}
@@ -293,7 +295,8 @@ function renderScalarControl(
         }}
       >
         ${optionsList.map(
-          (option) => html`<option value=${String(option)}>${String(option)}</option>`,
+          (option, index) =>
+            html`<option value=${String(index)}>${optionLabels[index] ?? String(option)}</option>`,
         )}
       </select>
     `;
@@ -384,7 +387,7 @@ function renderScalarControl(
 
 function renderScalarControlRange(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   path: JsonPointerPath,
   options: ScalarControlOptions,
   step: number,
@@ -444,7 +447,7 @@ type NumericFieldEventMode = "input" | "commit";
 function handleNumericFieldEvent(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
-  schema: TSchema,
+  schema: JsonSchema,
   input: HTMLInputElement,
   mode: NumericFieldEventMode,
 ): void {
@@ -494,7 +497,7 @@ function getNumericDisplayValue(inputId: string, fallbackValue: string): string 
 
 function renderUnionBranch(
   ctx: JsonSchemaFormContext,
-  branchSchema: TSchema,
+  branchSchema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
 ): TemplateResult {
@@ -560,7 +563,7 @@ function renderUnionSelector(
 
 function renderObjectField(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -591,17 +594,17 @@ function renderObjectField(
 
 function renderObjectBody(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   objectValue: Record<string, JsonValue>,
   path: JsonPointerPath,
-  propertyEntries: Array<[string, TSchema]>,
+  propertyEntries: Array<[string, JsonSchema]>,
   requiredSet: Set<string>,
   additionalKeys: string[],
 ): TemplateResult {
   return html`
     ${propertyEntries.map(([key, childSchema]) => {
       const required = requiredSet.has(key);
-      const present = required || key in objectValue;
+      const present = key in objectValue;
 
       return renderNode(ctx, childSchema, objectValue[key], [...path, key], {
         label: childSchema.title ?? humanizeLabel(key),
@@ -609,8 +612,8 @@ function renderObjectBody(
         present,
         framed: true,
         collapsible: canCollapseSchema(ctx, childSchema),
-        onAdd: required ? undefined : () => addKnownProperty(ctx, path, key, childSchema),
-        onRemove: required ? undefined : () => removeProperty(ctx, [...path, key]),
+        onAdd: present ? undefined : () => addKnownProperty(ctx, path, key, childSchema),
+        onRemove: required || !present ? undefined : () => removeProperty(ctx, [...path, key]),
       });
     })}
     ${additionalKeys.map((key) =>
@@ -629,7 +632,7 @@ function renderObjectBody(
 
 function renderAdditionalPropertyComposer(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
   const canAdd = canAddAdditionalProperty(schema);
@@ -684,7 +687,7 @@ function renderAdditionalPropertyComposer(
 
 function renderArrayField(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -712,7 +715,7 @@ function renderArrayField(
 
 function renderArrayBody(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   arrayValue: JsonValue[],
   path: JsonPointerPath,
   nextIndex: number,
@@ -739,7 +742,7 @@ function renderArrayBody(
 
 function renderArrayItem(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   item: JsonValue,
   path: JsonPointerPath,
   index: number,
@@ -811,7 +814,7 @@ function renderArrayItem(
 
 function renderScalarField(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   value: JsonValue | undefined,
   path: JsonPointerPath,
   options: FieldRenderOptions,
@@ -852,7 +855,7 @@ function renderScalarField(
 
 function renderFieldsetHeader(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   options: FieldRenderOptions,
   path: JsonPointerPath,
   collapsed: boolean,
@@ -863,7 +866,9 @@ function renderFieldsetHeader(
   }
 
   if (!options.present && options.onAdd) {
-    return html` <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd)}</legend> `;
+    return html`
+      <legend>${renderOptionalAddTrigger(ctx, text, options.onAdd, options.required)}</legend>
+    `;
   }
 
   const rootActions =
@@ -937,7 +942,7 @@ function renderLeafHeader(
   const collapsed = isCollapsed(ctx, path);
 
   if (!options.present && options.onAdd) {
-    return renderOptionalAddTrigger(ctx, label, options.onAdd);
+    return renderOptionalAddTrigger(ctx, label, options.onAdd, options.required);
   }
 
   if (options.collapsible === false) {
@@ -971,7 +976,7 @@ function renderLeafHeader(
 
 function renderDescription(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
   void ctx;
@@ -982,7 +987,7 @@ function renderDescription(
 function renderValidationMessages(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
-  schema?: TSchema,
+  schema?: JsonSchema,
   value?: JsonValue | undefined,
 ): TemplateResult | typeof nothing {
   const localNumericError = getLocalNumericParseError(ctx, path);
@@ -1000,7 +1005,7 @@ function renderValidationMessages(
 
 function renderFramedFieldset(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   options: FieldRenderOptions,
   path: JsonPointerPath,
   value: JsonValue | undefined,
@@ -1025,7 +1030,7 @@ function renderFramedFieldset(
 function getFieldMessages(
   ctx: JsonSchemaFormContext,
   path: JsonPointerPath,
-  schema?: TSchema,
+  schema?: JsonSchema,
   value?: JsonValue | undefined,
 ): string[] {
   if (schema) {
@@ -1058,7 +1063,11 @@ function getLocalNumericParseError(
 
   for (const id of candidateIds) {
     const input = globalThis.document?.getElementById(id);
-    if (input instanceof HTMLInputElement && input.dataset.parseError === "true") {
+    if (
+      typeof HTMLInputElement !== "undefined" &&
+      input instanceof HTMLInputElement &&
+      input.dataset.parseError === "true"
+    ) {
       return "Enter a valid number.";
     }
   }
@@ -1066,9 +1075,50 @@ function getLocalNumericParseError(
   return undefined;
 }
 
+function getEnumOptionLabels(options: readonly JsonValue[]): string[] {
+  if (!options.every((option): option is string => typeof option === "string")) {
+    return options.map((option) => String(option));
+  }
+
+  const prefix = getSharedEnumPrefix(options);
+  if (!prefix) {
+    return [...options];
+  }
+
+  return options.map((option) => option.slice(prefix.length) || option);
+}
+
+function getSharedEnumPrefix(options: readonly string[]): string | undefined {
+  if (options.length < 2) {
+    return undefined;
+  }
+
+  let common = options[0] ?? "";
+  for (const option of options.slice(1)) {
+    while (common && !option.startsWith(common)) {
+      common = common.slice(0, -1);
+    }
+  }
+
+  const separatorIndex = Math.max(
+    common.lastIndexOf(":"),
+    common.lastIndexOf("/"),
+    common.lastIndexOf("."),
+    common.lastIndexOf("_"),
+    common.lastIndexOf("-"),
+  );
+
+  if (separatorIndex < 0) {
+    return undefined;
+  }
+
+  const prefix = common.slice(0, separatorIndex + 1);
+  return options.every((option) => option.length > prefix.length) ? prefix : undefined;
+}
+
 function getControlDescribedBy(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   path: JsonPointerPath,
   value: JsonValue | undefined,
 ): string | undefined {
@@ -1085,18 +1135,18 @@ function getControlDescribedBy(
 
 function renderLeafMeta(
   ctx: JsonSchemaFormContext,
-  schema: TSchema,
+  schema: JsonSchema,
   path: JsonPointerPath,
 ): TemplateResult | typeof nothing {
   return html` ${renderDescription(ctx, schema, path)} `;
 }
 
-function formatSimpleArrayItemLabel(schema: TSchema, index: number): string | undefined {
+function formatSimpleArrayItemLabel(schema: JsonSchema, index: number): string | undefined {
   const title = schema.title?.trim();
   return title ? `${title} ${index + 1}` : undefined;
 }
 
-function getArrayObjectItemLabel(schema: TSchema, value: JsonValue, index: number): string {
+function getArrayObjectItemLabel(schema: JsonSchema, value: JsonValue, index: number): string {
   if (isJsonObject(value)) {
     const properties = schema.properties ?? {};
     const orderedKeys = [...Object.keys(properties), ...Object.keys(value)];
@@ -1120,7 +1170,7 @@ function getArrayObjectItemLabel(schema: TSchema, value: JsonValue, index: numbe
   return `${title} ${index + 1}`;
 }
 
-function getArrayMutationRules(schema: TSchema, arrayLength: number): ArrayMutationRules {
+function getArrayMutationRules(schema: JsonSchema, arrayLength: number): ArrayMutationRules {
   const nextIndex = arrayLength;
   const prefixItemsLength = schema.prefixItems?.length ?? 0;
   const withinMaxItems = schema.maxItems === undefined || nextIndex < schema.maxItems;
@@ -1185,6 +1235,7 @@ function renderOptionalAddTrigger(
   ctx: JsonSchemaFormContext,
   label: string,
   onAdd: () => void,
+  required = false,
 ): TemplateResult {
   return html`
     <button
@@ -1200,6 +1251,7 @@ function renderOptionalAddTrigger(
     >
       <span aria-hidden="true">+</span>
       <span>${label}</span>
+      ${required ? html`<span aria-hidden="true">*</span>` : nothing}
     </button>
   `;
 }
@@ -1230,7 +1282,7 @@ function renderInlineSimpleField(
   label: string,
   options: FieldRenderOptions,
   inputId: string,
-  schema: TSchema,
+  schema: JsonSchema,
   control: TemplateResult,
   afterControl: TemplateResult | typeof nothing = nothing,
   path: JsonPointerPath = [],

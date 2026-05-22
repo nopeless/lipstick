@@ -1,6 +1,5 @@
-import { describeUnion, getArrayItemSchema, isArraySchema, isObjectSchema, pathToKey, resolveSchema, } from "../lib/schema.js";
+import { describeUnion, getArrayItemSchema, isArraySchema, isObjectSchema, pathToKey, resolveSchema, createInitialValue, } from "../lib/schema.js";
 import { cloneJsonValue, deleteValueAtPath, getValueAtPath, moveArrayItem, setValueAtPath, } from "../lib/value.js";
-import { Value } from "typebox/value";
 /**
  * Emits a path-scoped value update by patching `ctx.value` at `path`.
  */
@@ -9,7 +8,7 @@ export function updatePathValue(ctx, path, nextValue, schema, commit) {
     ctx.applyFormValueUpdate(commit ? "both" : "input", path, nextRootValue, schema);
 }
 export function resetRootValue(ctx) {
-    commitRootValue(ctx, [], Value.Repair(ctx.rootSchema, undefined), ctx.rootSchema, "both");
+    commitRootValue(ctx, [], createInitialValue(ctx.rootSchema), ctx.rootSchema, "both");
 }
 export function commitRootValue(ctx, path, nextValue, schema, mode) {
     reconcileUiStateWithValue(ctx, nextValue);
@@ -83,14 +82,15 @@ function resolveSchemaForPath(ctx, path, rootValue) {
  * emits the path update from one shared place.
  */
 export function switchUnionBranch(ctx, path, value, branches, index) {
+    void value;
     const pathKey = pathToKey(path);
     ctx.branchSelections = new Map(ctx.branchSelections).set(pathKey, index);
-    const nextValue = Value.Repair(branches[index], value);
+    const nextValue = createInitialValue(branches[index], ctx.rootSchema);
     updatePathValue(ctx, path, nextValue, branches[index], true);
     return nextValue;
 }
 export function addKnownProperty(ctx, objectPath, key, schema) {
-    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], Value.Repair(schema, undefined));
+    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], createInitialValue(schema, ctx.rootSchema));
     commitRootValue(ctx, [...objectPath, key], nextValue, schema, "both");
 }
 export function addAdditionalProperty(ctx, objectPath, key, schema) {
@@ -98,7 +98,7 @@ export function addAdditionalProperty(ctx, objectPath, key, schema) {
         return;
     }
     const additionalSchema = getAdditionalPropertySchema(schema);
-    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], Value.Repair(additionalSchema, undefined));
+    const nextValue = setValueAtPath(ctx.value, [...objectPath, key], createInitialValue(additionalSchema, ctx.rootSchema));
     commitRootValue(ctx, [...objectPath, key], nextValue, additionalSchema, "both");
 }
 export function removeProperty(ctx, path) {
@@ -109,8 +109,8 @@ export function addArrayItem(ctx, path, schema, index) {
     const itemSchema = getArrayItemSchema(schema, index) ?? {};
     const currentArray = getValueAtPath(ctx.value, path);
     const nextArray = Array.isArray(currentArray)
-        ? [...currentArray, Value.Repair(itemSchema, undefined)]
-        : [Value.Repair(itemSchema, undefined)];
+        ? [...currentArray, createInitialValue(itemSchema, ctx.rootSchema)]
+        : [createInitialValue(itemSchema, ctx.rootSchema)];
     const nextValue = setValueAtPath(ctx.value, path, nextArray);
     ctx.pendingFocusId = isSimpleArrayItemSchema(ctx, itemSchema)
         ? createInputId(ctx, [...path, index])
@@ -160,7 +160,10 @@ export function emitValue(ctx, type, path, nextValue, schema) {
     }));
 }
 export function parseLiteralOption(rawValue, options) {
-    return options.find((option) => String(option) === rawValue) ?? rawValue;
+    const index = Number(rawValue);
+    return Number.isInteger(index) && index >= 0 && index < options.length
+        ? options[index]
+        : rawValue;
 }
 export function createInputId(ctx, path) {
     const formIdPrefix = ctx.id?.trim() || "lipstick";

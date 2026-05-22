@@ -1,10 +1,10 @@
 import { acceptsType } from "./schema.js";
-import type { TSchema } from "./types.js";
+import type { JsonSchema } from "./types.js";
 
 const LOCAL_DATE_TIME_PATTERN =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(\.(\d{1,3}))?)?$/;
 
-export function getStringInputType(schema: TSchema): string {
+export function getStringInputType(schema: JsonSchema): string {
   if (schema.writeOnly) {
     return "password";
   }
@@ -91,7 +91,7 @@ export function normalizeDateTimeFromInput(value: string): string {
   return `${year}-${month}-${day}T${hour}:${minute}:${seconds}${offsetSign}${pad2(offsetHours)}:${pad2(offsetRemainderMinutes)}`;
 }
 
-export function getNumericInputStep(schema: TSchema): number {
+export function getNumericInputStep(schema: JsonSchema): number {
   if (typeof schema.multipleOf === "number") {
     return schema.multipleOf;
   }

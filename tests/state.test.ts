@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { TSchema } from "../src/lib/types.js";
+import type { JsonSchema } from "../src/lib/types.js";
 import { createTestContext } from "./helpers.js";
 import {
   addAdditionalProperty,
@@ -17,7 +17,7 @@ import {
 } from "../src/json-schema-form/state.js";
 
 test("emits cloned events for path updates", () => {
-  const schema: TSchema = {
+  const schema: JsonSchema = {
     type: "object",
     properties: {
       name: { type: "string" },
@@ -36,7 +36,7 @@ test("emits cloned events for path updates", () => {
 });
 
 test("mutates object and array paths through helpers", () => {
-  const objectSchema: TSchema = {
+  const objectSchema: JsonSchema = {
     type: "object",
     properties: {
       name: { type: "string", default: "Ada" },
@@ -105,7 +105,7 @@ test("tracks collapsed sections and generated metadata", () => {
 });
 
 test("root commit prunes stale collapsed sections", () => {
-  const schema: TSchema = {
+  const schema: JsonSchema = {
     type: "object",
     properties: {
       keep: {
@@ -125,7 +125,7 @@ test("root commit prunes stale collapsed sections", () => {
 });
 
 test("root commit resets invalid union branch selection", () => {
-  const schema: TSchema = {
+  const schema: JsonSchema = {
     type: "object",
     properties: {
       optionalRange: {

@@ -1,5 +1,5 @@
 import type { TemplateResult } from "lit";
-import type { JsonPointerPath, TSchema, JsonValue } from "../lib/types.js";
+import type { JsonPointerPath, JsonSchema, JsonValue } from "../lib/types.js";
 import type { ValidationSnapshot } from "../lib/validation.js";
 
 export interface FieldRenderOptions {
@@ -19,24 +19,26 @@ export interface FieldRenderOptions {
 
 export interface JsonSchemaFormContext extends EventTarget {
   id?: string;
-  schema?: TSchema;
+  name?: string;
+  schema?: JsonSchema;
   value?: JsonValue;
+  repair: boolean;
   disabled: boolean;
   readonly: boolean;
   branchSelections: Map<string, number>;
   collapsedSections: Set<string>;
   pendingFocusId?: string;
-  rootSchema: TSchema;
+  rootSchema: JsonSchema;
   formDisabled: boolean;
   validation: ValidationSnapshot;
   applyFormValueUpdate(
     type: "input" | "change" | "both",
     path: JsonPointerPath,
     nextValue: JsonValue,
-    schema: TSchema,
+    schema: JsonSchema,
   ): void;
   dispatchEvent(event: Event): boolean;
 }
 
-export type { JsonPointerPath, TSchema, JsonValue };
+export type { JsonPointerPath, JsonSchema, JsonValue };
 

@@ -1,17 +1,17 @@
 import type { JsonSchemaFormContext } from "../src/json-schema-form/shared.js";
-import type { JsonPointerPath, JsonValue, TSchema } from "../src/lib/types.js";
+import type { JsonPointerPath, JsonValue, JsonSchema } from "../src/lib/types.js";
 
 export type RecordedEvent = {
   type: string;
   detail: {
     value: JsonValue;
     path: JsonPointerPath;
-    schema: TSchema;
+    schema: JsonSchema;
   };
 };
 
 export function createTestContext(
-  rootSchema: TSchema,
+  rootSchema: JsonSchema,
   value?: JsonValue,
   branchSelections = new Map<string, number>(),
 ): JsonSchemaFormContext & { events: RecordedEvent[] } {
@@ -19,7 +19,9 @@ export function createTestContext(
 
   return Object.assign(new EventTarget(), {
     schema: rootSchema,
+    name: "",
     value,
+    repair: false,
     disabled: false,
     readonly: false,
     branchSelections,
@@ -35,7 +37,7 @@ export function createTestContext(
       type: "input" | "change" | "both",
       path: JsonPointerPath,
       nextValue: JsonValue,
-      schema: TSchema,
+      schema: JsonSchema,
     ) {
       this.value = nextValue;
       if (type === "input" || type === "both") {
@@ -56,7 +58,7 @@ export function createTestContext(
         event as CustomEvent<{
           value: JsonValue;
           path: JsonPointerPath;
-          schema: TSchema;
+          schema: JsonSchema;
         }>
       ).detail;
       events.push({ type: event.type, detail });
