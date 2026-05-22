@@ -39,10 +39,14 @@
     "lit": "^3.3.2",
     "typebox": "^1.1.38"
   },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
   "devDependencies": {
     "@types/node": "^24.10.1",
     "oxlint": "^1.65.0",
     "typescript": "~6.0.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vue": "3.5.0"
   }
 }

@@ -35,36 +35,16 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     input: (_event: CustomEvent<JsonSchemaFormEventDetail>) => true;
     change: (_event: CustomEvent<JsonSchemaFormEventDetail>) => true;
     "update:modelValue": (_value: JsonValue | undefined) => true;
-}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
-    schema: {
-        type: () => TSchema | undefined;
-        default: undefined;
-    };
-    repair: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    persist: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    value: {
-        type: () => JsonValue | undefined;
-        default: undefined;
-    };
-    modelValue: {
-        type: () => JsonValue | undefined;
-        default: undefined;
-    };
-    disabled: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    readonly: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-}>> & Readonly<{
+}, string, import("vue").PublicProps, Readonly<{
+    disabled: boolean;
+    readonly: boolean;
+    repair: boolean;
+    persist: boolean;
+} & {
+    schema?: TSchema | undefined;
+    value?: JsonValue | undefined;
+    modelValue?: JsonValue | undefined;
+} & {
     onInput?: ((_event: CustomEvent<JsonSchemaFormEventDetail>) => any) | undefined;
     onChange?: ((_event: CustomEvent<JsonSchemaFormEventDetail>) => any) | undefined;
     "onUpdate:modelValue"?: ((_value: JsonValue | undefined) => any) | undefined;
@@ -76,5 +56,5 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     repair: boolean;
     persist: boolean;
     modelValue: JsonValue | undefined;
-}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}>;
 //# sourceMappingURL=index.d.ts.map
