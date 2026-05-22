@@ -149,6 +149,20 @@ export const schema = Type.Object(
           type: "string",
           title: "Mode",
         }),
+        enumList: Type.Array(
+          Type.Union(
+            [Type.Literal("alpha"), Type.Literal("beta"), Type.Literal("gamma")],
+            {
+              type: "string",
+            },
+          ),
+          {
+            title: "Enum list",
+            description: "Tests arrays of enum values.",
+            minItems: 1,
+            uniqueItems: true,
+          },
+        ),
       },
       {
         title: "Enums",
@@ -701,6 +715,7 @@ export const schema = Type.Object(
         status: "draft",
         kind: "test-case",
         mode: "manual",
+        enumList: ["alpha", "gamma"],
       },
       arrays: {
         tags: ["one", "two"],
