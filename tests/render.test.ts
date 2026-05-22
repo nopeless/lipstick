@@ -24,6 +24,51 @@ test("renders absent required properties as add actions with required markers", 
   assert.match(output, />\*<\/span>/);
 });
 
+test("renders homogeneous simple array items without labels", () => {
+  const schema: JsonSchema = {
+    type: "array",
+    title: "Tags",
+    items: {
+      type: "string",
+      title: "Tag",
+    },
+  };
+
+  const output = flattenTemplate(renderForm(createTestContext(schema, ["alpha"])));
+
+  assert.doesNotMatch(output, /<label[^>]*>Tag 1<\/label>/);
+});
+
+test("keeps tuple labels for inline scalar tuple items", () => {
+  const schema: JsonSchema = {
+    type: "array",
+    title: "Tuple",
+    prefixItems: [
+      {
+        type: "string",
+        title: "Label",
+      },
+    ],
+    items: false,
+  };
+
+  const output = flattenTemplate(renderForm(createTestContext(schema, ["primary"])));
+
+  assert.match(output, /<label[^>]*>Label 1<\/label>/);
+});
+
+test("renders additional property composer with class hook", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    additionalProperties: true,
+  };
+
+  const output = flattenTemplate(renderForm(createTestContext(schema, {})));
+
+  assert.match(output, /class="lipstick-composer"/);
+  assert.doesNotMatch(output, /data-lipstick-composer/);
+});
+
 function flattenTemplate(value: unknown): string {
   if (value === null || value === undefined) {
     return "";

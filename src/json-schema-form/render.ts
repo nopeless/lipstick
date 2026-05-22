@@ -650,7 +650,7 @@ function renderAdditionalPropertyComposer(
   };
 
   return html`
-    <p data-lipstick-composer>
+    <p class="lipstick-composer">
       <span>
         <button
           type="button"
@@ -658,7 +658,7 @@ function renderAdditionalPropertyComposer(
           ?disabled=${ctx.formDisabled || !canAdd}
           @click=${(event: Event) => {
             const input = (event.currentTarget as HTMLButtonElement).closest(
-              "[data-lipstick-composer]",
+              ".lipstick-composer",
             )?.querySelector("input");
             if (input instanceof HTMLInputElement) {
               commitFromInput(input);
@@ -760,7 +760,10 @@ function renderArrayItem(
   const canMoveDown =
     Array.isArray(arrayValue) && index >= prefixItemsLength && index < arrayValue.length - 1;
   const isSimpleItem = isSimpleArrayItemSchema(ctx, resolvedItemSchema);
-  const simpleItemLabel = formatSimpleArrayItemLabel(resolvedItemSchema, index);
+  const isTupleItem = index < prefixItemsLength;
+  const simpleItemLabel = isTupleItem
+    ? formatSimpleArrayItemLabel(resolvedItemSchema, index)
+    : undefined;
   const objectItemLabel = getArrayObjectItemLabel(resolvedItemSchema, item, index);
   const reorderActions = renderArrayItemReorderActions(
     ctx,

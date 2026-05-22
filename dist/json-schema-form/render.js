@@ -392,14 +392,14 @@ function renderAdditionalPropertyComposer(ctx, schema, path) {
         }
     };
     return html `
-    <p data-lipstick-composer>
+    <p class="lipstick-composer">
       <span>
         <button
           type="button"
           class="lipstick-add"
           ?disabled=${ctx.formDisabled || !canAdd}
           @click=${(event) => {
-        const input = event.currentTarget.closest("[data-lipstick-composer]")?.querySelector("input");
+        const input = event.currentTarget.closest(".lipstick-composer")?.querySelector("input");
         if (input instanceof HTMLInputElement) {
             commitFromInput(input);
         }
@@ -464,7 +464,10 @@ function renderArrayItem(ctx, schema, item, path, index) {
     const canMoveUp = index > prefixItemsLength;
     const canMoveDown = Array.isArray(arrayValue) && index >= prefixItemsLength && index < arrayValue.length - 1;
     const isSimpleItem = isSimpleArrayItemSchema(ctx, resolvedItemSchema);
-    const simpleItemLabel = formatSimpleArrayItemLabel(resolvedItemSchema, index);
+    const isTupleItem = index < prefixItemsLength;
+    const simpleItemLabel = isTupleItem
+        ? formatSimpleArrayItemLabel(resolvedItemSchema, index)
+        : undefined;
     const objectItemLabel = getArrayObjectItemLabel(resolvedItemSchema, item, index);
     const reorderActions = renderArrayItemReorderActions(ctx, path, index, canMoveUp, canMoveDown, prefixItemsLength);
     if (isSimpleItem) {
