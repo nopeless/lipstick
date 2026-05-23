@@ -9,5 +9,7 @@
     "types": ["vite/client", "node"]
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
-  "exclude": ["dist", "demo-dist", ".test-dist"]
+  "exclude": ["dist", "demo-dist", ".test-dist", "framework"]
 }
+
+

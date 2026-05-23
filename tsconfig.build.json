@@ -9,5 +9,7 @@
     "allowImportingTsExtensions": false
   },
   "include": ["src"],
-  "exclude": ["src/demo/**/*"]
+  "exclude": ["src/demo/**/*", "framework"]
 }
+
+

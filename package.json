@@ -30,7 +30,7 @@
     "build:demo": "vite build",
     "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/**/*.test.js",
     "preview": "vite preview",
-    "typecheck": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "lint": "oxlint .",
     "format": "oxfmt --write",
     "format:check": "oxfmt --check"
@@ -49,3 +49,5 @@
     "vue": "3.5.0"
   }
 }
+
+

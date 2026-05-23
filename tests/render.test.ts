@@ -97,5 +97,3 @@ function isTemplateResult(value: unknown): value is TemplateResult & {
 } {
   return typeof value === "object" && value !== null && "strings" in value && "values" in value;
 }
-
-
