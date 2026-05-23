@@ -67,7 +67,9 @@ export function renderScalarControl(
       >
         ${optionsList.map(
           (option, index) =>
-            html`<option value=${String(index)}>${optionLabels[index] ?? String(option)}</option>`,
+            html`<option value=${String(index)} ?selected=${index === selectedIndex}>
+              ${optionLabels[index] ?? String(option)}
+            </option>`,
         )}
       </select>
     `;

@@ -39,6 +39,27 @@ test("renders homogeneous simple array items without labels", () => {
   assert.doesNotMatch(output, /<label[^>]*>Tag 1<\/label>/);
 });
 
+test("marks each loaded enum array item option as selected", () => {
+  const schema: JsonSchema = {
+    type: "array",
+    title: "Steps",
+    items: {
+      enum: ["stocks", "debt", "ppe"],
+    },
+  };
+
+  const output = flattenTemplate(renderForm(createTestContext(schema, ["stocks", "debt"])));
+
+  assert.match(
+    output,
+    /id=lipstick-lipstick-0[\s\S]*<option value=0 \?selected=true>[\s\S]*stocks/,
+  );
+  assert.match(
+    output,
+    /id=lipstick-lipstick-1[\s\S]*<option value=1 \?selected=true>[\s\S]*debt/,
+  );
+});
+
 test("renders primitive union array items inline with delete actions", () => {
   const schema: JsonSchema = {
     type: "array",

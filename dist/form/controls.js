@@ -33,7 +33,9 @@ export function renderScalarControl(ctx, schema, value, path, options) {
             updatePathValue(ctx, path, nextValue, schema, true);
         }}
       >
-        ${optionsList.map((option, index) => html `<option value=${String(index)}>${optionLabels[index] ?? String(option)}</option>`)}
+        ${optionsList.map((option, index) => html `<option value=${String(index)} ?selected=${index === selectedIndex}>
+              ${optionLabels[index] ?? String(option)}
+            </option>`)}
       </select>
     `;
     }

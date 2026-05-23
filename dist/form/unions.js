@@ -15,7 +15,11 @@ export function renderUnionSelector(ctx, union, changeBranch) {
         .value=${String(selectedIndex)}
         @change=${(event) => changeBranch(Number(event.target.value))}
       >
-        ${options.map((option) => html ` <option value=${String(option.index)}>${option.label}</option> `)}
+        ${options.map((option) => html `
+            <option value=${String(option.index)} ?selected=${option.index === selectedIndex}>
+              ${option.label}
+            </option>
+          `)}
       </select>
     </div>
   `;

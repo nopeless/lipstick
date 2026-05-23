@@ -26,7 +26,11 @@ export function renderUnionSelector(
         @change=${(event: Event) => changeBranch(Number((event.target as HTMLSelectElement).value))}
       >
         ${options.map(
-          (option) => html` <option value=${String(option.index)}>${option.label}</option> `,
+          (option) => html`
+            <option value=${String(option.index)} ?selected=${option.index === selectedIndex}>
+              ${option.label}
+            </option>
+          `,
         )}
       </select>
     </div>

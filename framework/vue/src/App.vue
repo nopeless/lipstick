@@ -21,6 +21,10 @@ const schema = {
       type: "array",
       items: { type: "string", anyOf: [{ const: "a" }, { const: "b" }, { const: "c" }] },
     },
+    steps: {
+      type: "array",
+      items: { enum: ["stocks", "debt", "ppe", "production", "sales", "taxIncome"] },
+    },
   },
   required: ["name", "age"],
 };
