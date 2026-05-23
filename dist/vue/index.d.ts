@@ -1,6 +1,6 @@
 import { type PropType } from "vue";
 import "../define.js";
-import type { JsonSchemaFormEventDetail, JsonValue } from "../types.js";
+import type { JsonSchemaFormEventDetail } from "../types.js";
 export declare const Lipstick: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
     schema: {
         type: PropType<unknown>;
@@ -19,12 +19,12 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
         default: string;
     };
     value: {
-        type: () => JsonValue | undefined;
-        default: undefined;
+        type: PropType<unknown>;
+        required: false;
     };
     modelValue: {
-        type: () => JsonValue | undefined;
-        default: undefined;
+        type: PropType<unknown>;
+        required: false;
     };
     disabled: {
         type: BooleanConstructor;
@@ -39,7 +39,7 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
 }>, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {
     input: (_event: CustomEvent<JsonSchemaFormEventDetail>) => true;
     change: (_event: CustomEvent<JsonSchemaFormEventDetail>) => true;
-    "update:modelValue": (_value: JsonValue | undefined) => true;
+    "update:modelValue": (_value: unknown) => true;
 }, string, import("vue").PublicProps, Readonly<{
     name: string;
     repair: boolean;
@@ -48,19 +48,17 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     persist: boolean;
 } & {
     schema?: unknown;
-    value?: JsonValue | undefined;
-    modelValue?: JsonValue | undefined;
+    value?: unknown;
+    modelValue?: unknown;
 } & {
     onInput?: ((_event: CustomEvent<JsonSchemaFormEventDetail>) => any) | undefined;
     onChange?: ((_event: CustomEvent<JsonSchemaFormEventDetail>) => any) | undefined;
-    "onUpdate:modelValue"?: ((_value: JsonValue | undefined) => any) | undefined;
+    "onUpdate:modelValue"?: ((_value: unknown) => any) | undefined;
 }>, {
     name: string;
-    value: JsonValue | undefined;
     repair: boolean;
     disabled: boolean;
     readonly: boolean;
     persist: boolean;
-    modelValue: JsonValue | undefined;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}>;
 //# sourceMappingURL=index.d.ts.map

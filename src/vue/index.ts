@@ -1,6 +1,6 @@
 import { defineComponent, h, type PropType } from "vue";
 import "../define.js";
-import type { JsonSchemaFormEventDetail, JsonValue } from "../types.js";
+import type { JsonSchemaFormEventDetail } from "../types.js";
 
 export const Lipstick = defineComponent({
   name: "Lipstick",
@@ -9,15 +9,15 @@ export const Lipstick = defineComponent({
     repair: { type: Boolean, default: false },
     persist: { type: Boolean, default: false },
     name: { type: String, default: "" },
-    value: { type: null as unknown as () => JsonValue | undefined, default: undefined },
-    modelValue: { type: null as unknown as () => JsonValue | undefined, default: undefined },
+    value: { type: null as unknown as PropType<unknown>, required: false },
+    modelValue: { type: null as unknown as PropType<unknown>, required: false },
     disabled: { type: Boolean, default: false },
     readonly: { type: Boolean, default: false },
   },
   emits: {
     input: (_event: CustomEvent<JsonSchemaFormEventDetail>) => true,
     change: (_event: CustomEvent<JsonSchemaFormEventDetail>) => true,
-    "update:modelValue": (_value: JsonValue | undefined) => true,
+    "update:modelValue": (_value: unknown) => true,
   },
   setup(props, { emit }) {
     const isFormEvent = (
