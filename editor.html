@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lipstick editor</title>
+    <script type="module" src="/src/demo/index.ts"></script>
+    <style>
+      .editor-stack {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .editor-section {
+        border: 1px solid var(--demo-panel-border);
+        border-radius: var(--demo-radius);
+        background: var(--demo-panel-bg);
+        box-shadow: var(--demo-panel-shadow);
+        overflow: clip;
+      }
+
+      .editor-section > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 1rem 1.1rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .editor-section > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .editor-section > summary::after {
+        content: "▾";
+        float: right;
+        transition: transform 0.2s ease;
+      }
+
+      .editor-section:not([open]) > summary::after {
+        transform: rotate(-90deg);
+      }
+
+      .editor-section-body {
+        border-top: 1px solid var(--demo-panel-border);
+        padding: 1rem 1.1rem 1.1rem;
+      }
+
+      [data-role="output"] {
+        min-height: 16rem;
+        margin: 0;
+        display: block;
+        padding: 1rem;
+        border: 1px solid var(--demo-panel-border);
+        border-radius: var(--demo-radius);
+        background: var(--demo-panel-bg);
+        white-space: pre;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-shell">
+      <section class="editor-stack">
+        <details class="editor-section" open>
+          <summary>Schema</summary>
+          <div class="editor-section-body">
+            <label class="demo-field">
+              <span>Theme</span>
+              <select class="demo-select" data-role="theme-picker">
+                <option value="none">None</option>
+              </select>
+            </label>
+
+            <label class="demo-field">
+              <span>Schema JSON</span>
+              <textarea
+                data-role="schema-json"
+                class="demo-textarea"
+                placeholder='{"type":"object","properties":{"name":{"type":"string"}}}'
+              ></textarea>
+            </label>
+            <p data-role="schema-status"></p>
+          </div>
+        </details>
+
+        <details class="editor-section" open>
+          <summary>Form</summary>
+          <div class="editor-section-body">
+            <lipstick-form id="demo"></lipstick-form>
+          </div>
+        </details>
+
+        <details class="editor-section" open>
+          <summary>JSON Output</summary>
+          <div class="editor-section-body">
+            <code data-role="output"></code>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <button class="demo-top-button" type="button" data-role="scroll-top" aria-label="Scroll to top">↑ Top</button>
+  </body>
+</html>
