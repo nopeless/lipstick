@@ -38,8 +38,8 @@ export const schema: JsonSchema = {
         status: {
           type: "string",
           title: "Status",
-          enum: ["workflow.status.draft", "workflow.status.review", "workflow.status.published"],
-          default: "workflow.status.draft",
+          enum: ["Draft (not yet submitted)", "In review (awaiting approval)", "Published (live)"],
+          default: "Draft (not yet submitted)",
         },
       },
     },
@@ -121,7 +121,7 @@ export const schema: JsonSchema = {
               kind: {
                 type: "string",
                 title: "Kind",
-                enum: ["asset.kind.image", "asset.kind.file"],
+                enum: ["Image attachment", "File attachment"],
               },
             },
           },
@@ -187,6 +187,19 @@ export const schema: JsonSchema = {
         required: ["publishAt"],
       },
     },
+    optionalFlexibleValue: {
+      title: "Optional flexible value",
+      oneOf: [
+        { type: "null", title: "No value" },
+        {
+          type: "number",
+          title: "Numeric value (0 to 100)",
+          minimum: 0,
+          maximum: 100,
+        },
+        { type: "string", title: "Text value" },
+      ],
+    },
     metadata: {
       type: "object",
       title: "Metadata",
@@ -203,7 +216,7 @@ export const schema: JsonSchema = {
       name: "Avery Stone",
       email: "avery@example.com",
       favoriteColor: "#ff4d6d",
-      status: "workflow.status.review",
+      status: "In review (awaiting approval)",
     },
     primitives: {
       score: 42.5,
@@ -219,7 +232,7 @@ export const schema: JsonSchema = {
         {
           url: "https://example.com/assets/a.png",
           alt: "Attachment A",
-          kind: "asset.kind.image",
+          kind: "Image attachment",
         },
       ],
     },
@@ -230,6 +243,7 @@ export const schema: JsonSchema = {
     schedule: {
       mode: "immediate",
     },
+    optionalFlexibleValue: null,
     metadata: {
       owner: "content",
     },
