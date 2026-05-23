@@ -200,7 +200,18 @@ export function canCollapseSchema(ctx, schema) {
 }
 export function isSimpleArrayItemSchema(ctx, schema) {
     const resolved = resolveSchema(schema, ctx.rootSchema, undefined);
+    if (isCycledPrimitiveUnionSchema(ctx, resolved)) {
+        return true;
+    }
     return !(describeUnion(resolved, undefined, ctx.rootSchema) ||
         isObjectSchema(resolved) ||
         isArraySchema(resolved));
+}
+function isCycledPrimitiveUnionSchema(ctx, schema) {
+    const branches = schema.anyOf ?? [];
+    return (branches.length > 1 &&
+        branches.every((branch) => {
+            const resolvedBranch = resolveSchema(branch, ctx.rootSchema, undefined);
+            return !isObjectSchema(resolvedBranch) && !isArraySchema(resolvedBranch);
+        }));
 }

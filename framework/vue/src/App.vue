@@ -17,6 +17,10 @@ const schema = {
   properties: {
     name: { type: "string" },
     age: { type: "number" },
+    list: {
+      type: "array",
+      items: { type: "string", anyOf: [{ const: "a" }, { const: "b" }, { const: "c" }] },
+    },
   },
   required: ["name", "age"],
 };

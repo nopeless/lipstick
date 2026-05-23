@@ -200,6 +200,10 @@ function renderPrimitiveUnionField(
           ⇄
         </button>`
       : nothing;
+  const inlineActions =
+    options.inlineActions !== undefined
+      ? html`${cycleButton}${options.inlineActions}`
+      : cycleButton;
 
   const fieldLabel = options.label ?? schema.title ?? "";
   if (!schema.description) {
@@ -210,7 +214,7 @@ function renderPrimitiveUnionField(
       inputId,
       schema,
       scalarControl,
-      cycleButton,
+      inlineActions,
       path,
     );
   }
@@ -223,7 +227,7 @@ function renderPrimitiveUnionField(
     <section>
       <header>
         <span>${fieldLabel}</span>
-        ${cycleButton}${removeButton}
+        ${inlineActions}${removeButton}
       </header>
       <div>
         ${renderDescription(ctx, schema, path)} ${scalarControl}

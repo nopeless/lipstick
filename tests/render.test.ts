@@ -39,6 +39,24 @@ test("renders homogeneous simple array items without labels", () => {
   assert.doesNotMatch(output, /<label[^>]*>Tag 1<\/label>/);
 });
 
+test("renders primitive union array items inline with delete actions", () => {
+  const schema: JsonSchema = {
+    type: "array",
+    title: "List",
+    items: {
+      type: "string",
+      anyOf: [{ const: "a" }, { const: "b" }, { const: "c" }],
+    },
+  };
+
+  const output = flattenTemplate(renderForm(createTestContext(schema, ["a"])));
+
+  assert.doesNotMatch(output, /<label[^>]*>Item 1<\/label>/);
+  assert.match(output, /data-lipstick-simple-array-item/);
+  assert.match(output, /aria-label="Cycle variant"/);
+  assert.match(output, /aria-label="Delete array item"/);
+});
+
 test("keeps tuple labels for inline scalar tuple items", () => {
   const schema: JsonSchema = {
     type: "array",

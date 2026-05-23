@@ -101,9 +101,12 @@ function renderPrimitiveUnionField(ctx, schema, value, path, options, union) {
           ⇄
         </button>`
         : nothing;
+    const inlineActions = options.inlineActions !== undefined
+        ? html `${cycleButton}${options.inlineActions}`
+        : cycleButton;
     const fieldLabel = options.label ?? schema.title ?? "";
     if (!schema.description) {
-        return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, scalarControl, cycleButton, path);
+        return renderInlineSimpleField(ctx, fieldLabel, options, inputId, schema, scalarControl, inlineActions, path);
     }
     const removeButton = options.present && options.onRemove
         ? renderRemoveButton(ctx, options.onRemove, options.removeLabel, options.removeDisabled)
@@ -112,7 +115,7 @@ function renderPrimitiveUnionField(ctx, schema, value, path, options, union) {
     <section>
       <header>
         <span>${fieldLabel}</span>
-        ${cycleButton}${removeButton}
+        ${inlineActions}${removeButton}
       </header>
       <div>
         ${renderDescription(ctx, schema, path)} ${scalarControl}
