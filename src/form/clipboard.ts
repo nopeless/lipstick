@@ -13,7 +13,7 @@ export async function copyRootValueToClipboard(ctx: JsonSchemaFormContext, event
   }
 
   try {
-    await clipboard.writeText(JSON.stringify(ctx.value ?? null, null, 2));
+    await clipboard.writeText(JSON.stringify(ctx.value ?? null));
   } catch {
     // Clipboard access may be denied by browser permissions.
   }
