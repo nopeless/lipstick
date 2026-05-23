@@ -1,11 +1,11 @@
-import { defineComponent, h } from "vue";
+import { defineComponent, h, type PropType } from "vue";
 import "../define.js";
 import type { JsonSchemaFormEventDetail, JsonValue } from "../types.js";
 
 export const Lipstick = defineComponent({
   name: "Lipstick",
   props: {
-    schema: { type: Object as () => unknown, default: undefined },
+    schema: { type: Object as PropType<unknown>, required: false },
     repair: { type: Boolean, default: false },
     persist: { type: Boolean, default: false },
     name: { type: String, default: "" },

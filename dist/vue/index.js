@@ -3,7 +3,7 @@ import "../define.js";
 export const Lipstick = defineComponent({
     name: "Lipstick",
     props: {
-        schema: { type: Object, default: undefined },
+        schema: { type: Object, required: false },
         repair: { type: Boolean, default: false },
         persist: { type: Boolean, default: false },
         name: { type: String, default: "" },
