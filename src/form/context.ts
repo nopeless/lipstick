@@ -20,7 +20,7 @@ export interface FieldRenderOptions {
 export interface JsonSchemaFormContext extends EventTarget {
   id?: string;
   name?: string;
-  schema?: JsonSchema;
+  schema?: unknown;
   value?: JsonValue;
   repair: boolean;
   disabled: boolean;

@@ -3,7 +3,7 @@ import type { JsonSchemaFormContext } from "./form/context.js";
 import type { JsonSchema, JsonValue } from "./types.js";
 import { type ValidationSnapshot } from "./validation.js";
 export declare class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
-    schema?: JsonSchema;
+    schema?: unknown;
     name: string;
     repair: boolean;
     _value?: JsonValue;

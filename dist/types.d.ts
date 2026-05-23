@@ -50,6 +50,6 @@ export interface JsonSchema {
 export interface JsonSchemaFormEventDetail {
     value: JsonValue;
     path: JsonPointerPath;
-    schema: JsonSchema;
+    schema: unknown;
 }
 //# sourceMappingURL=types.d.ts.map

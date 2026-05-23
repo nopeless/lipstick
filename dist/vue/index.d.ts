@@ -1,8 +1,8 @@
 import "../define.js";
-import type { JsonSchemaFormEventDetail, JsonValue, JsonSchema } from "../types.js";
+import type { JsonSchemaFormEventDetail, JsonValue } from "../types.js";
 export declare const Lipstick: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
     schema: {
-        type: () => JsonSchema | undefined;
+        type: () => unknown;
         default: undefined;
     };
     repair: {
@@ -46,7 +46,7 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     readonly: boolean;
     persist: boolean;
 } & {
-    schema?: JsonSchema | undefined;
+    schema?: undefined;
     value?: JsonValue | undefined;
     modelValue?: JsonValue | undefined;
 } & {
@@ -55,7 +55,7 @@ export declare const Lipstick: import("vue").DefineComponent<import("vue").Extra
     "onUpdate:modelValue"?: ((_value: JsonValue | undefined) => any) | undefined;
 }>, {
     name: string;
-    schema: JsonSchema | undefined;
+    schema: undefined;
     value: JsonValue | undefined;
     repair: boolean;
     disabled: boolean;

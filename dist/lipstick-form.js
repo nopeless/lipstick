@@ -39,7 +39,7 @@ export class LipstickFormElement extends LitElement {
         return this;
     }
     get rootSchema() {
-        if (!this.schema) {
+        if (!isSchemaValue(this.schema)) {
             throw new Error("Cannot render without a schema.");
         }
         return this.schema;
@@ -52,11 +52,11 @@ export class LipstickFormElement extends LitElement {
     }
     set value(next) {
         const previous = this._value;
-        const repaired = this.repair && this.schema ? repairValueForSchema(this.schema, next) : next;
+        const repaired = this.repair && isSchemaValue(this.schema) ? repairValueForSchema(this.schema, next) : next;
         this._value = repaired;
         this.requestUpdate("value", previous);
         if (this.repair &&
-            this.schema &&
+            isSchemaValue(this.schema) &&
             next !== undefined &&
             repaired !== undefined &&
             !this.isApplyingFormUpdate &&
@@ -65,7 +65,7 @@ export class LipstickFormElement extends LitElement {
         }
     }
     render() {
-        if (this.schema) {
+        if (isSchemaValue(this.schema)) {
             this.validation = validateValueAgainstSchema(this.schema, this.value);
         }
         else {
@@ -113,7 +113,7 @@ export class LipstickFormElement extends LitElement {
     }
     getPersistStorageKey() {
         const formId = this.id?.trim();
-        const schemaTitle = this.schema?.title?.trim();
+        const schemaTitle = isSchemaValue(this.schema) ? this.schema.title?.trim() : undefined;
         const source = formId || schemaTitle;
         if (!source) {
             console.error("[lipstick] persist requires either a form id or schema.title to derive a storage key.");
@@ -131,7 +131,7 @@ export class LipstickFormElement extends LitElement {
             if (raw !== null) {
                 const hydrated = JSON.parse(raw);
                 this.value = hydrated;
-                if (this.schema) {
+                if (isSchemaValue(this.schema)) {
                     emitValue(this, "input", [], hydrated, this.schema);
                 }
             }
@@ -199,3 +199,6 @@ __decorate([
 __decorate([
     state()
 ], LipstickFormElement.prototype, "collapsedSections", void 0);
+function isSchemaValue(value) {
+    return typeof value === "object" && value !== null;
+}

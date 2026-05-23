@@ -10,7 +10,7 @@ import { config } from "./config.js";
 
 export class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
   @property({ attribute: false })
-  schema?: JsonSchema;
+  schema?: unknown;
 
   @property({ reflect: true })
   name = "";
@@ -56,7 +56,7 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
   }
 
   get rootSchema(): JsonSchema {
-    if (!this.schema) {
+    if (!isSchemaValue(this.schema)) {
       throw new Error("Cannot render without a schema.");
     }
 
@@ -74,13 +74,13 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
   set value(next: JsonValue | undefined) {
     const previous = this._value;
     const repaired =
-      this.repair && this.schema ? repairValueForSchema(this.schema, next) : next;
+      this.repair && isSchemaValue(this.schema) ? repairValueForSchema(this.schema, next) : next;
     this._value = repaired;
     this.requestUpdate("value", previous);
 
     if (
       this.repair &&
-      this.schema &&
+      isSchemaValue(this.schema) &&
       next !== undefined &&
       repaired !== undefined &&
       !this.isApplyingFormUpdate &&
@@ -91,7 +91,7 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
   }
 
   render() {
-    if (this.schema) {
+    if (isSchemaValue(this.schema)) {
       this.validation = validateValueAgainstSchema(this.schema, this.value);
     } else {
       this.validation = {
@@ -152,7 +152,7 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
 
   private getPersistStorageKey(): string | undefined {
     const formId = this.id?.trim();
-    const schemaTitle = this.schema?.title?.trim();
+    const schemaTitle = isSchemaValue(this.schema) ? this.schema.title?.trim() : undefined;
     const source = formId || schemaTitle;
     if (!source) {
       console.error(
@@ -174,7 +174,7 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
       if (raw !== null) {
         const hydrated = JSON.parse(raw) as JsonValue;
         this.value = hydrated;
-        if (this.schema) {
+        if (isSchemaValue(this.schema)) {
           emitValue(this, "input", [], hydrated, this.schema);
         }
       }
@@ -215,6 +215,10 @@ export class LipstickFormElement extends LitElement implements JsonSchemaFormCon
     window.removeEventListener("beforeunload", this.beforeUnloadHandler);
     this.isBeforeUnloadRegistered = false;
   }
+}
+
+function isSchemaValue(value: unknown): value is JsonSchema {
+  return typeof value === "object" && value !== null;
 }
 
 declare global {
