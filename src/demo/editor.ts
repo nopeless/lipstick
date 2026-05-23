@@ -30,6 +30,17 @@ export const schema: JsonSchema = {
           title: "Website",
           format: "uri",
         },
+        nullable: {
+          anyOf: [
+            {
+              type: "null",
+            },
+            {
+              type: "string",
+              title: "Nullable string",
+            },
+          ],
+        },
         favoriteColor: {
           type: "string",
           title: "Favorite color",
