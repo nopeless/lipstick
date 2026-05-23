@@ -1,6 +1,6 @@
 import { defineComponent, h } from "vue";
 import "../define.js";
-import type { JsonSchemaFormEventDetail, JsonValue, JsonSchema } from "../lib/types.js";
+import type { JsonSchemaFormEventDetail, JsonValue, JsonSchema } from "../types.js";
 
 export const Lipstick = defineComponent({
   name: "Lipstick",
@@ -64,3 +64,4 @@ export const Lipstick = defineComponent({
       });
   },
 });
+

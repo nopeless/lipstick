@@ -4,7 +4,7 @@ import type { JsonSchemaFormEventDetail, JsonValue } from "../index.js";
 import { getDemoRefs } from "./dom.js";
 import { getErrorMessage, loadDemoFixture, assertSchema, type DemoFixtureName } from "./data.js";
 import type { JsonSchema } from "../index.js";
-import { createInitialValue } from "../lib/schema.js";
+import { createInitialValue } from "../schema.js";
 
 let value: JsonValue = null;
 
@@ -221,4 +221,5 @@ async function runWithStatus(operation: () => void | Promise<void>, successMessa
     setStatus(getErrorMessage(error), true);
   }
 }
+
 

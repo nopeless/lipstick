@@ -1,3 +1,3 @@
-export * from "./lipstick-form.js";
-export * from "./config.js";
-export * from "./lib/validation.js";
+export { LipstickFormElement } from "./lipstick-form.js";
+export { defineConfigLipstick } from "./config.js";
+export { validateValueAgainstSchema } from "./validation.js";

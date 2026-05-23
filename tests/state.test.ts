@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { JsonSchema } from "../src/lib/types.js";
+import type { JsonSchema } from "../src/types.js";
 import { createTestContext } from "./helpers.js";
 import {
   addAdditionalProperty,
@@ -14,7 +14,7 @@ import {
   reorderArrayItem,
   toggleCollapsed,
   updatePathValue,
-} from "../src/json-schema-form/state.js";
+} from "../src/form/state.js";
 
 test("emits cloned events for path updates", () => {
   const schema: JsonSchema = {
@@ -143,5 +143,7 @@ test("root commit resets invalid union branch selection", () => {
 
   assert.equal(ctx.branchSelections.get("#/optionalRange"), 0);
 });
+
+
 
 

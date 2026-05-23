@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { TemplateResult } from "lit";
-import { renderForm } from "../src/json-schema-form/render.js";
-import type { JsonSchema } from "../src/lib/types.js";
+import { renderForm } from "../src/form/render.js";
+import type { JsonSchema } from "../src/types.js";
 import { createTestContext } from "./helpers.js";
 
 test("renders absent required properties as add actions with required markers", () => {
@@ -97,3 +97,5 @@ function isTemplateResult(value: unknown): value is TemplateResult & {
 } {
   return typeof value === "object" && value !== null && "strings" in value && "values" in value;
 }
+
+

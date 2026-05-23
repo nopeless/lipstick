@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { pasteRootValueFromClipboard } from "../src/json-schema-form/clipboard.js";
-import type { JsonSchema } from "../src/lib/types.js";
+import { pasteRootValueFromClipboard } from "../src/form/clipboard.js";
+import type { JsonSchema } from "../src/types.js";
 import { createTestContext } from "./helpers.js";
 
 test("paste clears stale branch selections before emitting", async () => {
@@ -43,3 +43,5 @@ test("paste clears stale branch selections before emitting", async () => {
   assert.deepEqual(ctx.events.at(-1)?.detail.value, { optionalRange: 7 });
   assert.equal(ctx.branchSelections.get("#/optionalRange"), 0);
 });
+
+

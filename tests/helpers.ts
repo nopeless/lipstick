@@ -1,5 +1,5 @@
-import type { JsonSchemaFormContext } from "../src/json-schema-form/shared.js";
-import type { JsonPointerPath, JsonValue, JsonSchema } from "../src/lib/types.js";
+import type { JsonSchemaFormContext } from "../src/form/context.js";
+import type { JsonPointerPath, JsonValue, JsonSchema } from "../src/types.js";
 
 export type RecordedEvent = {
   type: string;
@@ -67,3 +67,5 @@ export function createTestContext(
     events,
   });
 }
+
+

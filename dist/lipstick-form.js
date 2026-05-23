@@ -6,10 +6,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
-import { renderForm } from "./json-schema-form/render.js";
-import { emitValue } from "./json-schema-form/state.js";
-import { validateValueAgainstSchema } from "./lib/validation.js";
-import { jsonValueEquals, repairValueForSchema } from "./lib/schema.js";
+import { renderForm } from "./form/render.js";
+import { emitValue } from "./form/state.js";
+import { validateValueAgainstSchema } from "./validation.js";
+import { jsonValueEquals, repairValueForSchema } from "./schema.js";
 import { config } from "./config.js";
 export class LipstickFormElement extends LitElement {
     constructor() {

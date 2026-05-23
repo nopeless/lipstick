@@ -1,15 +1,26 @@
 lipstick-form {
   display: block;
 
-  & input[readonly] {
-    background: transparent;
-    pointer-events: none;
-    border: none;
+  & input {
+    flex-grow: 1;
 
-    &[data-null] {
-      font-family: 'Courier New', Courier, monospace;
+    &[type="checkbox"] {
+      flex-grow: 0;
+      margin: 0;
+      margin-right: auto;
+    }
+
+    &[readonly] {
+      background: transparent;
+      pointer-events: none;
+      border: none;
+
+      &[data-null] {
+        font-family: 'Courier New', Courier, monospace;
+      }
     }
   }
+
 
   & section {
     display: flex;
@@ -45,19 +56,14 @@ lipstick-form {
     align-items: center;
     justify-content: space-between;
 
-    > :where(.lipstick-range-component, input, select) {
+    > :where(.lipstick-range-component, select) {
       flex-grow: 1;
-
-      &[type="checkbox"] {
-        flex-grow: 0;
-        margin: 0;
-        margin-right: auto;
-      }
     }
   }
 
   .lipstick-actions,
-  .lipstick-union-picker {
+  .lipstick-union-picker,
+  .lipstick-composer {
     display: flex;
     align-items: stretch;
   }

@@ -1,11 +1,11 @@
 import { LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
-import { renderForm } from "./json-schema-form/render.js";
-import { emitValue } from "./json-schema-form/state.js";
-import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
-import type { JsonSchema, JsonValue } from "./lib/types.js";
-import { validateValueAgainstSchema, type ValidationSnapshot } from "./lib/validation.js";
-import { jsonValueEquals, repairValueForSchema } from "./lib/schema.js";
+import { renderForm } from "./form/render.js";
+import { emitValue } from "./form/state.js";
+import type { JsonSchemaFormContext } from "./form/context.js";
+import type { JsonSchema, JsonValue } from "./types.js";
+import { validateValueAgainstSchema, type ValidationSnapshot } from "./validation.js";
+import { jsonValueEquals, repairValueForSchema } from "./schema.js";
 import { config } from "./config.js";
 
 export class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
@@ -222,3 +222,4 @@ declare global {
     "lipstick-form": LipstickFormElement;
   }
 }
+

@@ -1,5 +1,5 @@
 import "../define.js";
-import type { JsonSchemaFormEventDetail, JsonValue, JsonSchema } from "../lib/types.js";
+import type { JsonSchemaFormEventDetail, JsonValue, JsonSchema } from "../types.js";
 export declare const Lipstick: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
     schema: {
         type: () => JsonSchema | undefined;

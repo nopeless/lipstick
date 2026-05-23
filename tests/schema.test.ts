@@ -6,14 +6,14 @@ import {
   getArrayItemSchema,
   pathToKey,
   repairValueForSchema,
-} from "../src/lib/schema.js";
-import { validateValueAgainstSchema } from "../src/lib/validation.js";
+} from "../src/schema.js";
+import { validateValueAgainstSchema } from "../src/validation.js";
 import {
   formatDateTimeForInput,
   getStringInputType,
   normalizeDateTimeFromInput,
-} from "../src/lib/input.js";
-import type { JsonSchema } from "../src/lib/types.js";
+} from "../src/input.js";
+import type { JsonSchema } from "../src/types.js";
 
 const thenKeyword = ("th" + "en") as "then";
 
@@ -202,3 +202,5 @@ test("detects discriminated unions from required literal properties", () => {
     ["email", "webhook"],
   );
 });
+
+

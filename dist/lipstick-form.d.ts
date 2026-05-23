@@ -1,7 +1,7 @@
 import { LitElement } from "lit";
-import type { JsonSchemaFormContext } from "./json-schema-form/shared.js";
-import type { JsonSchema, JsonValue } from "./lib/types.js";
-import { type ValidationSnapshot } from "./lib/validation.js";
+import type { JsonSchemaFormContext } from "./form/context.js";
+import type { JsonSchema, JsonValue } from "./types.js";
+import { type ValidationSnapshot } from "./validation.js";
 export declare class LipstickFormElement extends LitElement implements JsonSchemaFormContext {
     schema?: JsonSchema;
     name: string;
@@ -22,7 +22,7 @@ export declare class LipstickFormElement extends LitElement implements JsonSchem
     get formDisabled(): boolean;
     get value(): JsonValue | undefined;
     set value(next: JsonValue | undefined);
-    render(): typeof import("lit").nothing | import("lit").TemplateResult<1>;
+    render(): import("lit").TemplateResult<1> | typeof import("lit").nothing;
     connectedCallback(): void;
     disconnectedCallback(): void;
     protected updated(): void;
