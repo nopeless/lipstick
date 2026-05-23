@@ -106,7 +106,7 @@ function repairObjectValue(
       continue;
     }
 
-    if (required.has(key) || hasOwnDefault(childSchema)) {
+    if (required.has(key)) {
       next[key] = createInitialValue(childSchema, root);
     }
   }

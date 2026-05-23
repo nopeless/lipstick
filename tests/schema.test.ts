@@ -167,7 +167,7 @@ test("initializes required/default values and preserves existing invalid input",
   });
 
   assert.deepEqual(repairValueForSchema(schema, { profile: { name: 12 } }), {
-    profile: { name: 12, email: "", status: "draft" },
+    profile: { name: 12, email: "" },
     tags: [],
     enabled: false,
   });
