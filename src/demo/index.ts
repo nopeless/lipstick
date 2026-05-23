@@ -19,7 +19,9 @@ const themeStyles = {
 
 type DemoTheme = keyof typeof themeStyles;
 
-refs.schemaSourcePicker.value = "editor";
+if (refs.schemaSourcePicker) {
+  refs.schemaSourcePicker.value = "editor";
+}
 initializeThemePicker();
 setStatus("Loading editor demo...");
 void bootstrap();
@@ -27,10 +29,8 @@ void bootstrap();
 wireEvents();
 
 async function bootstrap() {
-  await runWithStatus(
-    () => loadSelectedDemo(refs.schemaSourcePicker.value as DemoFixtureName),
-    "Loaded editor demo.",
-  );
+  const selectedFixture = (refs.schemaSourcePicker?.value as DemoFixtureName | undefined) ?? "editor";
+  await runWithStatus(() => loadSelectedDemo(selectedFixture), "Loaded editor demo.");
 }
 
 async function loadSelectedDemo(fixture: DemoFixtureName) {
@@ -38,7 +38,9 @@ async function loadSelectedDemo(fixture: DemoFixtureName) {
     setStatus(`Loading ${fixture} demo...`);
     const example = await loadDemoFixture(fixture);
     applySchema(example.schema, example.value);
-    refs.schemaSourcePicker.value = fixture;
+    if (refs.schemaSourcePicker) {
+      refs.schemaSourcePicker.value = fixture;
+    }
   }, `Loaded ${fixture} demo.`);
 }
 
@@ -61,7 +63,12 @@ function setStatus(message: string, isError = false) {
   refs.schemaStatus.style.color = isError ? "#b9381d" : "#6f6255";
 }
 
-async function loadSchemaFromUrl(rawUrl = refs.schemaUrlInput.value.trim()) {
+async function loadSchemaFromUrl(rawUrl = refs.schemaUrlInput?.value.trim() ?? "") {
+  if (!refs.schemaUrlInput) {
+    setStatus("Schema URL input is not available.", true);
+    return;
+  }
+
   if (!rawUrl) {
     setStatus("Enter a schema URL first.", true);
     return;
@@ -161,8 +168,8 @@ function coerceTheme(value: string | null | undefined): DemoTheme {
 
 function wireEvents() {
   refs.form.addEventListener("input", onFormInput);
-  refs.schemaUrlInput.addEventListener("paste", onSchemaUrlPaste);
-  refs.schemaUrlInput.addEventListener("change", () => {
+  refs.schemaUrlInput?.addEventListener("paste", onSchemaUrlPaste);
+  refs.schemaUrlInput?.addEventListener("change", () => {
     void loadSchemaFromUrl();
   });
   refs.schemaJson.addEventListener("paste", onSchemaJsonPaste);
@@ -170,7 +177,7 @@ function wireEvents() {
     applyPastedSchema();
   });
   refs.schemaJson.addEventListener("input", autoSizeSchemaJson);
-  refs.schemaSourcePicker.addEventListener("change", onSchemaSourceChange);
+  refs.schemaSourcePicker?.addEventListener("change", onSchemaSourceChange);
   refs.themePicker.addEventListener("change", onThemeChange);
   document.querySelector<HTMLButtonElement>('[data-role="scroll-top"]')?.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });

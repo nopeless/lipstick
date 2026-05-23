@@ -3,8 +3,8 @@ import type { LipstickFormElement } from "../lipstick-form.js";
 export interface DemoRefs {
   form: LipstickFormElement;
   output: HTMLElement;
-  schemaSourcePicker: HTMLSelectElement;
-  schemaUrlInput: HTMLInputElement;
+  schemaSourcePicker: HTMLSelectElement | null;
+  schemaUrlInput: HTMLInputElement | null;
   schemaJson: HTMLTextAreaElement;
   schemaStatus: HTMLElement;
   themePicker: HTMLSelectElement;
@@ -21,15 +21,7 @@ export function getDemoRefs(): DemoRefs {
   const schemaStatus = document.querySelector<HTMLElement>('[data-role="schema-status"]');
   const themePicker = document.querySelector<HTMLSelectElement>('[data-role="theme-picker"]');
 
-  if (
-    !form ||
-    !output ||
-    !schemaSourcePicker ||
-    !schemaUrlInput ||
-    !schemaJson ||
-    !schemaStatus ||
-    !themePicker
-  ) {
+  if (!form || !output || !schemaJson || !schemaStatus || !themePicker) {
     throw new Error("Demo root not found.");
   }
 
